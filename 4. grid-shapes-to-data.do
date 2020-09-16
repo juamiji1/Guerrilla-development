@@ -18,4 +18,4 @@ cd ${data}
 
 
 *Coverting shape to dta 
-shp2dta using "${maps}/guerrilla_map/nl06Shp_pixels_sp", data("${data}/nl06Shp_pixels.dta") coor("${data}/nl06Shp_pixels_coord.dta") replace 
+shp2dta using "${maps}/guerrilla_map/nl13Shp_pixels_sp", data("${data}/nl13Shp_pixels.dta") coord("${data}/nl13Shp_pixels_coord.dta") genid(pixel_id) genc(coord) replace 
