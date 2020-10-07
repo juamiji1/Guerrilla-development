@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-PROJECT: Guerillas_Development
+PROJECT: Guerrillas_Development
 AUTHOR: JMJR
 TOPIC: Spatial RDD of Night Light Density 
 DATE:
@@ -106,23 +106,23 @@ gl b=e(b_l)
 rdmse nl13_density z_run_cntrl, p(1) h(${h}) b(${b})
 gl amsep1=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_cntrl, all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Polynomial", 1, "AMSE", ${amsep1}) replace 
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
 
 rdmse nl13_density z_run_cntrl, p(2) h(${h}) b(${b})
 gl amsep2=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_cntrl, all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Polynomial", 2, "AMSE", ${amsep2}) append
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
 
 rdmse nl13_density z_run_cntrl, p(3) h(${h}) b(${b}) 
 gl amsep3=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_cntrl, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Polynomial", 3, "AMSE", ${amsep3}) append
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
 
 rdrobust nl13_density z_run_cntrl, all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Polynomial", 1) append
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
 
 rdrobust nl13_density z_run_cntrl, all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Polynomial", 1) append
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
 
 *-------------------------------------------------------------------------------
 * Sharp RDD plots:
@@ -157,7 +157,7 @@ mat S=e(stars)
 tempfile X
 frmttable using `X', statmat(T) varlabels replace substat(1) annotate(S) asymbol(*,**,***) ///
 ctitle("Variables", "Control", "Treatment", , "Difference" \ "", "Mean", "Mean", "of means" \ ///
-" ", "(ED)", "(ED)", "(p-value)†") fragment tex nocenter
+" ", "(SD)", "(SD)", "(p-value)†") fragment tex nocenter
 filefilter `X' "${tables}\ttest_treat_cntrl.tex", from("r}\BS\BS") to("r}") replace
 
 

@@ -1,3 +1,4 @@
+# PROJECT: 
 # TOPIC: 
 # AUTHOR: JMJR
 # DATE: 
@@ -120,10 +121,19 @@ tm_shape(y) +
   tm_shape(slvShp) + 
   tm_borders()
 
+#Exporting map of night light density and FMLN zones
 tm_shape(nl13_mask) + 
-  tm_raster() +
+  tm_raster(title='Night Light Density (2013)') +
   tm_shape(slvShp) + 
-  tm_borders()
+  tm_borders()+
+  tm_shape(disputaShp) + 
+  tm_borders(col='pink', lwd = 3, lty = "solid", alpha = NA) +
+  tm_shape(expansionShp) + 
+  tm_borders(col='blue', lwd = 2, lty = "solid", alpha = NA) +
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
 
 
 
