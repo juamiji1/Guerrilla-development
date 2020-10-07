@@ -103,6 +103,12 @@ tm_shape(nl12_mask) +
   tm_shape(slvShp) + 
   tm_borders()
 
+tm_shape(nldi_mask) + 
+  tm_raster() +
+  tm_shape(slvShp) + 
+  tm_borders()
+
+
 
 
 
