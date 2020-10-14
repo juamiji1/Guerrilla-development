@@ -128,11 +128,14 @@ tm_shape(nl13_mask) +
   tm_borders()+
   tm_shape(disputaShp) + 
   tm_borders(col='pink', lwd = 3, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="pink", lwd=10, title="Disputed FMLN zone")+
   tm_shape(expansionShp) + 
   tm_borders(col='blue', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="blue", lwd=10, title="Expansion FMLN zone")+
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_layout(frame = FALSE)
+  tm_add_legend(type="line", col="red", lwd=10, title="Controlled FMLN zone")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
 
 
