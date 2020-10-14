@@ -12,8 +12,8 @@ clear all
 gl do "C:\Users\jmjimenez\Documents\GitHub\Guerrilla-development"
 gl path "C:\Users\jmjimenez\Dropbox\Mica-projects\Guerillas_Development"
 gl data "${path}\2-Data\Salvador"
-gl plots "${path}\4-Results\Salvador\plots"
-gl tables "${path}\4-Results\Salvador\tables"
+gl plots "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\Mica-projects\plots"
+gl tables "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\Mica-projects\tables"
 gl maps "${path}\5-Maps\Salvador"
 
 cd ${data}
