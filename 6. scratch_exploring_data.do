@@ -49,7 +49,33 @@ frmttable using `X', s(A) ctitle("Variable", "Obs.", "Mean", "Sd") sdec(0,3,3) t
 filefilter `X' "${tables}\summary_stats_ehpm.tex", from("r}\BS\BS") to("r}") replace
 
 
+use "${data}/ehpm\ehpm_2000_2017_mjsp.dta", clear 
 
+gen ehpm=1 
+
+collapse (mean) ehpm, by(segment_id year)
+gen l=length(segment_id)
+tab l 
+drop if l==6
+drop l 
+
+*keep if year==2007				// first year with complete match is 2011
+
+outsheet using "${data}/segment_id.csv", comma replace 
+save "${data}/segment_id_ehpm", replace
+
+
+import excel "${data}\census2007_seg_id.xls", sheet("census2007_seg_id") firstrow clear
+rename _all, low
+rename seg_id segment_id
+
+isid segment_id
+
+distinct segment_id				// 5471 segments 
+gen l=length(segment_id)
+tab l 
+
+merge 1:1 segment_id using "${data}/segment_id_ehpm"
 
 
 *END

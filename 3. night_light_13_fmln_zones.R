@@ -16,7 +16,7 @@ library(sf)
 library(sp)
 library("ggpubr")
 library(dplyr)
-library(tidyr)
+#library(tidyr)
 library(scales) 
 library(tidyverse)
 library(lubridate)
@@ -102,7 +102,48 @@ y<-subset(nl13Shp_pixels_int, dist_control==0)
 
 ## EXPORTING THE SHAPEFILE AS AN SP OBJECT:
 nl13Shp_pixels_sp <- as(nl13Shp_pixels_int, Class='Spatial')
+crs(nl13Shp_pixels_sp)
+
 writeOGR(obj=nl13Shp_pixels_sp, dsn="guerrilla_map", layer="nl13Shp_pixels_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+
+##Adding geographical controls information to the pixel shape
+#Importing rasters 
+nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+elevation <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
+cacao <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
+bean <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
+
+#Aligning the CRS for all rasters 
+nl_crs <- crs(nl13)
+elevation <- projectRaster(elevation, crs=nl_crs)
+cacao <- projectRaster(cacao, crs=nl_crs)
+bean <- projectRaster(bean, crs=nl_crs)
+
+#Checking the CRS 
+crs(elevation)
+crs(cacao)
+crs(bean)
+
+#Checking resolution
+res(nl13)
+res(elevation)
+res(cacao)
+res(bean)
+
+#Averaging rasters by night light pixel 
+nl13Shp_pixels_info_sp <- extract(elevation, nl13Shp_pixels_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[8] <- 'mean_elev'
+nl13Shp_pixels_info_sp <- extract(cacao, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[9] <- 'mean_cacao'
+nl13Shp_pixels_info_sp <- extract(bean, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[10] <- 'mean_bean'
+
+nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
+
+#Exporting the shape with additional info 
+writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+
+
 
 
 ## PLOTTING VISUALIZATION CHECKS:
@@ -139,6 +180,37 @@ tm_shape(nl13_mask) +
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
 
 
+tm_shape(nl13Shp_pixels) + 
+  tm_borders()
+
+tm_shape(elevation) + 
+  tm_raster(title='Elevation')
+
+tm_shape(cacao) + 
+  tm_raster(title='Cacao')
+
+tm_shape(bean) + 
+  tm_raster(title='Bean')
+
+tm_shape(nl13Shp_pixels_info) +
+  tm_polygons("value", title="Night light")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_pixel.pdf")
+
+tm_shape(nl13Shp_pixels_info) +
+  tm_polygons("mean_elev", title="Elevation")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/elevation_pixel.pdf")
+
+tm_shape(nl13Shp_pixels_info) +
+  tm_polygons("mean_cacao", title="Cacao yield")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/cacao_pixel.pdf")
+
+tm_shape(nl13Shp_pixels_info) +
+  tm_polygons("mean_bean", title="Bean yield")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/bean_pixel.pdf")
 
 
 
