@@ -34,8 +34,8 @@ shp2dta using "${maps}/night_lights/slvShp_segm_info_sp", data("${data}/slvShp_s
 use "slvShp_segm_info_sp.dta", clear
 
 *Keeping only important vars 
-keep pixel_id wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn
-rename (wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn) (within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean)
+keep pixel_id wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc-min_ben
+rename (wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn med_nl med_elv med_cac med_ben max_nl max_elv max_cac max_ben min_nl min_elv min_cac min_ben) (within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean md_nl13 md_elevation md_cacao md_bean max_nl13 max_elevation max_cacao max_bean min_nl13 min_elevation min_cacao min_bean)
 
 *Fixing the running variables
 gen z_run_cntrl= dist_control 
@@ -61,6 +61,9 @@ la var z_run_dsptd "Distance to nearest disputed zone"
 * No manipulation Test:
 *-------------------------------------------------------------------------------
 *On control zones 
+kdensity z_run_cntrl, graphregion(color(white)) xtitle("Normalized distance to the nearest controlled zone border") title("")
+gr export "${plots}\kden_z_run_cntrl_segm.pdf", as(pdf) replace 
+
 rddensity z_run_cntrl
 local t=round(e(T_q), .01)
 local p=round(e(pv_q), .01)
@@ -68,6 +71,9 @@ rddensity z_run_cntrl, plot graph_opt(graphregion(color(white)) legend(off) xtit
 gr export "${plots}\manip_test_z_run_cntrl_segm.pdf", as(pdf) replace 
 
 *On expansion zones
+kdensity z_run_xpsn, graphregion(color(white)) xtitle("Normalized distance to the nearest expansion zone border") title("")
+gr export "${plots}\kden_z_run_xpsn_segm.pdf", as(pdf) replace 
+
 rddensity z_run_xpsn
 local t=round(e(T_q), .01)
 local p=round(e(pv_q), .01)
@@ -75,6 +81,9 @@ rddensity z_run_xpsn, plot graph_opt(graphregion(color(white)) legend(off) xtitl
 gr export "${plots}\manip_test_z_run_xpsn_segm.pdf", as(pdf) replace 
 
 *On disputed zones
+kdensity z_run_dsptd, graphregion(color(white)) xtitle("Normalized distance to the nearest disputed zone border") title("")
+gr export "${plots}\kden_z_run_dsptd_segm.pdf", as(pdf) replace 
+
 rddensity z_run_dsptd
 local t=round(e(T_q), .01)
 local p=round(e(pv_q), .01)
@@ -276,8 +285,12 @@ ctitle("Variables", "Control", "Treatment", , "Difference" \ "", "Mean", "Mean",
 " ", "(SD)", "(SD)", "(p-value)†") fragment tex nocenter
 filefilter `X' "${tables}\ttest_treat_cntrl_segm.tex", from("r}\BS\BS") to("r}") replace
 
+*Checking the distribution 
+hist nl13_density, freq graphregion(color(white)) 
+gr export "${plots}\hist_nl_13_segm.pdf", as(pdf) replace 
 
-
+*Comparing to other functions of aggregating night light
+tabstat nl13_density md_nl13 max_nl13 min_nl13, s(N mean sd min p50 max)
 
 
 

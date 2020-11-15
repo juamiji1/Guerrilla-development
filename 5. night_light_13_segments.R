@@ -138,6 +138,46 @@ names(slvShp_segm_info_sp)[25] <- 'mean_cacao'
 slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(slvShp_segm_info_sp)[26] <- 'mean_bean'
 
+#Median of night light pixel 
+slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[27] <- 'med_nl'
+
+slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[28] <- 'med_elev'
+
+slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[29] <- 'med_cacao'
+
+slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[30] <- 'med_bean'
+
+#Max of night light pixel 
+slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[31] <- 'max_nl'
+
+slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[32] <- 'max_elev'
+
+slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[33] <- 'max_cacao'
+
+slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[34] <- 'max_bean'
+
+#Min of night light pixel 
+slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[35] <- 'min_nl'
+
+slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[36] <- 'min_elev'
+
+slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[37] <- 'min_cacao'
+
+slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[38] <- 'min_bean'
+
+
 #Exporting the shapefile 
 writeOGR(obj=slvShp_segm_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights", layer="slvShp_segm_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 

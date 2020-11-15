@@ -287,7 +287,9 @@ ctitle("Variables", "Control", "Treatment", , "Difference" \ "", "Mean", "Mean",
 " ", "(SD)", "(SD)", "(p-value)†") fragment tex nocenter
 filefilter `X' "${tables}\ttest_treat_cntrl.tex", from("r}\BS\BS") to("r}") replace
 
-
+*Checking the distribution 
+hist nl13_density, freq graphregion(color(white)) 
+gr export "${plots}\hist_nl_13_pixels.pdf", as(pdf) replace 
 
 
 

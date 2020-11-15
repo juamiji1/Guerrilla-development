@@ -63,6 +63,9 @@ la var z_run_dsptd "Distance to nearest disputed zone"
 * No manipulation Test:
 *-------------------------------------------------------------------------------
 *On control zones 
+kdensity z_run_cntrl, graphregion(color(white)) xtitle("Normalized distance to the nearest controlled zone border") title("")
+gr export "${plots}\kden_z_run_cntrl_x10_res.pdf", as(pdf) replace 
+
 rddensity z_run_cntrl
 local t=round(e(T_q), .01)
 local p=round(e(pv_q), .01)
@@ -70,6 +73,9 @@ rddensity z_run_cntrl, plot graph_opt(graphregion(color(white)) legend(off) xtit
 gr export "${plots}\manip_test_z_run_cntrl_x10_res.pdf", as(pdf) replace 
 
 *On expansion zones
+kdensity z_run_xpsn, graphregion(color(white)) xtitle("Normalized distance to the nearest expansion zone border") title("")
+gr export "${plots}\kden_z_run_xpsn_x10_res.pdf", as(pdf) replace 
+
 rddensity z_run_xpsn
 local t=round(e(T_q), .01)
 local p=round(e(pv_q), .01)
@@ -77,6 +83,9 @@ rddensity z_run_xpsn, plot graph_opt(graphregion(color(white)) legend(off) xtitl
 gr export "${plots}\manip_test_z_run_xpsn_x10_res.pdf", as(pdf) replace 
 
 *On disputed zones
+kdensity z_run_dsptd, graphregion(color(white)) xtitle("Normalized distance to the nearest disputed zone border") title("")
+gr export "${plots}\kden_z_run_dsptd_x10_res.pdf", as(pdf) replace 
+
 rddensity z_run_dsptd
 local t=round(e(T_q), .01)
 local p=round(e(pv_q), .01)
@@ -183,10 +192,12 @@ gl amsep2=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(2) h(${h}) b(${b}) kernel(triangular)
 outreg2 using "${tables}\rdd_z_run_xvsnx_x10_res.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
 
-rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(3) h(${h}) b(${b}) 
-gl amsep3=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_xvsnx_x10_res.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+cap nois {
+	rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(3) h(${h}) b(${b}) 
+	gl amsep3=round(e(amse_bc), .001)
+	rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
+	outreg2 using "${tables}\rdd_z_run_xvsnx_x10_res.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+}
 
 rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all h(${h}) b(${b}) kernel(epa)
 outreg2 using "${tables}\rdd_z_run_xvsnx_x10_res.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
