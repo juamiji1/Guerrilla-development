@@ -54,6 +54,16 @@ expansionShp <- st_transform(expansionShp, crs = slv_crs)
 disputaShp <- st_read(dsn = "guerrilla_map", layer = "Zonas_disputa")
 disputaShp <- st_transform(disputaShp, crs = slv_crs)
 
+#Importing hidrography shapes
+lakeShp <- st_read(dsn = "Hidrografia", layer = "lagoA_merge")
+lakeShp <- st_transform(lakeShp, crs = slv_crs)
+
+river1Shp <- st_read(dsn = "Hidrografia", layer = "rioA_merge")
+river1Shp <- st_transform(river1Shp, crs = slv_crs)
+
+river2Shp <- st_read(dsn = "Hidrografia", layer = "rioL_merge")
+river2Shp <- st_transform(river2Shp, crs = slv_crs)
+
 #Converting polygons to polylines
 control_line <- st_cast(controlShp,"MULTILINESTRING")
 expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
@@ -89,7 +99,10 @@ crs(nl13Shp_pixels)
 #Creating indicators for whether the pixel is within each FMLN zone
 nl13Shp_pixels_int <- mutate(nl13Shp_pixels, within_control=as.numeric(st_intersects(nl13Shp_pixels, controlShp, sparse = FALSE)), 
                              within_expansion=as.numeric(st_intersects(nl13Shp_pixels, expansionShp, sparse = FALSE)),
-                             within_disputa=as.numeric(st_intersects(nl13Shp_pixels, disputaShp, sparse = FALSE)))
+                             within_disputa=as.numeric(st_intersects(nl13Shp_pixels, disputaShp, sparse = FALSE)), 
+                             lake_int=as.numeric(st_intersects(nl13Shp_pixels, lakeShp, sparse = FALSE)), 
+                             riv1_int=as.numeric(st_intersects(nl13Shp_pixels, river1Shp, sparse = FALSE)),
+                             riv2_int=as.numeric(st_intersects(nl13Shp_pixels, river2Shp, sparse = FALSE)))
 
 #Calculating the minimum distance of each pixel to the FMLN zones 
 nl13Shp_pixels_int$dist_control<-as.numeric(st_distance(nl13Shp_pixels, control_line))
@@ -98,7 +111,6 @@ nl13Shp_pixels_int$dist_disputa<-as.numeric(st_distance(nl13Shp_pixels, disputa_
 
 #Subseting to check the bordering pixels 
 y<-subset(nl13Shp_pixels_int, dist_control==0)
-
 
 ## EXPORTING THE SHAPEFILE AS AN SP OBJECT:
 nl13Shp_pixels_sp <- as(nl13Shp_pixels_int, Class='Spatial')
@@ -132,11 +144,11 @@ res(bean)
 
 #Averaging rasters by night light pixel 
 nl13Shp_pixels_info_sp <- extract(elevation, nl13Shp_pixels_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[8] <- 'mean_elev'
+names(nl13Shp_pixels_info_sp)[11] <- 'mean_elev'
 nl13Shp_pixels_info_sp <- extract(cacao, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[9] <- 'mean_cacao'
+names(nl13Shp_pixels_info_sp)[12] <- 'mean_cacao'
 nl13Shp_pixels_info_sp <- extract(bean, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[10] <- 'mean_bean'
+names(nl13Shp_pixels_info_sp)[13] <- 'mean_bean'
 
 nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
 

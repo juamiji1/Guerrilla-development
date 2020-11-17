@@ -38,7 +38,11 @@ use "nl13Shp_pixels_info", clear
 
 *Renaming variables
 *rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed)
-rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean)
+rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn lake_nt riv1_nt riv2_nt) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean lake river1 river2)
+
+*Creating hydrography var
+gen hydrography=1 if lake==1 | river1==1 | river2==1
+replace hydrography=0 if hydrography==.
 
 *Fixing the running variables
 gen z_run_cntrl= dist_control 
@@ -223,6 +227,9 @@ gr export "${plots}\rdplot_p3_z_run_cntrl.pdf", as(pdf) replace
 rdrobust elevation z_run_cntrl, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Elevation") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote replace 
+rdrobust hydrography z_run_cntrl, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Hydrography") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 rdrobust cacao z_run_cntrl, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Cacao yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
@@ -234,6 +241,9 @@ outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Bean yield")
 rdrobust elevation z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Elevation") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote replace 
+rdrobust hydrography z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Hydrography") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 rdrobust cacao z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Cacao yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
@@ -245,6 +255,9 @@ outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Bean yield") 
 rdrobust elevation z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Elevation") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote replace 
+rdrobust hydrography z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Hydrography") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 rdrobust cacao z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Cacao yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
@@ -256,6 +269,9 @@ outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Bean yield")
 rdrobust elevation z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Elevation") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote replace 
+rdrobust hydrography z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Hydrography") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 rdrobust cacao z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Cacao yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
