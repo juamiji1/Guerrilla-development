@@ -117,15 +117,27 @@ bean_mask <- mask(bean_crop, mask=slvShp_sp)
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
 #
 #---------------------------------------------------------------------------------------
-#Creating indicators for whether the pixel is within each FMLN zone
-slvShp_segm_int <- mutate(slvShp_segm, within_control=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
-                             within_expansion=as.numeric(st_intersects(slvShp_segm, expansionShp, sparse = FALSE)),
-                             within_disputa=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
+#Calculating centroid of segments
+slvShp_segm_centroid <-st_centroid(slvShp_segm)
 
 #Calculating the minimum distance of each pixel to the FMLN zones 
-slvShp_segm_int$dist_control<-as.numeric(st_distance(slvShp_segm, control_line))
-slvShp_segm_int$dist_expansion<-as.numeric(st_distance(slvShp_segm, expansion_line))
-slvShp_segm_int$dist_disputa<-as.numeric(st_distance(slvShp_segm, disputa_line))
+slvShp_segm_int <- slvShp_segm
+slvShp_segm_int$dist_control<-as.numeric(st_distance(slvShp_segm_centroid, control_line))
+slvShp_segm_int$dist_expansion<-as.numeric(st_distance(slvShp_segm_centroid, expansion_line))
+slvShp_segm_int$dist_disputa<-as.numeric(st_distance(slvShp_segm_centroid, disputa_line))
+
+slvShp_segm_int$dist_control2<-as.numeric(st_distance(slvShp_segm, control_line))
+slvShp_segm_int$dist_expansion2<-as.numeric(st_distance(slvShp_segm, expansion_line))
+slvShp_segm_int$dist_disputa2<-as.numeric(st_distance(slvShp_segm, disputa_line))
+
+#Creating indicators for whether the pixel is within each FMLN zone
+slvShp_segm_int <- mutate(slvShp_segm_int, within_control=as.numeric(st_within(slvShp_segm_centroid, controlShp, sparse = FALSE)), 
+                          within_expansion=as.numeric(st_within(slvShp_segm_centroid, expansionShp, sparse = FALSE)),
+                          within_disputa=as.numeric(st_within(slvShp_segm_centroid, disputaShp, sparse = FALSE)))
+
+slvShp_segm_int <- mutate(slvShp_segm_int, within_control2=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
+                          within_expansion2=as.numeric(st_intersects(slvShp_segm, expansionShp, sparse = FALSE)),
+                          within_disputa2=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
 
 #Creating indicators for whether the pixel is within each FMLN zone
 slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
@@ -133,64 +145,65 @@ slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slv
                              riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)))
 
 #Subseting to check the bordering pixels 
-y<-subset(slvShp_segm_int, dist_control==0)
+y1<-subset(slvShp_segm_int, dist_control<1000)
+y2<-subset(slvShp_segm_int, within_control==1)
 
 # Converting from sf to sp object
 slvShp_segm_sp <- as(slvShp_segm_int, Class='Spatial')
 
 #Averaging rasters by night light pixel 
-detach(package:tidyr)
+#etach(package:tidyr)
 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[26] <- 'mean_nl'
+names(slvShp_segm_info_sp)[32] <- 'mean_nl'
 
 slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[27] <- 'mean_elev'
+names(slvShp_segm_info_sp)[33] <- 'mean_elev'
 
 slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[28] <- 'mean_cacao'
+names(slvShp_segm_info_sp)[34] <- 'mean_cacao'
 
 slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[29] <- 'mean_bean'
+names(slvShp_segm_info_sp)[35] <- 'mean_bean'
 
 #Median of night light pixel 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[30] <- 'med_nl'
+names(slvShp_segm_info_sp)[36] <- 'med_nl'
 
 slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[31] <- 'med_elev'
+names(slvShp_segm_info_sp)[37] <- 'med_elev'
 
 slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[32] <- 'med_cacao'
+names(slvShp_segm_info_sp)[38] <- 'med_cacao'
 
 slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[33] <- 'med_bean'
+names(slvShp_segm_info_sp)[39] <- 'med_bean'
 
 #Max of night light pixel 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[34] <- 'max_nl'
+names(slvShp_segm_info_sp)[40] <- 'max_nl'
 
 slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[35] <- 'max_elev'
+names(slvShp_segm_info_sp)[41] <- 'max_elev'
 
 slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[36] <- 'max_cacao'
+names(slvShp_segm_info_sp)[42] <- 'max_cacao'
 
 slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[37] <- 'max_bean'
+names(slvShp_segm_info_sp)[43] <- 'max_bean'
 
 #Min of night light pixel 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[38] <- 'min_nl'
+names(slvShp_segm_info_sp)[44] <- 'min_nl'
 
 slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[39] <- 'min_elev'
+names(slvShp_segm_info_sp)[45] <- 'min_elev'
 
 slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[40] <- 'min_cacao'
+names(slvShp_segm_info_sp)[46] <- 'min_cacao'
 
 slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=min, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[41] <- 'min_bean'
+names(slvShp_segm_info_sp)[47] <- 'min_bean'
 
 
 #Exporting the shapefile 
@@ -207,6 +220,26 @@ slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))
 tm_shape(slvShp_segm_info) + 
   tm_polygons(col = "mean_nl", lwd=0.02, title="Mean of Night Light (2013)")+
   tm_layout(frame = FALSE)
+
+tm_shape(y1) + 
+  tm_polygons(col = "dist_control", lwd=0.02, title="")+
+  tm_layout(frame = FALSE)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_shape(slvShp) + 
+  tm_borders()+
+  tm_shape(slvShp_segm_centroid) + 
+  tm_dots()
+
+tm_shape(y2) + 
+  tm_polygons(col = "within_control", lwd=0.02, title="Within control")+
+  tm_layout(frame = FALSE)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_shape(slvShp) + 
+  tm_borders()+
+  tm_shape(slvShp_segm_centroid) + 
+  tm_dots()
 
 
 
