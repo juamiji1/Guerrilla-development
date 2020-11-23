@@ -25,11 +25,11 @@ cd ${data}
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
 *shp2dta using "${maps}/guerrilla_map/nl13Shp_pixels_sp", data("${data}/nl13Shp_pixels.dta") coord("${data}/nl13Shp_pixels_coord.dta") genid(pixel_id) genc(coord) replace 
-shp2dta using "${maps}/pixel_lvl_vars/nl13Shp_pixels_info_sp", data("${data}/nl13Shp_pixels_info.dta") coord("${data}/nl13Shp_pixels_info_coord.dta") genid(pixel_id) genc(coord) replace 
+shp2dta using "${data}/gis\nl_pixel_lvl_vars\nl13Shp_pixels_info_sp", data("${data}/nl13Shp_pixels_info.dta") coord("${data}/nl13Shp_pixels_info_coord.dta") genid(pixel_id) genc(coord) replace 
 
 
 *-------------------------------------------------------------------------------
-* 					Spatial RDD of Night Light Density
+* 					Preparing the data for the RDD
 *
 *-------------------------------------------------------------------------------
 *Loading the data 
@@ -38,21 +38,40 @@ use "nl13Shp_pixels_info", clear
 
 *Renaming variables
 *rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed)
-rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn lake_nt riv1_nt riv2_nt) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean lake river1 river2)
+rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 wthn_c3 wthn_x3 wthn_d3) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 within_control_v3 within_expansion_v3 within_disputed_v3)
+
+*Other version
+*drop within_control within_expansion within_disputed dist_control dist_expansion dist_disputed
+*ren (dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2) (dist_control dist_expansion dist_disputed within_control within_expansion within_disputed)
+*drop within_control within_expansion within_disputed
+*ren (within_control_v3 within_expansion_v3 within_disputed_v3) (within_control within_expansion within_disputed)
 
 *Creating hydrography var
 gen hydrography=1 if lake==1 | river1==1 | river2==1
 replace hydrography=0 if hydrography==.
 
+*Changing units to Kms
+replace dist_control=dist_control/1000
+replace dist_expansion=dist_expansion/1000
+replace dist_disputed=dist_disputed/1000
+
 *Fixing the running variables
 gen z_run_cntrl= dist_control 
 replace z_run_cntrl= -1*dist_control if within_control==0 				//The rdrobust command is coded to indicate treated=(z>=0).
+*replace z_run_cntrl= -1*dist_control if within_control_v2==0 
+*summ nl13_density, d
+				//The rdrobust command is coded to indicate treated=(z>=0).
+*replace nl13_density=. if nl13_density<=`r(p5)' | nl13_density>=`r(p95)'
 
 gen z_run_xpsn= dist_expansion 
 replace z_run_xpsn= -1*dist_expansion if within_expansion==0
+*replace z_run_xpsn= -1*dist_expansion if within_expansion_v2==0
+*replace z_run_xpsn=. if z_run_xpsn==0 
 
 gen z_run_dsptd= dist_disputed 
 replace z_run_dsptd= -1*dist_disputed if within_disputed==0
+*replace z_run_dsptd= -1*dist_disputed if within_disputed_v2==0
+*replace z_run_dsptd=. if z_run_dsptd==0 
 
 *Creating vars to do some checking 
 gen treat_cntrl=(z_run_cntrl>=0)
@@ -64,6 +83,39 @@ la var z_run_cntrl "Distance to nearest control zone"
 la var z_run_xpsn "Distance to nearest expansion zone"
 la var z_run_dsptd "Distance to nearest disputed zone"
 
+*-------------------------------------------------------------------------------
+*Night light density distribution to put in context the results found:
+*-------------------------------------------------------------------------------
+*Summary statistics
+summ nl13_density, d
+tabstat nl13_density dist_control dist_expansion dist_disputed, s(N mean sd min p1 p5 p10 p25 p50 p75 p90 p95 p99 max) save
+tabstatmat A
+
+tempfile X
+frmttable using `X', s(A) ctitle("Stat", "Night light", "Distance to nearest", "Distance to nearest", "Distance to nearest" \ "", "density (2013)", "control zone", "expansion zone", "disputed zone") tex fragment nocenter replace 
+filefilter `X' "${tables}\summary_stats.tex", from("r}\BS\BS") to("r}") replace
+
+*Test of means between groups (formatting?)
+do "${do}/0. my_ttest.do"
+my_ttest nl13_density, by(treat_cntrl)
+mat T=e(est)
+mat S=e(stars)
+
+tempfile X
+frmttable using `X', statmat(T) varlabels replace substat(1) annotate(S) asymbol(*,**,***) ///
+ctitle("Variables", "Control", "Treatment", , "Difference" \ "", "Mean", "Mean", "of means" \ ///
+" ", "(SD)", "(SD)", "(p-value)†") fragment tex nocenter
+filefilter `X' "${tables}\ttest_treat_cntrl.tex", from("r}\BS\BS") to("r}") replace
+
+*Checking the distribution 
+hist nl13_density, freq graphregion(color(white)) 
+gr export "${plots}\hist_nl_13_pixels.pdf", as(pdf) replace 
+
+
+*-------------------------------------------------------------------------------
+* 					Spatial RDD of Night Light Density
+*
+*-------------------------------------------------------------------------------
 *-------------------------------------------------------------------------------
 * No manipulation Test:
 *-------------------------------------------------------------------------------
@@ -98,129 +150,6 @@ rddensity z_run_dsptd, plot graph_opt(graphregion(color(white)) legend(off) xtit
 gr export "${plots}\manip_test_z_run_dsptd.pdf", as(pdf) replace 
 
 *-------------------------------------------------------------------------------
-* Sharp RDD results:
-*-------------------------------------------------------------------------------
-*Checking the methodology
-rdrobust nl13_density z_run_cntrl, all p(0) kernel(uniform)
-local h=e(h_l) 
-reg nl13_density treat_cntrl if abs(z_run_cntrl)<=`h' 				// So the OLS estimate is the conventional one in the rdd. It Shows the difference between treated and untreated.
-
-*For control zones
-rdrobust nl13_density z_run_cntrl, all kernel(triangular)
-gl h=e(h_l) 
-gl b=e(b_l)
-
-*Between pixels within and outside controlled FMLN zones 
-rdmse nl13_density z_run_cntrl, p(1) h(${h}) b(${b})
-gl amsep1=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_cntrl, all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
-
-rdmse nl13_density z_run_cntrl, p(2) h(${h}) b(${b})
-gl amsep2=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_cntrl, all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
-
-rdmse nl13_density z_run_cntrl, p(3) h(${h}) b(${b}) 
-gl amsep3=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_cntrl, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
-
-rdrobust nl13_density z_run_cntrl, all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-rdrobust nl13_density z_run_cntrl, all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
-rdmse nl13_density z_run_cntrl if within_expansion==0, p(1) h(${h}) b(${b})
-gl amsep1=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_cntrl if within_expansion==0, all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
-
-rdmse nl13_density z_run_cntrl if within_expansion==0, p(2) h(${h}) b(${b})
-gl amsep2=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_cntrl if within_expansion==0, all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
-
-rdmse nl13_density z_run_cntrl if within_expansion==0, p(3) h(${h}) b(${b}) 
-gl amsep3=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_cntrl if within_expansion==0, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
-
-rdrobust nl13_density z_run_cntrl if within_expansion==0, all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-rdrobust nl13_density z_run_cntrl if within_expansion==0, all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-*For disputed zones
-rdrobust nl13_density z_run_dsptd, all kernel(triangular)
-gl h=e(h_l) 
-gl b=e(b_l)
-
-*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
-rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(1) h(${h}) b(${b})
-gl amsep1=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
-
-rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(2) h(${h}) b(${b})
-gl amsep2=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
-
-rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(3) h(${h}) b(${b}) 
-gl amsep3=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
-
-rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-*For expansion zones
-rdrobust nl13_density z_run_xpsn, all kernel(triangular)
-gl h=e(h_l) 
-gl b=e(b_l)
-
-*Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
-rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(1) h(${h}) b(${b})
-gl amsep1=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
-
-rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(2) h(${h}) b(${b})
-gl amsep2=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
-
-rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(3) h(${h}) b(${b}) 
-gl amsep3=round(e(amse_bc), .001)
-rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
-
-rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
-
-*-------------------------------------------------------------------------------
-* Sharp RDD plots:
-*-------------------------------------------------------------------------------
-rdplot nl13_density z_run_cntrl if abs(z_run_cntrl)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
-gr export "${plots}\rdplot_p1_z_run_cntrl.pdf", as(pdf) replace 
-
-rdplot nl13_density z_run_cntrl if abs(z_run_cntrl)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
-gr export "${plots}\rdplot_p2_z_run_cntrl.pdf", as(pdf) replace 
-
-rdplot nl13_density z_run_cntrl if abs(z_run_cntrl)<=${h}, all p(3) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
-gr export "${plots}\rdplot_p3_z_run_cntrl.pdf", as(pdf) replace 
-
-*-------------------------------------------------------------------------------
 * Local continuity assumption:
 *-------------------------------------------------------------------------------
 *Between pixels within and outside controlled FMLN zones 
@@ -238,16 +167,16 @@ gl h=e(h_l)
 outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
-rdrobust elevation z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
+rdrobust elevation z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Elevation") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote replace 
-rdrobust hydrography z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
+rdrobust hydrography z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Hydrography") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
-rdrobust cacao z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
+rdrobust cacao z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Cacao yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
-rdrobust bean z_run_cntrl if within_expansion==0, all p(1) kernel(triangular)
+rdrobust bean z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
@@ -280,32 +209,206 @@ gl h=e(h_l)
 outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *-------------------------------------------------------------------------------
-*Night light density distribution to put in context the results found:
+* Sharp RDD results:
 *-------------------------------------------------------------------------------
-*Summary statistics
-summ nl13_density, d
-tabstat nl13_density dist_control dist_expansion dist_disputed, s(N mean sd min p1 p5 p10 p25 p50 p75 p90 p95 p99 max) save
-tabstatmat A
+*Checking the methodology
+rdrobust nl13_density z_run_cntrl, all p(0) kernel(uniform)
+local h=e(h_l) 
+reg nl13_density treat_cntrl if abs(z_run_cntrl)<=`h' 				// So the OLS estimate is the conventional one in the rdd. It Shows the difference between treated and untreated.
 
-tempfile X
-frmttable using `X', s(A) ctitle("Stat", "Night light", "Distance to nearest", "Distance to nearest", "Distance to nearest" \ "", "density (2013)", "control zone", "expansion zone", "disputed zone") tex fragment nocenter replace 
-filefilter `X' "${tables}\summary_stats.tex", from("r}\BS\BS") to("r}") replace
+*Between pixels within and outside controlled FMLN zones 
+rdrobust nl13_density z_run_cntrl, all kernel(triangular)
+gl h=e(h_l) 
+gl b=e(b_l)
 
-*Test of means between groups (formatting?)
-do "${do}/0. my_ttest.do"
-my_ttest nl13_density, by(treat_cntrl)
-mat T=e(est)
-mat S=e(stars)
+rdmse nl13_density z_run_cntrl, p(1) h(${h}) b(${b})
+gl amsep1=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_cntrl, all p(1) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
 
-tempfile X
-frmttable using `X', statmat(T) varlabels replace substat(1) annotate(S) asymbol(*,**,***) ///
-ctitle("Variables", "Control", "Treatment", , "Difference" \ "", "Mean", "Mean", "of means" \ ///
-" ", "(SD)", "(SD)", "(p-value)†") fragment tex nocenter
-filefilter `X' "${tables}\ttest_treat_cntrl.tex", from("r}\BS\BS") to("r}") replace
+rdmse nl13_density z_run_cntrl, p(2) h(${h}) b(${b})
+gl amsep2=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_cntrl, all p(2) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
 
-*Checking the distribution 
-hist nl13_density, freq graphregion(color(white)) 
-gr export "${plots}\hist_nl_13_pixels.pdf", as(pdf) replace 
+rdmse nl13_density z_run_cntrl, p(3) h(${h}) b(${b}) 
+gl amsep3=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_cntrl, all p(3) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+
+rdrobust nl13_density z_run_cntrl, all h(${h}) b(${b}) kernel(epa)
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+rdrobust nl13_density z_run_cntrl, all h(${h}) b(${b}) kernel(uni)
+outreg2 using "${tables}\rdd_z_run_cntrl.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+mat coef=J(3,25,.)
+local h=0.2
+local lab=""
+forval c=1/25{
+	rdrobust nl13_density z_run_cntrl, all p(1) h(`h') kernel(triangular)
+	mat coef[1,`c']= e(tau_bc)
+	mat coef[2,`c']= e(ci_l_rb)
+	mat coef[3,`c']= e(ci_r_rb)
+	
+	local h2=substr("`h'",1,3)
+	local lab="`lab' `h2'"
+	*dis "`lab'"
+	
+	local h=`h'+0.2
+}
+
+mat coln coef= .2 .4 .6 .8 1 1.2 1.4 1.6 1.8 2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6 3.8 4 4.2 4.4 4.6 4.8 5
+
+coefplot (mat(coef[1]), ci((2 3))), vert recast(connected) ciopts(recast(rcap)) yline(0,lp(dash)) ylabel(,labsize(small)) xlabel(,labsize(vsmall)) ylabel(-8(2)5) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") graphregion(color(white))
+gr export "${plots}\rdd_z_run_cntrl_h_robustness.pdf", as(pdf) replace 
+
+*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+gl h=e(h_l) 
+gl b=e(b_l)
+
+rdmse nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), p(1) h(${h}) b(${b})
+gl amsep1=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
+
+rdmse nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), p(2) h(${h}) b(${b})
+gl amsep2=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(2) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
+
+rdmse nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), p(3) h(${h}) b(${b}) 
+gl amsep3=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(3) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all h(${h}) b(${b}) kernel(epa)
+outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all h(${h}) b(${b}) kernel(uni)
+outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+mat coef=J(3,25,.)
+local h=0.2
+local lab=""
+forval c=1/25{
+	rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) h(`h') kernel(triangular)
+	mat coef[1,`c']= e(tau_bc)
+	mat coef[2,`c']= e(ci_l_rb)
+	mat coef[3,`c']= e(ci_r_rb)
+	
+	local h2=substr("`h'",1,3)
+	local lab="`lab' `h2'"
+	*dis "`lab'"
+	
+	local h=`h'+0.2
+}
+
+mat coln coef= .2 .4 .6 .8 1 1.2 1.4 1.6 1.8 2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6 3.8 4 4.2 4.4 4.6 4.8 5
+
+coefplot (mat(coef[1]), ci((2 3))), vert recast(connected) ciopts(recast(rcap)) yline(0,lp(dash)) ylabel(,labsize(small)) xlabel(,labsize(vsmall)) ylabel(-8(2)5) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") graphregion(color(white))
+gr export "${plots}\rdd_z_run_cvsd_h_robustness.pdf", as(pdf) replace 
+
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+gl b=e(b_l)
+
+rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(1) h(${h}) b(${b})
+gl amsep1=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(1) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
+
+rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(2) h(${h}) b(${b})
+gl amsep2=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(2) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
+
+rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(3) h(${h}) b(${b}) 
+gl amsep3=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all h(${h}) b(${b}) kernel(epa)
+outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all h(${h}) b(${b}) kernel(uni)
+outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+mat coef=J(3,25,.)
+local h=1.2
+local lab=""
+forval c=1/25{
+	rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(1) h(`h') kernel(triangular)
+	mat coef[1,`c']= e(tau_bc)
+	mat coef[2,`c']= e(ci_l_rb)
+	mat coef[3,`c']= e(ci_r_rb)
+	
+	local h2=substr("`h'",1,3)
+	local lab="`lab' `h2'"
+	*dis "`lab'"
+	
+	local h=`h'+0.2
+}
+
+mat coln coef= 1.2 1.4 1.6 1.8 2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6 3.8 4 4.2 4.4 4.6 4.8 5 5.2 5.4 5.6 5.8 6
+
+coefplot (mat(coef[1]), ci((2 3))), vert recast(connected) ciopts(recast(rcap)) yline(0,lp(dash)) ylabel(,labsize(small)) xlabel(,labsize(vsmall)) ylabel(-2(.5)2) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") graphregion(color(white))
+gr export "${plots}\rdd_z_run_dvsnd_h_robustness.pdf", as(pdf) replace 
+
+*Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+gl b=e(b_l)
+
+rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(1) h(${h}) b(${b})
+gl amsep1=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(1) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
+
+rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(2) h(${h}) b(${b})
+gl amsep2=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(2) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
+
+rdmse nl13_density z_run_xpsn if within_disputed==0 & within_control==0, p(3) h(${h}) b(${b}) 
+gl amsep3=round(e(amse_bc), .001)
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
+outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all h(${h}) b(${b}) kernel(epa)
+outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all h(${h}) b(${b}) kernel(uni)
+outreg2 using "${tables}\rdd_z_run_xvsnx.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+
+*-------------------------------------------------------------------------------
+* Sharp RDD plots:
+*-------------------------------------------------------------------------------
+*For control zones
+rdrobust nl13_density z_run_cntrl, all kernel(triangular)
+gl h=e(h_l) 
+gl b=e(b_l)
+
+rdplot nl13_density z_run_cntrl if abs(z_run_cntrl)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+gr export "${plots}\rdplot_p1_z_run_cntrl.pdf", as(pdf) replace 
+
+rdplot nl13_density z_run_cntrl if abs(z_run_cntrl)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+gr export "${plots}\rdplot_p2_z_run_cntrl.pdf", as(pdf) replace 
+
+*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
+rdrobust nl13_density z_run_cntrl if within_expansion==0, all kernel(triangular)
+gl h=e(h_l) 
+gl b=e(b_l)
+
+rdplot nl13_density z_run_cntrl if within_expansion==0 & abs(z_run_cntrl)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+gr export "${plots}\rdplot_p1_z_run_cvsd.pdf", as(pdf) replace 
+
+rdplot nl13_density z_run_cntrl if within_expansion==0 & abs(z_run_cntrl)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+gr export "${plots}\rdplot_p2_z_run_cvsd.pdf", as(pdf) replace 
+
+
 
 
 

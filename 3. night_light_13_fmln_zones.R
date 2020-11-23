@@ -35,33 +35,33 @@ library(raster)
 ## PREPARING SHAPEFILES OF FMLN ZONES:
 
 #Directory: 
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/'
 setwd(current_path)
 
 #Importing El salvador shapefile
-slvShp <- st_read(dsn = "slv_adm_2020_shp", layer = "slv_admbnda_adm0_2020")
+slvShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_borders_census2007")
 slv_crs <- st_crs(slvShp)
 
 #Importing FMLN control zones
-controlShp <- st_read(dsn = "guerrilla_map", layer = "Zonas_control")
+controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_control")
 controlShp <- st_transform(controlShp, crs = slv_crs)
 
 #Importing FMLN expansion zones
-expansionShp <- st_read(dsn = "guerrilla_map", layer = "Zonas_expansion")
+expansionShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_expansion")
 expansionShp <- st_transform(expansionShp, crs = slv_crs)
 
 #Importing FMLN disputed zones
-disputaShp <- st_read(dsn = "guerrilla_map", layer = "Zonas_disputa")
+disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa")
 disputaShp <- st_transform(disputaShp, crs = slv_crs)
 
 #Importing hidrography shapes
-lakeShp <- st_read(dsn = "Hidrografia", layer = "lagoA_merge")
+lakeShp <- st_read(dsn = "gis/Hidrografia", layer = "lagoA_merge")
 lakeShp <- st_transform(lakeShp, crs = slv_crs)
 
-river1Shp <- st_read(dsn = "Hidrografia", layer = "rioA_merge")
+river1Shp <- st_read(dsn = "gis/Hidrografia", layer = "rioA_merge")
 river1Shp <- st_transform(river1Shp, crs = slv_crs)
 
-river2Shp <- st_read(dsn = "Hidrografia", layer = "rioL_merge")
+river2Shp <- st_read(dsn = "gis/Hidrografia", layer = "rioL_merge")
 river2Shp <- st_transform(river2Shp, crs = slv_crs)
 
 #Converting polygons to polylines
@@ -95,11 +95,19 @@ crs(nl13Shp_pixels)
 
 
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
+#Calculating centroid of pixels
+pixel_centroid <-st_centroid(nl13Shp_pixels)
 
 #Creating indicators for whether the pixel is within each FMLN zone
 nl13Shp_pixels_int <- mutate(nl13Shp_pixels, within_control=as.numeric(st_intersects(nl13Shp_pixels, controlShp, sparse = FALSE)), 
                              within_expansion=as.numeric(st_intersects(nl13Shp_pixels, expansionShp, sparse = FALSE)),
                              within_disputa=as.numeric(st_intersects(nl13Shp_pixels, disputaShp, sparse = FALSE)), 
+                             within_control2=as.numeric(st_within(pixel_centroid, controlShp, sparse = FALSE)), 
+                             within_expansion2=as.numeric(st_within(pixel_centroid, expansionShp, sparse = FALSE)),
+                             within_disputa2=as.numeric(st_within(pixel_centroid, disputaShp, sparse = FALSE)),
+                             within_control3=as.numeric(st_within(nl13Shp_pixels, controlShp, sparse = FALSE)), 
+                             within_expansion3=as.numeric(st_within(nl13Shp_pixels, expansionShp, sparse = FALSE)),
+                             within_disputa3=as.numeric(st_within(nl13Shp_pixels, disputaShp, sparse = FALSE)),
                              lake_int=as.numeric(st_intersects(nl13Shp_pixels, lakeShp, sparse = FALSE)), 
                              riv1_int=as.numeric(st_intersects(nl13Shp_pixels, river1Shp, sparse = FALSE)),
                              riv2_int=as.numeric(st_intersects(nl13Shp_pixels, river2Shp, sparse = FALSE)))
@@ -108,6 +116,10 @@ nl13Shp_pixels_int <- mutate(nl13Shp_pixels, within_control=as.numeric(st_inters
 nl13Shp_pixels_int$dist_control<-as.numeric(st_distance(nl13Shp_pixels, control_line))
 nl13Shp_pixels_int$dist_expansion<-as.numeric(st_distance(nl13Shp_pixels, expansion_line))
 nl13Shp_pixels_int$dist_disputa<-as.numeric(st_distance(nl13Shp_pixels, disputa_line))
+
+nl13Shp_pixels_int$dist_control2<-as.numeric(st_distance(pixel_centroid, control_line))
+nl13Shp_pixels_int$dist_expansion2<-as.numeric(st_distance(pixel_centroid, expansion_line))
+nl13Shp_pixels_int$dist_disputa2<-as.numeric(st_distance(pixel_centroid, disputa_line))
 
 #Subseting to check the bordering pixels 
 y<-subset(nl13Shp_pixels_int, dist_control==0)
@@ -144,16 +156,16 @@ res(bean)
 
 #Averaging rasters by night light pixel 
 nl13Shp_pixels_info_sp <- extract(elevation, nl13Shp_pixels_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[11] <- 'mean_elev'
+names(nl13Shp_pixels_info_sp)[20] <- 'mean_elev'
 nl13Shp_pixels_info_sp <- extract(cacao, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[12] <- 'mean_cacao'
+names(nl13Shp_pixels_info_sp)[21] <- 'mean_cacao'
 nl13Shp_pixels_info_sp <- extract(bean, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[13] <- 'mean_bean'
+names(nl13Shp_pixels_info_sp)[22] <- 'mean_bean'
 
 nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
 
 #Exporting the shape with additional info 
-writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 
