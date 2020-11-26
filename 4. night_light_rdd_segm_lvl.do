@@ -23,7 +23,7 @@ cd ${data}
 *
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
-shp2dta using "${data}/gis\segm_lvl_vars\slvShp_segm_info_sp", data("${data}/slvShp_segm_info_sp.dta") coord("${data}/slvShp_segm_info_coord.dta") genid(pixel_id) genc(coord) replace 
+shp2dta using "${data}/gis\nl_segm_lvl_vars\slvShp_segm_info_sp", data("${data}/slvShp_segm_info_sp.dta") coord("${data}/slvShp_segm_info_coord.dta") genid(pixel_id) genc(coord) replace 
 
 
 *-------------------------------------------------------------------------------
@@ -34,8 +34,9 @@ shp2dta using "${data}/gis\segm_lvl_vars\slvShp_segm_info_sp", data("${data}/slv
 use "slvShp_segm_info_sp.dta", clear
 
 *Keeping only important vars 
-keep pixel_id wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc-min_ben lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 men_nl2 men_lv2 wmn_nl2 wmn_lv2
-rename (wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn med_nl med_elv med_cac med_ben max_nl max_elv max_cac max_ben min_nl min_elv min_cac min_ben lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 men_nl2 men_lv2 wmn_nl2 wmn_lv2) (within_control_v2 within_expansion_v2 within_disputed_v2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 nl13_density elevation cacao bean md_nl13 md_elevation md_cacao md_bean max_nl13 max_elevation max_cacao max_bean min_nl13 min_elevation min_cacao min_bean lake river1 river2 dist_control dist_expansion dist_disputed within_control within_expansion within_disputed nl13_density_v2 elevation_v2 nl13_density_v3 elevation_v3)
+rename (wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn wmn_nl1 mn_nl_z wmn_nl_ sm_lv_1 sm_lv_2 sm_lv_3 sm_lv_4 men_nl2 men_lv2 wmn_nl2 wmn_lv2 lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2) (within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean wmean_nl1 mean_nl_z wmean_nl_z sum_elev_1 sum_elev_2 sum_elev_3 sum_elev_4 mean_nl2 mean_elev2 wmean_nl2 wmean_elev2 lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2) 
+
+keep pixel_id within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean wmean_nl1 mean_nl_z wmean_nl_z sum_elev_1 sum_elev_2 sum_elev_3 sum_elev_4 mean_nl2 mean_elev2 wmean_nl2 wmean_elev2 lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2
 
 *Creating hydrography var
 gen hydrography=1 if lake==1 | river1==1 | river2==1
@@ -48,21 +49,23 @@ replace dist_disputed=dist_disputed/1000
 
 replace dist_control_v2=dist_control_v2/1000
 replace dist_expansion_v2=dist_expansion_v2/1000
-replace dist_expansion_v2=dist_expansion_v2/1000
+replace dist_disputed_v2=dist_disputed_v2/1000
 
 *Fixing the running variables
 gen z_run_cntrl= dist_control 
 replace z_run_cntrl= -1*dist_control if within_control==0 				//The rdrobust command is coded to indicate treated=(z>=0).
-*replace z_run_cntrl=-0.000001 if z_run_cntrl==0 
 
 gen z_run_xpsn= dist_expansion 
 replace z_run_xpsn= -1*dist_expansion if within_expansion==0
-*replace z_run_xpsn=. if z_run_xpsn==0 
 
 gen z_run_dsptd= dist_disputed 
 replace z_run_dsptd= -1*dist_disputed if within_disputed==0
-*replace z_run_dsptd=. if z_run_dsptd==0 
 
+*Creating vars to do some checking 
+gen treat_cntrl=(z_run_cntrl>=0)
+tabstat z_run_cntrl, by(treat_cntrl) s(N mean sd min max)
+
+*Fixing the running variables (version 2)
 gen z_run_cntrl_v2= dist_control_v2 
 replace z_run_cntrl_v2= -1*dist_control_v2 if within_control_v2==0 				//The rdrobust command is coded to indicate treated=(z>=0).
 
@@ -72,18 +75,14 @@ replace z_run_xpsn_v2= -1*dist_expansion_v2 if within_expansion_v2==0
 gen z_run_dsptd_v2= dist_disputed_v2 
 replace z_run_dsptd_v2= -1*dist_disputed_v2 if within_disputed_v2==0
 
-*Creating vars to do some checking 
-gen treat_cntrl=(z_run_cntrl>=0)
-tabstat z_run_cntrl, by(treat_cntrl) s(N mean sd min max)
-
 *Labelling for results 
 la var nl13_density "Night light density (2013)"
 la var z_run_cntrl "Distance to nearest control zone"
 la var z_run_xpsn "Distance to nearest expansion zone"
 la var z_run_dsptd "Distance to nearest disputed zone"
-la var z_run_cntrl_v2 "Distance to nearest control zone (v2)"
-la var z_run_xpsn_v2 "Distance to nearest expansion zone (v2)"
-la var z_run_dsptd_v2 "Distance to nearest disputed zone (v2)"
+la var z_run_cntrl_v2 "Distance to nearest control zone (version 2)"
+la var z_run_xpsn_v2 "Distance to nearest expansion zone (version 2)"
+la var z_run_dsptd_v2 "Distance to nearest disputed zone (version 2)"
 
 *-------------------------------------------------------------------------------
 *Night light density distribution to put in context the results found:
@@ -412,6 +411,165 @@ gr export "${plots}\rdplot_p1_z_run_cvsd_segm.pdf", as(pdf) replace
 
 rdplot nl13_density z_run_cntrl if within_expansion==0 & abs(z_run_cntrl)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
 gr export "${plots}\rdplot_p2_z_run_cvsd_segm.pdf", as(pdf) replace 
+
+
+*-------------------------------------------------------------------------------
+* Checking the robustness of results
+*
+*-------------------------------------------------------------------------------
+*Creating different versions of nl density
+summ nl13_density, d
+gen nl13_density_v2=nl13_density if nl13_density>`r(p1)' & nl13_density<`r(p99)'
+
+summ nl13_density, d
+gen nl13_density_v3=nl13_density if nl13_density>`r(p5)' & nl13_density<`r(p95)'
+
+gen ln_nl13=ln(nl13_density)
+gen ln_nl13_plus=ln(nl13_density+0.01)
+
+*nl13_density wmean_nl1 mean_nl_z wmean_nl_z
+
+*Different versions of the running variable for the controlled zones 
+gen z_run_cntrl_v3=z_run_cntrl
+replace z_run_cntrl_v3=. if z_run_cntrl==0 
+
+gen z_run_dsptd_v3=z_run_dsptd
+replace z_run_dsptd_v3=. if z_run_dsptd==0 
+
+*Descriptives 
+tab within_control within_control_v2 
+tabstat nl13_density z_run_cntrl z_run_cntrl_v2 if within_control ==1, by(within_control_v2) s(N mean sd min p50 max)
+
+scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<20, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_cntrl_20_segm.pdf", as(pdf) replace 
+
+scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<2, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_cntrl_2_segm.pdf", as(pdf) replace 
+
+scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<20, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_cntrl_v2_20_segm.pdf", as(pdf) replace 
+
+scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<2, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_cntrl_v2_2_segm.pdf", as(pdf) replace 
+
+two (scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_cntrl if z_run_cntrl==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<3 & within_control ==1 & within_control_v2==0, xline(0) mcolor(maroon%50) ), xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
+gr export "${plots}\scatter_cntrl_change_segm.pdf", as(pdf) replace 
+
+
+scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<20, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_dsptd_20_segm.pdf", as(pdf) replace 
+
+scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<2, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_dsptd_2_segm.pdf", as(pdf) replace 
+
+scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<20, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_dsptd_v2_20_segm.pdf", as(pdf) replace 
+
+scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<2, xline(0) mcolor(%40) graphregion(color(white))
+gr export "${plots}\scatter_dsptd_v2_2_segm.pdf", as(pdf) replace 
+
+two (scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_dsptd if z_run_dsptd==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<3 & within_disputed ==1 & within_disputed_v2==0, xline(0) mcolor(maroon%50) ), xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
+gr export "${plots}\scatter_dsptd_change_segm.pdf", as(pdf) replace 
+
+
+*Robusteness of controlled results
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote replace  
+
+rdrobust nl13_density z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) c(-0.2) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "cut-off: -0.2") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density z_run_cntrl_v3 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Note", "cut-off: deleted obs") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v2 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Note", "p1-p99") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v2 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p1-p99") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v3 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v3 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13_plus z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13_plus z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust mean_nl_z z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust mean_nl_z z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust wmean_nl1 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust wmean_nl1 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+
+*Robusteness of disputed results
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote replace  
+
+rdrobust nl13_density z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular) c(-0.2)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "cut-off: -0.2") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density z_run_dsptd_v3 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Note", "cut-off: deleted obs") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v2 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Note", "p1-p99") addstat("Polynomial", 1) nonote append 
+
+rdrobust nl13_density_v2 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p1-p99") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v3 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v3 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13_plus z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust ln_nl13_plus z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust mean_nl_z z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust mean_nl_z z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+
+rdrobust wmean_nl1 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust wmean_nl1 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 
 

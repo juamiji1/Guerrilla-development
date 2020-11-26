@@ -122,7 +122,8 @@ nl13Shp_pixels_int$dist_expansion2<-as.numeric(st_distance(pixel_centroid, expan
 nl13Shp_pixels_int$dist_disputa2<-as.numeric(st_distance(pixel_centroid, disputa_line))
 
 #Subseting to check the bordering pixels 
-y<-subset(nl13Shp_pixels_int, dist_control==0)
+y1<-subset(nl13Shp_pixels_int, dist_control==0)
+y2<-subset(nl13Shp_pixels_int, dist_control2<800 & within_control2==1)
 
 ## EXPORTING THE SHAPEFILE AS AN SP OBJECT:
 nl13Shp_pixels_sp <- as(nl13Shp_pixels_int, Class='Spatial')
@@ -165,9 +166,7 @@ names(nl13Shp_pixels_info_sp)[22] <- 'mean_bean'
 nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
 
 #Exporting the shape with additional info 
-writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-
-
+writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 ## PLOTTING VISUALIZATION CHECKS:
@@ -181,10 +180,27 @@ tm_shape(control_line)+
   tm_shape(slvShp) + 
   tm_borders()
 
-tm_shape(y) + 
-  tm_polygons(col="within_control", palette="Reds") +
+tmap_mode("plot")
+
+tm_shape(y1) + 
+  tm_polygons(col = "dist_control", lwd=0.02, title="")+
+  tm_layout(frame = FALSE)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
   tm_shape(slvShp) + 
-  tm_borders()
+  tm_borders()+ 
+  tm_layout(legend.show=FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_intersect.pdf")
+
+tm_shape(y2) + 
+  tm_polygons(col = "within_control", lwd=0.02, title="Within control")+
+  tm_layout(frame = FALSE)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_shape(slvShp) + 
+  tm_borders()+ 
+  tm_layout(legend.show=FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_centroid.pdf")
 
 #Exporting map of night light density and FMLN zones
 tm_shape(nl13_mask) + 

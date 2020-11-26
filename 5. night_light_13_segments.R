@@ -5,7 +5,7 @@
 
 #install.packages('bit64')
 #install.packages('raster')
-install.packages('exactextractr')
+#install.packages('exactextractr')
 
 ## LIBRARIES:
 library(data.table)
@@ -111,7 +111,12 @@ bean_mask <- mask(bean_crop, mask=slvShp_sp)
 
 #Not considering zeros 
 nl13_mask_zeros <- reclassify(nl13_mask, c(-Inf,0, NA))
-  
+
+#Different cut offs of elevation 
+elev_0<- reclassify(elevation_mask, c(0,500, 1, 500, Inf, NA))
+elev_500<- reclassify(elevation_mask, c(0,500, NA, 500, 1000, 1, 1000, Inf, NA))
+elev_1000<- reclassify(elevation_mask, c(0,1000, NA, 1000, 1500, 1, 1500, Inf, NA))
+elev_1500<- reclassify(elevation_mask, c(0,1500, NA, 1500, Inf, 1))
 
 #---------------------------------------------------------------------------------------
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
@@ -122,22 +127,23 @@ slvShp_segm_centroid <-st_centroid(slvShp_segm)
 
 #Calculating the minimum distance of each pixel to the FMLN zones 
 slvShp_segm_int <- slvShp_segm
-slvShp_segm_int$dist_control<-as.numeric(st_distance(slvShp_segm_centroid, control_line))
-slvShp_segm_int$dist_expansion<-as.numeric(st_distance(slvShp_segm_centroid, expansion_line))
-slvShp_segm_int$dist_disputa<-as.numeric(st_distance(slvShp_segm_centroid, disputa_line))
 
-slvShp_segm_int$dist_control2<-as.numeric(st_distance(slvShp_segm, control_line))
-slvShp_segm_int$dist_expansion2<-as.numeric(st_distance(slvShp_segm, expansion_line))
-slvShp_segm_int$dist_disputa2<-as.numeric(st_distance(slvShp_segm, disputa_line))
+slvShp_segm_int$dist_control<-as.numeric(st_distance(slvShp_segm, control_line))
+slvShp_segm_int$dist_expansion<-as.numeric(st_distance(slvShp_segm, expansion_line))
+slvShp_segm_int$dist_disputa<-as.numeric(st_distance(slvShp_segm, disputa_line))
+
+slvShp_segm_int$dist_control2<-as.numeric(st_distance(slvShp_segm_centroid, control_line))
+slvShp_segm_int$dist_expansion2<-as.numeric(st_distance(slvShp_segm_centroid, expansion_line))
+slvShp_segm_int$dist_disputa2<-as.numeric(st_distance(slvShp_segm_centroid, disputa_line))
 
 #Creating indicators for whether the pixel is within each FMLN zone
-slvShp_segm_int <- mutate(slvShp_segm_int, within_control=as.numeric(st_within(slvShp_segm_centroid, controlShp, sparse = FALSE)), 
-                          within_expansion=as.numeric(st_within(slvShp_segm_centroid, expansionShp, sparse = FALSE)),
-                          within_disputa=as.numeric(st_within(slvShp_segm_centroid, disputaShp, sparse = FALSE)))
+slvShp_segm_int <- mutate(slvShp_segm_int, within_control=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
+                          within_expansion=as.numeric(st_intersects(slvShp_segm, expansionShp, sparse = FALSE)),
+                          within_disputa=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
 
-slvShp_segm_int <- mutate(slvShp_segm_int, within_control2=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
-                          within_expansion2=as.numeric(st_intersects(slvShp_segm, expansionShp, sparse = FALSE)),
-                          within_disputa2=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
+slvShp_segm_int <- mutate(slvShp_segm_int, within_control2=as.numeric(st_within(slvShp_segm_centroid, controlShp, sparse = FALSE)), 
+                          within_expansion2=as.numeric(st_within(slvShp_segm_centroid, expansionShp, sparse = FALSE)),
+                          within_disputa2=as.numeric(st_within(slvShp_segm_centroid, disputaShp, sparse = FALSE)))
 
 #Creating indicators for whether the pixel is within each FMLN zone
 slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
@@ -151,8 +157,9 @@ y2<-subset(slvShp_segm_int, within_control==1)
 
 # Converting from sf to sp object
 slvShp_segm_sp <- as(slvShp_segm_int, Class='Spatial')
+
 #Averaging rasters by night light pixel 
-#etach(package:tidyr)
+detach(package:tidyr)
 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(slvShp_segm_info_sp)[32] <- 'mean_nl'
@@ -174,8 +181,21 @@ names(slvShp_segm_info_sp)[36] <- 'wmean_nl1'
 slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(slvShp_segm_info_sp)[37] <- 'mean_nl_z'
 
-slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=median, na.rm=TRUE, sp=TRUE, weights=TRUE)
+slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE, weights=TRUE)
 names(slvShp_segm_info_sp)[38] <- 'wmean_nl_z'
+
+#Count of different elevations
+slvShp_segm_info_sp <- extract(elev_0, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[39] <- 'sum_elev_1'
+
+slvShp_segm_info_sp <- extract(elev_500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[40] <- 'sum_elev_2'
+
+slvShp_segm_info_sp <- extract(elev_1000, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[41] <- 'sum_elev_3'
+
+slvShp_segm_info_sp <- extract(elev_1500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[42] <- 'sum_elev_4'
 
 #Transforming sp object to sf object 
 slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))
@@ -189,7 +209,7 @@ slvShp_segm_info$wmean_elev2 <- exact_extract(elevation_mask, slvShp_segm_info, 
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
 #Exporting the shapefile 
-writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/nl_segm_lvl_vars", layer="slvShp_segm_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #---------------------------------------------------------------------------------------
