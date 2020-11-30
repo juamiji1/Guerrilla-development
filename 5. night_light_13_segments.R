@@ -151,9 +151,8 @@ slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slv
                              riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)))
 
 #Subseting to check the bordering pixels 
-y1<-subset(slvShp_segm_int, dist_control<1000)
-y2<-subset(slvShp_segm_int, within_control==1)
-
+y1<-subset(slvShp_segm_int, dist_control==0)
+y2<-subset(slvShp_segm_int, dist_control2<800 & within_control2==1)
 
 # Converting from sf to sp object
 slvShp_segm_sp <- as(slvShp_segm_int, Class='Spatial')
@@ -227,9 +226,9 @@ tm_shape(y1) +
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
   tm_shape(slvShp) + 
-  tm_borders()+
-  tm_shape(slvShp_segm_centroid) + 
-  tm_dots()
+  tm_borders()+ 
+  tm_layout(legend.show=FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_nl13_cntrl_intersect.pdf")
 
 tm_shape(y2) + 
   tm_polygons(col = "within_control", lwd=0.02, title="Within control")+
@@ -237,9 +236,9 @@ tm_shape(y2) +
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
   tm_shape(slvShp) + 
-  tm_borders()+
-  tm_shape(slvShp_segm_centroid) + 
-  tm_dots()
+  tm_borders()+ 
+  tm_layout(legend.show=FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_nl13_cntrl_centroid.pdf")
 
 
 

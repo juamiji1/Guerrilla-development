@@ -454,7 +454,7 @@ gr export "${plots}\scatter_cntrl_v2_20.pdf", as(pdf) replace
 scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<2, xline(0) mcolor(%40) graphregion(color(white))
 gr export "${plots}\scatter_cntrl_v2_2.pdf", as(pdf) replace 
 
-two (scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_cntrl if z_run_cntrl==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<3 & within_control ==1 & within_control_v2==0, xline(0) mcolor(maroon%50) ), xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
+two (scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_cntrl if z_run_cntrl==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<3 & within_control ==1 & within_control_v2==0, xline(0) mcolor(maroon%50) ), b2title("Normalized distance to controlled zones", size(small)) xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
 gr export "${plots}\scatter_cntrl_change.pdf", as(pdf) replace 
 
 
@@ -470,7 +470,7 @@ gr export "${plots}\scatter_dsptd_v2_20.pdf", as(pdf) replace
 scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<2, xline(0) mcolor(%40) graphregion(color(white))
 gr export "${plots}\scatter_dsptd_v2_2.pdf", as(pdf) replace 
 
-two (scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_dsptd if z_run_dsptd==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<3 & within_disputed ==1 & within_disputed_v2==0, xline(0) mcolor(maroon%50) ), xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
+two (scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_dsptd if z_run_dsptd==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<3 & within_disputed ==1 & within_disputed_v2==0, xline(0) mcolor(maroon%50) ), b2title("Normalized distance to disputed zones", size(small))  xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
 gr export "${plots}\scatter_dsptd_change.pdf", as(pdf) replace 
 
 

@@ -88,7 +88,7 @@ la var z_run_dsptd_v2 "Distance to nearest disputed zone (version 2)"
 *Night light density distribution to put in context the results found:
 *-------------------------------------------------------------------------------
 *Summary statistics
-summ nl13_density nl13_density_v2 nl13_density_v3, d
+summ nl13_density, d
 tabstat nl13_density dist_control dist_expansion dist_disputed, s(N mean sd min p1 p5 p10 p25 p50 p75 p90 p95 p99 max) save
 tabstatmat A
 
@@ -113,7 +113,7 @@ hist nl13_density, freq graphregion(color(white))
 gr export "${plots}\hist_nl_13_segm.pdf", as(pdf) replace 
 
 *Comparing to other functions of aggregating night light
-tabstat nl13_density md_nl13 max_nl13 min_nl13, s(N mean sd min p50 max)
+*tabstat nl13_density md_nl13 max_nl13 min_nl13, s(N mean sd min p50 max)
 
 
 *-------------------------------------------------------------------------------
@@ -169,6 +169,19 @@ outreg2 using "${tables}\rdd_z_run_cntrl_lc_segm.tex", tex(frag) ctitle("Cacao y
 rdrobust bean z_run_cntrl, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cntrl_lc_segm.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_1 z_run_cntrl, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cntrl_lc_segm.tex", tex(frag) ctitle("Elevation (0-500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_2 z_run_cntrl, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cntrl_lc_segm.tex", tex(frag) ctitle("Elevation (500-1000)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_3 z_run_cntrl, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cntrl_lc_segm.tex", tex(frag) ctitle("Elevation (1000-1500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_4 z_run_cntrl, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cntrl_lc_segm.tex", tex(frag) ctitle("Elevation (1500-Max)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+
 
 *Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
 rdrobust elevation z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
@@ -183,6 +196,19 @@ outreg2 using "${tables}\rdd_z_run_cvsd_lc_segm.tex", tex(frag) ctitle("Cacao yi
 rdrobust bean z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc_segm.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_1 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cvsd_lc_segm.tex", tex(frag) ctitle("Elevation (0-500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_2 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cvsd_lc_segm.tex", tex(frag) ctitle("Elevation (500-1000)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_3 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cvsd_lc_segm.tex", tex(frag) ctitle("Elevation (1000-1500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_4 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cvsd_lc_segm.tex", tex(frag) ctitle("Elevation (1500-Max)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 rdrobust elevation z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
@@ -197,6 +223,19 @@ outreg2 using "${tables}\rdd_z_run_dvsnd_lc_segm.tex", tex(frag) ctitle("Cacao y
 rdrobust bean z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_dvsnd_lc_segm.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_1 z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_dvsnd_lc_segm.tex", tex(frag) ctitle("Elevation (0-500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_2 z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_dvsnd_lc_segm.tex", tex(frag) ctitle("Elevation (500-1000)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_3 z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_dvsnd_lc_segm.tex", tex(frag) ctitle("Elevation (1000-1500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_4 z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_dvsnd_lc_segm.tex", tex(frag) ctitle("Elevation (1500-Max)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+
 
 *Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
 rdrobust elevation z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
@@ -211,6 +250,18 @@ outreg2 using "${tables}\rdd_z_run_xvsnx_lc_segm.tex", tex(frag) ctitle("Cacao y
 rdrobust bean z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_xvsnx_lc_segm.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_1 z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_xvsnx_lc_segm.tex", tex(frag) ctitle("Elevation (0-500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_2 z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_xvsnx_lc_segm.tex", tex(frag) ctitle("Elevation (500-1000)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_3 z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_xvsnx_lc_segm.tex", tex(frag) ctitle("Elevation (1000-1500)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust sum_elev_4 z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_xvsnx_lc_segm.tex", tex(frag) ctitle("Elevation (1500-Max)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *-------------------------------------------------------------------------------
 * Sharp RDD results:
@@ -452,7 +503,7 @@ gr export "${plots}\scatter_cntrl_v2_20_segm.pdf", as(pdf) replace
 scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<2, xline(0) mcolor(%40) graphregion(color(white))
 gr export "${plots}\scatter_cntrl_v2_2_segm.pdf", as(pdf) replace 
 
-two (scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_cntrl if z_run_cntrl==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<3 & within_control ==1 & within_control_v2==0, xline(0) mcolor(maroon%50) ), xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
+two (scatter nl13_density z_run_cntrl if abs(z_run_cntrl)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_cntrl if z_run_cntrl==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_cntrl_v2 if abs(z_run_cntrl_v2)<3 & within_control ==1 & within_control_v2==0, xline(0) mcolor(maroon%50) ), b2title("Normalized distance to controlled zones", size(small)) xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
 gr export "${plots}\scatter_cntrl_change_segm.pdf", as(pdf) replace 
 
 
@@ -468,7 +519,7 @@ gr export "${plots}\scatter_dsptd_v2_20_segm.pdf", as(pdf) replace
 scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<2, xline(0) mcolor(%40) graphregion(color(white))
 gr export "${plots}\scatter_dsptd_v2_2_segm.pdf", as(pdf) replace 
 
-two (scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_dsptd if z_run_dsptd==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<3 & within_disputed ==1 & within_disputed_v2==0, xline(0) mcolor(maroon%50) ), xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
+two (scatter nl13_density z_run_dsptd if abs(z_run_dsptd)<3, xline(0) mcolor(%20)) (scatter nl13_density z_run_dsptd if z_run_dsptd==0, xline(0) mcolor(green%40) ) (scatter nl13_density z_run_dsptd_v2 if abs(z_run_dsptd_v2)<3 & within_disputed ==1 & within_disputed_v2==0, xline(0) mcolor(maroon%50) ), b2title("Normalized distance to disputed zones", size(small)) xlabel(-3(0.5)3) legend(order(2 "Pixels in the border (intersect)" 3 "Pixels in the border (centroid)")) graphregion(color(white))
 gr export "${plots}\scatter_dsptd_change_segm.pdf", as(pdf) replace 
 
 
@@ -498,28 +549,28 @@ rdrobust nl13_density_v3 z_run_cntrl_v2 if within_expansion==0 & (within_control
 outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote replace  
 
 rdrobust ln_nl13 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13_plus z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13_plus z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 rdrobust mean_nl_z z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
 
 rdrobust mean_nl_z z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 rdrobust wmean_nl1 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
 
 rdrobust wmean_nl1 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 
 *Robusteness of disputed results
@@ -548,28 +599,28 @@ rdrobust nl13_density_v3 z_run_dsptd_v2 if within_expansion==0 & within_control=
 outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote replace  
 
 rdrobust ln_nl13 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13_plus z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13_plus z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 rdrobust mean_nl_z z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
 
 rdrobust mean_nl_z z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 rdrobust wmean_nl1 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
 
 rdrobust wmean_nl1 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
 
 
