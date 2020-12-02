@@ -67,6 +67,12 @@ river1Shp <- st_transform(river1Shp, crs = slv_crs)
 river2Shp <- st_read(dsn = "gis/Hidrografia", layer = "rioL_merge")
 river2Shp <- st_transform(river2Shp, crs = slv_crs)
 
+railShp <- st_read(dsn = "gis/historic_rail_roads", layer = "railway_1980")
+railShp <- st_transform(railShp, crs = slv_crs)
+
+roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
+roadShp <- st_transform(roadShp, crs = slv_crs)
+
 #Converting polygons to polylines
 control_line <- st_cast(controlShp,"MULTILINESTRING")
 expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
@@ -147,8 +153,10 @@ slvShp_segm_int <- mutate(slvShp_segm_int, within_control2=as.numeric(st_within(
 
 #Creating indicators for whether the pixel is within each FMLN zone
 slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
-                             riv1_int=as.numeric(st_intersects(slvShp_segm, river1Shp, sparse = FALSE)),
-                             riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)))
+                          riv1_int=as.numeric(st_intersects(slvShp_segm, river1Shp, sparse = FALSE)),
+                          riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)), 
+                          rail_int=as.numeric(st_intersects(slvShp_segm, railShp, sparse = FALSE)),
+                          road_int=as.numeric(st_intersects(slvShp_segm, roadShp, sparse = FALSE)))
 
 #Subseting to check the bordering pixels 
 y1<-subset(slvShp_segm_int, dist_control==0)
@@ -161,40 +169,40 @@ slvShp_segm_sp <- as(slvShp_segm_int, Class='Spatial')
 detach(package:tidyr)
 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[32] <- 'mean_nl'
+names(slvShp_segm_info_sp)[34] <- 'mean_nl'
 
 slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[33] <- 'mean_elev'
+names(slvShp_segm_info_sp)[35] <- 'mean_elev'
 
 slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[34] <- 'mean_cacao'
+names(slvShp_segm_info_sp)[36] <- 'mean_cacao'
 
 slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[35] <- 'mean_bean'
+names(slvShp_segm_info_sp)[37] <- 'mean_bean'
 
 #Weighted mean of night light pixel 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE, weights=TRUE)
-names(slvShp_segm_info_sp)[36] <- 'wmean_nl1'
+names(slvShp_segm_info_sp)[38] <- 'wmean_nl1'
 
 #Not taking into account the zeros 
 slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[37] <- 'mean_nl_z'
+names(slvShp_segm_info_sp)[39] <- 'mean_nl_z'
 
 slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE, weights=TRUE)
-names(slvShp_segm_info_sp)[38] <- 'wmean_nl_z'
+names(slvShp_segm_info_sp)[40] <- 'wmean_nl_z'
 
 #Count of different elevations
 slvShp_segm_info_sp <- extract(elev_0, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[39] <- 'sum_elev_1'
+names(slvShp_segm_info_sp)[41] <- 'sum_elev_1'
 
 slvShp_segm_info_sp <- extract(elev_500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[40] <- 'sum_elev_2'
+names(slvShp_segm_info_sp)[42] <- 'sum_elev_2'
 
 slvShp_segm_info_sp <- extract(elev_1000, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[41] <- 'sum_elev_3'
+names(slvShp_segm_info_sp)[43] <- 'sum_elev_3'
 
 slvShp_segm_info_sp <- extract(elev_1500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[42] <- 'sum_elev_4'
+names(slvShp_segm_info_sp)[44] <- 'sum_elev_4'
 
 #Transforming sp object to sf object 
 slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))

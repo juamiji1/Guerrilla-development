@@ -64,6 +64,12 @@ river1Shp <- st_transform(river1Shp, crs = slv_crs)
 river2Shp <- st_read(dsn = "gis/Hidrografia", layer = "rioL_merge")
 river2Shp <- st_transform(river2Shp, crs = slv_crs)
 
+railShp <- st_read(dsn = "gis/historic_rail_roads", layer = "railway_1980")
+railShp <- st_transform(railShp, crs = slv_crs)
+
+roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
+roadShp <- st_transform(roadShp, crs = slv_crs)
+
 #Converting polygons to polylines
 control_line <- st_cast(controlShp,"MULTILINESTRING")
 expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
@@ -75,7 +81,7 @@ slvShp_sp <- as(slvShp, Class='Spatial')
 ## PREPARING THE NIGHT LIGHT GRID:
 
 #Importing the 2013 night light raster 
-nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
 crs(nl13)
 res(nl13)
 
@@ -110,7 +116,9 @@ nl13Shp_pixels_int <- mutate(nl13Shp_pixels, within_control=as.numeric(st_inters
                              within_disputa3=as.numeric(st_within(nl13Shp_pixels, disputaShp, sparse = FALSE)),
                              lake_int=as.numeric(st_intersects(nl13Shp_pixels, lakeShp, sparse = FALSE)), 
                              riv1_int=as.numeric(st_intersects(nl13Shp_pixels, river1Shp, sparse = FALSE)),
-                             riv2_int=as.numeric(st_intersects(nl13Shp_pixels, river2Shp, sparse = FALSE)))
+                             riv2_int=as.numeric(st_intersects(nl13Shp_pixels, river2Shp, sparse = FALSE)), 
+                             rail_int=as.numeric(st_intersects(nl13Shp_pixels, railShp, sparse = FALSE)),
+                             road_int=as.numeric(st_intersects(nl13Shp_pixels, roadShp, sparse = FALSE)))
 
 #Calculating the minimum distance of each pixel to the FMLN zones 
 nl13Shp_pixels_int$dist_control<-as.numeric(st_distance(nl13Shp_pixels, control_line))
@@ -133,7 +141,7 @@ writeOGR(obj=nl13Shp_pixels_sp, dsn="guerrilla_map", layer="nl13Shp_pixels_sp", 
 
 ##Adding geographical controls information to the pixel shape
 #Importing rasters 
-nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
 elevation <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
 cacao <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
 bean <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
@@ -157,11 +165,11 @@ res(bean)
 
 #Averaging rasters by night light pixel 
 nl13Shp_pixels_info_sp <- extract(elevation, nl13Shp_pixels_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[20] <- 'mean_elev'
+names(nl13Shp_pixels_info_sp)[22] <- 'mean_elev'
 nl13Shp_pixels_info_sp <- extract(cacao, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[21] <- 'mean_cacao'
+names(nl13Shp_pixels_info_sp)[23] <- 'mean_cacao'
 nl13Shp_pixels_info_sp <- extract(bean, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(nl13Shp_pixels_info_sp)[22] <- 'mean_bean'
+names(nl13Shp_pixels_info_sp)[24] <- 'mean_bean'
 
 nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
 

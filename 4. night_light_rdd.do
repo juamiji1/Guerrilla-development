@@ -37,11 +37,15 @@ shp2dta using "${data}/gis\nl_pixel_lvl_vars\nl13Shp_pixels_info_sp", data("${da
 use "nl13Shp_pixels_info", clear
 
 *Renaming variables
-rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 wthn_c3 wthn_x3 wthn_d3) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 within_control_v3 within_expansion_v3 within_disputed_v3)
+rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 wthn_c3 wthn_x3 wthn_d3 rail_nt road_nt) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 within_control_v3 within_expansion_v3 within_disputed_v3 rail roads)
 
 *Creating hydrography var
 gen hydrography=1 if lake==1 | river1==1 | river2==1
 replace hydrography=0 if hydrography==.
+
+*Creating infraestructure var
+gen rail_road=1 if rail==1 | road==1
+replace rail_road=0 if rail_road==.
 
 *Changing units to Kms
 replace dist_control=dist_control/1000
@@ -167,6 +171,9 @@ outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Cacao yield"
 rdrobust bean z_run_cntrl, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust rail_road z_run_cntrl, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Roads or railway") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
 rdrobust elevation z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
@@ -181,6 +188,9 @@ outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Cacao yield")
 rdrobust bean z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust rail_road z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Roads or railway") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 rdrobust elevation z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
@@ -195,6 +205,9 @@ outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Cacao yield"
 rdrobust bean z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust rail_road z_run_dsptd if within_expansion==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_dvsnd_lc.tex", tex(frag) ctitle("Roads or railway") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
 rdrobust elevation z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
@@ -209,6 +222,9 @@ outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Cacao yield"
 rdrobust bean z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Bean yield") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
+rdrobust rail_road z_run_xpsn if within_disputed==0 & within_control==0, all p(1) kernel(triangular)
+gl h=e(h_l) 
+outreg2 using "${tables}\rdd_z_run_xvsnx_lc.tex", tex(frag) ctitle("Roads or railway") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
 *-------------------------------------------------------------------------------
 * Sharp RDD results:
