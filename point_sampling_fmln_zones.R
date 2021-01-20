@@ -60,9 +60,10 @@ expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
 disputa_line <- st_cast(disputaShp,"MULTILINESTRING")
 
 #Sampling points int he borders for the RDD
-control_line_sample <- st_sample(control_line, 300)
-expansion_line_sample <- st_sample(expansion_line, 300)
-disputa_line_sample <- st_sample(disputa_line, 300)
+set.seed(1234)
+control_line_sample <- st_sample(control_line, 300, type="regular") 
+expansion_line_sample <- st_sample(expansion_line, 300, type="regular")
+disputa_line_sample <- st_sample(disputa_line, 300, type="regular")
 
 #Grouping all points 
 pnt_control_line_sample <- st_cast(control_line_sample, "POINT")

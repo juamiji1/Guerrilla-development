@@ -132,40 +132,169 @@ merge 1:1 pixel_id using `X', nogen
 merge 1:1 pixel_id using `Y', nogen 
 merge 1:1 pixel_id using `Z', nogen 
 
+
 end
-
-export delimited using "${data}\trialrdms.csv", replace
-
 
 *-------------------------------------------------------------------------------
 * 						Estimating the RDMSE
 *
 *-------------------------------------------------------------------------------
-drop c1 c2
-gen c1= pnt_x_cntrl if _n<31
-gen c2= pnt_y_cntrl if _n<31
+*Between pixels within and outside controlled FMLN zones 
+cap drop c1 c2
+gen c1= pnt_x_cntrl if _n<101
+gen c2= pnt_y_cntrl if _n<101
 
-drop c1 c2
+rdms nl13_density x_coord y_coord within_control, c(c1 c2) xnorm(z_run_cntrl)
+
+*Saving relevant info
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
+
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(101,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\cntrl_rmds.tex", from("r}\BS\BS") to("r}") replace
+
+
+*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
+rdms nl13_density x_coord y_coord within_control if within_expansion==0 & (within_control==1 | within_disputed==1), c(c1 c2) xnorm(z_run_cntrl)
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
+
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(101,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\cntrl_rmds_cvsd.tex", from("r}\BS\BS") to("r}") replace
+
+
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+cap drop c1 c2
 gen c1= pnt_x_dspt if _n<31
 gen c2= pnt_y_dspt if _n<31
 
+rdms nl13_density x_coord y_coord within_disputed if within_expansion==0 & within_control==0, c(c1 c2) xnorm(z_run_dsptd)
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
 
-rdms nl13_density x_coord y_coord within_control, c(c1 c2)
-rdms nl13_density x_coord y_coord within_control, c(c1 c2) xnorm(z_run_cntrl)
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(31,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\dsptd_rmds_dvsnd.tex", from("r}\BS\BS") to("r}") replace
 
 
-rdms nl13_density x_coord y_coord within_control, c(pnt_x_cntrl pnt_y_cntrl) 
-xnorm(z_run_cntrl)
-rdms nl13_density x_coord y_coord within_control, c(pnt_x_xpsn pnt_y_xpsn) 
-xnorm(z_run_cntrl)
-rdms nl13_density x_coord y_coord within_control, c(pnt_x_dspt pnt_y_dspt) 
-xnorm(z_run_cntrl)
+*Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
+cap drop c1 c2
+gen c1= pnt_x_xpsn if _n<101
+gen c2= pnt_y_xpsn if _n<101
 
+rdms nl13_density x_coord y_coord within_expansion if within_disputed==0 & within_control==0, c(c1 c2) xnorm(z_run_xpsn)
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
 
+mat b=b'
+mat bw=bw' 
+mat N=N'
 
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(101,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
 
-rdms ln_nl13_plus x_coord y_coord within_control, c(c1 c2) 
-rdms ln_nl13_plus x_coord y_coord within_control, c(pnt_x_cntrl pnt_y_cntrl) 
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\xpsn_rmds_xvsnx.tex", from("r}\BS\BS") to("r}") replace
 
 
 *-------------------------------------------------------------------------------
