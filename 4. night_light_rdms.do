@@ -133,8 +133,6 @@ merge 1:1 pixel_id using `Y', nogen
 merge 1:1 pixel_id using `Z', nogen 
 
 
-end
-
 *-------------------------------------------------------------------------------
 * 						Estimating the RDMSE
 *
@@ -145,6 +143,7 @@ gen c1= pnt_x_cntrl if _n<101
 gen c2= pnt_y_cntrl if _n<101
 
 rdms nl13_density x_coord y_coord within_control, c(c1 c2) xnorm(z_run_cntrl)
+rdms ln_nl13_plus x_coord y_coord within_control, c(c1 c2) xnorm(z_run_cntrl)
 
 *Saving relevant info
 mat b=e(b)
@@ -179,6 +178,43 @@ tempfile X1 X2
 frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
 filefilter `X1' `X2', from("Point") to("Point ") replace
 filefilter `X2' "${tables}\cntrl_rmds.tex", from("r}\BS\BS") to("r}") replace
+
+*Logs
+rdms ln_nl13_plus x_coord y_coord within_control, c(c1 c2) xnorm(z_run_cntrl)
+
+*Saving relevant info
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
+
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(101,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\cntrl_rmds_ln.tex", from("r}\BS\BS") to("r}") replace
 
 
 *Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
@@ -215,6 +251,41 @@ tempfile X1 X2
 frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
 filefilter `X1' `X2', from("Point") to("Point ") replace
 filefilter `X2' "${tables}\cntrl_rmds_cvsd.tex", from("r}\BS\BS") to("r}") replace
+
+*Logs
+rdms ln_nl13_plus x_coord y_coord within_control if within_expansion==0 & (within_control==1 | within_disputed==1), c(c1 c2) xnorm(z_run_cntrl)
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
+
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(101,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\cntrl_rmds_cvsd_ln.tex", from("r}\BS\BS") to("r}") replace
 
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
@@ -256,6 +327,41 @@ frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0)
 filefilter `X1' `X2', from("Point") to("Point ") replace
 filefilter `X2' "${tables}\dsptd_rmds_dvsnd.tex", from("r}\BS\BS") to("r}") replace
 
+*Logs
+rdms ln_nl13_plus x_coord y_coord within_disputed if within_expansion==0 & within_control==0, c(c1 c2) xnorm(z_run_dsptd)
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
+
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(31,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\dsptd_rmds_dvsnd_ln.tex", from("r}\BS\BS") to("r}") replace
+
 
 *Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
 cap drop c1 c2
@@ -296,38 +402,249 @@ frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0)
 filefilter `X1' `X2', from("Point") to("Point ") replace
 filefilter `X2' "${tables}\xpsn_rmds_xvsnx.tex", from("r}\BS\BS") to("r}") replace
 
+*Logs
+rdms ln_nl13_plus x_coord y_coord within_expansion if within_disputed==0 & within_control==0, c(c1 c2) xnorm(z_run_xpsn)
+mat b=e(b)
+mat V=e(V)
+mat p=e(pv_rb)
+mat bw=e(H)
+mat N=e(sampsis)
+
+mat b=b'
+mat bw=bw' 
+mat N=N'
+
+*Creating the se and stars matrixes
+mata: V=st_matrix("V")
+mata: p=st_matrix("p")
+mata: se=diagonal(V)
+mata: stars=((p:<=0.1)+(p:<=0.05)+(p:<=0.01))'
+mata: stars=stars,J(101,5,0)
+mata: st_matrix("se", se)
+mata: st_matrix("stars", stars)
+
+*Col and row names
+mat out=b,se,bw,N
+mat coln out = "Coeff: Bias-corrected" "SE: Robust" "Bw: Left" "Bw: Right" "N: Left" "N: Right"
+local rnames: rown out
+local rnames=subinstr("`rnames'", "c", "Point",.)
+local rnames=subinstr("`rnames'", "pooled", "Pooled",.)
+mat rown out=`rnames'
+
+*Exporting results
+tempfile X1 X2
+frmttable using `X1', s(out) annotate(stars) asymbol(*,**,***) sdec(3,2,2,2,0,0) tex fragment nocenter replace 
+filefilter `X1' `X2', from("Point") to("Point ") replace
+filefilter `X2' "${tables}\xpsn_rmds_xvsnx_ln.tex", from("r}\BS\BS") to("r}") replace
+
 
 *-------------------------------------------------------------------------------
 * 						Estimating the Dells specification
 *
 *-------------------------------------------------------------------------------
+*Between pixels within and outside controlled FMLN zones 
 rdrobust nl13_density z_run_cntrl, all kernel(triangular)
 gl h=e(h_l) 
-gl b=e(b_l)
 
+*Dell specifications without weights 
+reg nl13_density within_control x_coord y_coord if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace 
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
 
-reg nl13_density within_control x_coord y_coord if abs(z_run_cntrl)<=2.897
-reg nl13_density i.within_control##c.z_run_cntrl if abs(z_run_cntrl)<=2.897
-
+*Dell specifications with weights 
+cap drop weights
 gen weights=(1-abs(z_run_cntrl/${h})) if z_run_cntrl<0 & z_run_cntrl>=-${h}
 replace weights=(1-abs(z_run_cntrl/${h})) if z_run_cntrl>=0 & z_run_cntrl<=${h}
 
-reg nl13_density within_control x_coord y_coord [aw=weights] if abs(z_run_cntrl)<=2.897, r
+reg nl13_density within_control x_coord y_coord [aw=weights] if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density  within_control i.within_control#c.z_run_cntrl z_run_cntrl [aw=weights] if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=weights] if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
 
-
-
-
-
-rdrobust nl13_density , all kernel(triangular)
+*Logs 
+rdrobust ln_nl13_plus z_run_cntrl, all kernel(triangular)
 gl h=e(h_l) 
-gl b=e(b_l)
 
-reg nl13_density within_control x_coord y_coord if abs(z_run_cntrl_v2)<=3.346
-reg nl13_density i.within_control##c.z_run_cntrl if abs(z_run_cntrl_v2)<=3.346
+*Dell specifications without weights 
+reg ln_nl13_plus within_control x_coord y_coord if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
 
-*Add weights to this!!!
+*Dell specifications with weights 
+cap drop weights
+gen weights=(1-abs(z_run_cntrl/${h})) if z_run_cntrl<0 & z_run_cntrl>=-${h}
+replace weights=(1-abs(z_run_cntrl/${h})) if z_run_cntrl>=0 & z_run_cntrl<=${h}
+
+reg ln_nl13_plus within_control x_coord y_coord [aw=weights] if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl [aw=weights] if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=weights] if abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+
+*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+gl h=e(h_l) 
+
+*Dell specifications without weights 
+reg nl13_density within_control x_coord y_coord if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Dell specifications with weights 
+cap drop weights 
+gen weights=(1-abs(z_run_cntrl/${h})) if within_expansion==0 & (within_control==1 | within_disputed==1) & z_run_cntrl<0 & z_run_cntrl>=-${h}
+replace weights=(1-abs(z_run_cntrl/${h})) if within_expansion==0 & (within_control==1 | within_disputed==1) & z_run_cntrl>=0 & z_run_cntrl<=${h}
+
+reg nl13_density within_control x_coord y_coord [aw=weights] if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl [aw=weights] if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=weights] if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd.tex", tex(frag) keep(within_control) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Logs
+rdrobust ln_nl13_plus z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+gl h=e(h_l) 
+
+*Without weights 
+reg ln_nl13_plus within_control x_coord y_coord if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*With weights 
+cap drop weights 
+gen weights=(1-abs(z_run_cntrl/${h})) if within_expansion==0 & (within_control==1 | within_disputed==1) & z_run_cntrl<0 & z_run_cntrl>=-${h}
+replace weights=(1-abs(z_run_cntrl/${h})) if within_expansion==0 & (within_control==1 | within_disputed==1) & z_run_cntrl>=0 & z_run_cntrl<=${h}
+
+reg ln_nl13_plus within_control x_coord y_coord [aw=weights] if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl [aw=weights] if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=weights] if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, r
+outreg2 using "${tables}\cntrl_dell_cvsd_ln.tex", tex(frag) keep(within_control) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+
+*Dell specifications without weights 
+reg nl13_density within_disputed x_coord y_coord if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd.tex", tex(frag) keep(within_disputed) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace 
+reg nl13_density within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd.tex", tex(frag) keep(within_disputed) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd x_coord y_coord if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd.tex", tex(frag) keep(within_disputed) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Dell specifications with weights 
+cap drop weights
+gen weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd<0 & z_run_dsptd>=-${h}
+replace weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd>=0 & z_run_dsptd<=${h}
+
+reg nl13_density within_disputed x_coord y_coord [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd.tex", tex(frag) keep(within_disputed) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd.tex", tex(frag) keep(within_disputed) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd x_coord y_coord [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd.tex", tex(frag) keep(within_disputed) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Logs
+rdrobust ln_nl13_plus z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+
+*Dell specifications without weights 
+reg ln_nl13_plus within_disputed x_coord y_coord if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd_ln.tex", tex(frag) keep(within_disputed) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace 
+reg ln_nl13_plus within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd_ln.tex", tex(frag) keep(within_disputed) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd x_coord y_coord if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd_ln.tex", tex(frag) keep(within_disputed) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Dell specifications with weights 
+cap drop weights
+gen weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd<0 & z_run_dsptd>=-${h}
+replace weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd>=0 & z_run_dsptd<=${h}
+
+reg ln_nl13_plus within_disputed x_coord y_coord [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd_ln.tex", tex(frag) keep(within_disputed) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd_ln.tex", tex(frag) keep(within_disputed) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_disputed i.within_disputed#c.z_run_dsptd z_run_dsptd x_coord y_coord [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+outreg2 using "${tables}\dsptd_dell_dvsnd_ln.tex", tex(frag) keep(within_disputed) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+
+*Between pixels within and outside expansion FMLN zones (not including pixels in controlled and disputed zones)
+rdrobust nl13_density z_run_xpsn if within_disputed==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+
+*Dell specifications without weights 
+reg nl13_density within_expansion x_coord y_coord if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx.tex", tex(frag) keep(within_expansion) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace 
+reg nl13_density within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx.tex", tex(frag) keep(within_expansion) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn x_coord y_coord if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx.tex", tex(frag) keep(within_expansion) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Dell specifications with weights 
+cap drop weights
+gen weights=(1-abs(z_run_xpsn/${h})) if z_run_xpsn<0 & z_run_xpsn>=-${h}
+replace weights=(1-abs(z_run_xpsn/${h})) if z_run_xpsn>=0 & z_run_xpsn<=${h}
+
+reg nl13_density within_expansion x_coord y_coord [aw=weights] if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx.tex", tex(frag) keep(within_expansion) ctitle("Night light density (2013)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn [aw=weights] if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx.tex", tex(frag) keep(within_expansion) ctitle("Night light density (2013)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg nl13_density within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn x_coord y_coord [aw=weights] if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx.tex", tex(frag) keep(within_expansion) ctitle("Night light density (2013)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Logs
+rdrobust ln_nl13_plus z_run_xpsn if within_disputed==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+
+*Dell specifications without weights 
+reg ln_nl13_plus within_expansion x_coord y_coord if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx_ln.tex", tex(frag) keep(within_expansion) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote replace 
+reg ln_nl13_plus within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx_ln.tex", tex(frag) keep(within_expansion) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn x_coord y_coord if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx_ln.tex", tex(frag) keep(within_expansion) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+
+*Dell specifications with weights 
+cap drop weights
+gen weights=(1-abs(z_run_xpsn/${h})) if z_run_xpsn<0 & z_run_xpsn>=-${h}
+replace weights=(1-abs(z_run_xpsn/${h})) if z_run_xpsn>=0 & z_run_xpsn<=${h}
+
+reg ln_nl13_plus within_expansion x_coord y_coord [aw=weights] if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx_ln.tex", tex(frag) keep(within_expansion) ctitle("ln(Night light+0.01)") addtext("Controls", "XY","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn [aw=weights] if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx_ln.tex", tex(frag) keep(within_expansion) ctitle("ln(Night light+0.01)") addtext("Controls", "txdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
+reg ln_nl13_plus within_expansion i.within_expansion#c.z_run_xpsn z_run_xpsn x_coord y_coord [aw=weights] if abs(z_run_xpsn)<=${h}, r
+outreg2 using "${tables}\xpsn_dell_xvsnx_ln.tex", tex(frag) keep(within_expansion) ctitle("ln(Night light+0.01)") addtext("Controls", "XYtxdist","Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nocons nonote append 
 
 
 
 
+
+
+
+
+
+
+*END
 
