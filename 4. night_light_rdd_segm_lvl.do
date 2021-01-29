@@ -490,6 +490,7 @@ gen nl13_density_v3=nl13_density if nl13_density>`r(p5)' & nl13_density<`r(p95)'
 
 gen ln_nl13=ln(nl13_density)
 gen ln_nl13_plus=ln(nl13_density+0.01)
+gen arcsine_nl13=ln(nl13_density+sqrt(nl13_density^2+1))
 
 *nl13_density wmean_nl1 mean_nl_z wmean_nl_z
 
@@ -561,6 +562,10 @@ outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night
 rdrobust nl13_density_v3 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
 outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
 
+rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all covs(elevation) kernel(triangular) 
+outreg2 using "${tables}\rdd_cntrl_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Control", "Elevation") addstat("Polynomial", 1) nonote append  
+
+
 rdrobust ln_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
 outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote replace  
 
@@ -585,6 +590,14 @@ outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("Ni
 rdrobust wmean_nl1 z_run_cntrl_v2 if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
 outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
+rdrobust ln_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection", "Control", "Elevation") addstat("Polynomial", 1) nonote append  
+
+rdrobust arcsine_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust arcsine_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_cntrl_robustness_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Method", "Intersection", "Control", "Elevation") addstat("Polynomial", 1) nonote append  
 
 *Robusteness of disputed results
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
@@ -611,6 +624,10 @@ outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night
 rdrobust nl13_density_v3 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
 outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Centroid", "Note", "p5-p95") addstat("Polynomial", 1) nonote append  
 
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm.tex", tex(frag) ctitle("Night light") addtext("Method", "Intersection", "Control", "Elevation") addstat("Polynomial", 1) nonote append  
+
+
 rdrobust ln_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
 outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote replace  
 
@@ -635,7 +652,14 @@ outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("Ni
 rdrobust wmean_nl1 z_run_dsptd_v2 if within_expansion==0 & within_control==0, all kernel(triangular)
 outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Method", "Centroid") addstat("Polynomial", 1) nonote append  
 
+rdrobust ln_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Method", "Intersection", "Control", "Elevation") addstat("Polynomial", 1) nonote append  
 
+rdrobust arcsine_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Method", "Intersection") addstat("Polynomial", 1) nonote append  
+
+rdrobust arcsine_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_dsptd_robustness_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Method", "Intersection", "Control", "Elevation") addstat("Polynomial", 1) nonote append  
 
 
 
