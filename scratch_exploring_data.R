@@ -35,11 +35,11 @@ library(raster)
 ## PREPARING SHAPEFILES OF FMLN ZONES:
 
 #Directory: 
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
 setwd(current_path)
 
 #Importing El salvador shapefile
-slvShp <- st_read(dsn = "C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/slv_adm_2020_shp", layer = "slv_admbnda_adm0_2020")
+slvShp <- st_read(dsn = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/slv_adm_2020_shp", layer = "slv_admbnda_adm0_2020")
 slv_crs <- st_crs(slvShp)
 
 #Importing El salvador shapefile of segments 
@@ -72,7 +72,7 @@ tm_shape(slvShp_segm_ephm) +
   tm_borders()+
   tm_fill('ehpm', palette='dodgerblue3', colorNA=NULL, title='Segment in EHPM')+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/slv_census_segm_ehpm.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/slv_census_segm_ehpm.pdf")
 
 
 

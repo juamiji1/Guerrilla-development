@@ -33,7 +33,7 @@ library(raster)
 
 
 #Directory: 
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/'
 setwd(current_path)
 
 
@@ -73,10 +73,10 @@ slvShp_sp <- as(slvShp, Class='Spatial')
 #---------------------------------------------------------------------------------------
 
 #Importing the 2013 night light raster 
-nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
-elevation <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
-cacao <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
-bean <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
+nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
+cacao <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
+bean <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
@@ -147,7 +147,7 @@ names(nl13Shp_pixels_info_sp)[10] <- 'mean_bean'
 nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
 
 #Exporting the shape with additional info 
-writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/pixel_lvl_vars", layer="nl13Shp_pixels_info_sp_x10_res", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/pixel_lvl_vars", layer="nl13Shp_pixels_info_sp_x10_res", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #---------------------------------------------------------------------------------------
@@ -162,22 +162,22 @@ tm_shape(nl13Shp_pixels) +
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("value", title="Night light")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/night_light_13_pixel.pdf")
 
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("mean_elev", title="Elevation")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/elevation_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/elevation_pixel.pdf")
 
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("mean_cacao", title="Cacao yield")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/cacao_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/cacao_pixel.pdf")
 
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("mean_bean", title="Bean yield")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/bean_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/bean_pixel.pdf")
 
 
 

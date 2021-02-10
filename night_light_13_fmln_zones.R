@@ -35,7 +35,7 @@ library(raster)
 ## PREPARING SHAPEFILES OF FMLN ZONES:
 
 #Directory: 
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
 setwd(current_path)
 
 #Importing El salvador shapefile
@@ -81,7 +81,7 @@ slvShp_sp <- as(slvShp, Class='Spatial')
 ## PREPARING THE NIGHT LIGHT GRID:
 
 #Importing the 2013 night light raster 
-nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
 crs(nl13)
 res(nl13)
 
@@ -141,10 +141,10 @@ writeOGR(obj=nl13Shp_pixels_sp, dsn="guerrilla_map", layer="nl13Shp_pixels_sp", 
 
 ##Adding geographical controls information to the pixel shape
 #Importing rasters 
-nl13 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
-elevation <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
-cacao <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
-bean <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
+nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
+cacao <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
+bean <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
@@ -174,7 +174,7 @@ names(nl13Shp_pixels_info_sp)[24] <- 'mean_bean'
 nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
 
 #Exporting the shape with additional info 
-writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 ## PLOTTING VISUALIZATION CHECKS:
@@ -198,7 +198,7 @@ tm_shape(y1) +
   tm_shape(slvShp) + 
   tm_borders()+ 
   tm_layout(legend.show=FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_intersect.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_intersect.pdf")
 
 tm_shape(y2) + 
   tm_polygons(col = "within_control", lwd=0.02, title="Within control")+
@@ -208,7 +208,7 @@ tm_shape(y2) +
   tm_shape(slvShp) + 
   tm_borders()+ 
   tm_layout(legend.show=FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_centroid.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_centroid.pdf")
 
 #Exporting map of night light density and FMLN zones
 tm_shape(nl13_mask) + 
@@ -225,7 +225,7 @@ tm_shape(nl13_mask) +
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
   tm_add_legend(type="line", col="red", lwd=10, title="Controlled FMLN zone")+
   tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
 
 
 tm_shape(nl13Shp_pixels) + 
@@ -243,22 +243,22 @@ tm_shape(bean) +
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("value", title="Night light")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/night_light_13_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/night_light_13_pixel.pdf")
 
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("mean_elev", title="Elevation")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/elevation_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/elevation_pixel.pdf")
 
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("mean_cacao", title="Cacao yield")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/cacao_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/cacao_pixel.pdf")
 
 tm_shape(nl13Shp_pixels_info) +
   tm_polygons("mean_bean", title="Bean yield")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/4-Results/Salvador/plots/bean_pixel.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/bean_pixel.pdf")
 
 
 

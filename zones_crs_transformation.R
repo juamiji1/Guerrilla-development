@@ -31,7 +31,7 @@ library(tmap)
 library(raster)
 
 ## Shapefiles ----------------------------------------------------------------------------------------------------------------------------------------------------
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/'
 setwd(current_path)
 
 ##Load old shp 

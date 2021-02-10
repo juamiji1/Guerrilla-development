@@ -35,7 +35,7 @@ library(raster)
 ## PREPARING SHAPEFILES OF FMLN ZONES:
 
 #Directory: 
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
 setwd(current_path)
 
 #Importing El salvador shapefile
@@ -82,9 +82,9 @@ pnt_disputa_line_sample_sp <- SpatialPointsDataFrame(pnt_disputa_line_sample_sp,
 class(pnt_control_line_sample_sp)
 
 #Exporting the shapefile 
-writeOGR(obj=pnt_control_line_sample_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/fmln_zone_point_sample", layer="control_line_sample", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-writeOGR(obj=pnt_expansion_line_sample_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/fmln_zone_point_sample", layer="expansion_line_sample", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-writeOGR(obj=pnt_control_line_sample_sp, dsn="C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/2-Data/Salvador/gis/fmln_zone_point_sample", layer="disputa_line_sample", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=pnt_control_line_sample_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/fmln_zone_point_sample", layer="control_line_sample", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=pnt_expansion_line_sample_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/fmln_zone_point_sample", layer="expansion_line_sample", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=pnt_control_line_sample_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/fmln_zone_point_sample", layer="disputa_line_sample", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #Plot checks 

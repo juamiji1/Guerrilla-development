@@ -32,7 +32,7 @@ library(tmap)
 library(raster)
 
 ## Shapefiles ----------------------------------------------------------------------------------------------------------------------------------------------------
-current_path ='C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/'
+current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/'
 setwd(current_path)
 
 ##Load old shp 
@@ -41,9 +41,9 @@ slv_crs <- st_crs(slvShp)
 
 # Load raster 
 nldi <- raster('NLDI_2006_0p25_rev20111230.tif')
-nl06 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F162006.v4b.avg_lights_x_pct.tif')
-nl09 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F162009.v4b.avg_lights_x_pct.tif')
-nl12 <- raster('C:/Users/jmjimenez/Dropbox/Mica-projects/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182012.v4c.avg_lights_x_pct.tif')
+nl06 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F162006.v4b.avg_lights_x_pct.tif')
+nl09 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F162009.v4b.avg_lights_x_pct.tif')
+nl12 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/5-Maps/Salvador/night_lights/raw/F182012.v4c.avg_lights_x_pct.tif')
 crs(nldi)
 res(nldi)
 crs(nl06)
