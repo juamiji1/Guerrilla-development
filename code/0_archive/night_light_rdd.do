@@ -25,7 +25,7 @@ cd ${data}
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
 *shp2dta using "${maps}/guerrilla_map/nl13Shp_pixels_sp", data("${data}/nl13Shp_pixels.dta") coord("${data}/nl13Shp_pixels_coord.dta") genid(pixel_id) genc(coord) replace 
-shp2dta using "${data}/gis\nl_pixel_lvl_vars\nl13Shp_pixels_info_sp", data("${data}/nl13Shp_pixels_info.dta") coord("${data}/nl13Shp_pixels_info_coord.dta") genid(pixel_id) genc(coord) replace 
+shp2dta using "${data}/gis\nl_pixel_lvl_vars\nl13Shp_pixels_info_sp", data("${data}/temp\nl13Shp_pixels_info.dta") coord("${data}/temp\nl13Shp_pixels_info_coord.dta") genid(pixel_id) genc(coord) replace 
 
 
 *-------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ shp2dta using "${data}/gis\nl_pixel_lvl_vars\nl13Shp_pixels_info_sp", data("${da
 *-------------------------------------------------------------------------------
 *Loading the data 
 *use "nl13Shp_pixels.dta", clear
-use "nl13Shp_pixels_info", clear
+use "${data}/temp\nl13Shp_pixels_info", clear
 
 *Renaming variables
 rename (value wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_lv mean_cc mean_bn lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 wthn_c3 wthn_x3 wthn_d3 rail_nt road_nt) (nl13_density within_control within_expansion within_disputed dist_control dist_expansion dist_disputed elevation cacao bean lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 within_control_v3 within_expansion_v3 within_disputed_v3 rail roads)
@@ -175,7 +175,7 @@ rdrobust rail_road z_run_cntrl, all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cntrl_lc.tex", tex(frag) ctitle("Roads or railway") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append 
 
-*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
+*Between pixels within FMLN controlled zones and disputed zones (not including pixels in expansion zones)
 rdrobust elevation z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) kernel(triangular)
 gl h=e(h_l) 
 outreg2 using "${tables}\rdd_z_run_cvsd_lc.tex", tex(frag) ctitle("Elevation") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1) nonote replace 
@@ -281,7 +281,7 @@ mat coln coef= .2 .4 .6 .8 1 1.2 1.4 1.6 1.8 2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6 3.8
 coefplot (mat(coef[1]), ci((2 3))), vert recast(connected) ciopts(recast(rcap)) yline(0,lp(dash)) ylabel(,labsize(small)) xlabel(,labsize(vsmall)) ylabel(-8(2)5) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") graphregion(color(white))
 gr export "${plots}\rdd_z_run_cntrl_h_robustness.pdf", as(pdf) replace 
 
-*Between pixels within FMLN zones and disputed zones (not including pixels in expansion zones)
+*Between pixels within FMLN controlled zones and disputed zones (not including pixels in expansion zones)
 rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
 gl h=e(h_l) 
 gl b=e(b_l)
