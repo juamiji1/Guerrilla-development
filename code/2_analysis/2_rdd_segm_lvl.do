@@ -167,23 +167,23 @@ gl b=e(b_l)
 rdmse nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), p(1) h(${h}) b(${b})
 gl amsep1=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
+outreg2 using "${tables}\rdd_z_run_cvsd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
 
 rdmse nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), p(2) h(${h}) b(${b})
 gl amsep2=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
+outreg2 using "${tables}\rdd_z_run_cvsd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
 
 rdmse nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), p(3) h(${h}) b(${b}) 
 gl amsep3=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+outreg2 using "${tables}\rdd_z_run_cvsd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
 
 rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+outreg2 using "${tables}\rdd_z_run_cvsd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
 
 rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_cvsd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+outreg2 using "${tables}\rdd_z_run_cvsd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
 
 mat coef=J(3,25,.)
 local h=0.2
@@ -204,7 +204,7 @@ forval c=1/25{
 mat coln coef= .2 .4 .6 .8 1 1.2 1.4 1.6 1.8 2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6 3.8 4 4.2 4.4 4.6 4.8 5
 
 coefplot (mat(coef[1]), ci((2 3))), vert recast(connected) ciopts(recast(rcap)) yline(0,lp(dash)) ylabel(,labsize(small)) xlabel(,labsize(vsmall)) ylabel(-8(2)5) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") graphregion(color(white))
-gr export "${plots}\rdd_z_run_cvsd_h_robustness.pdf", as(pdf) replace 
+gr export "${plots}\rdd_z_run_cvsd_h_robustness_segm.pdf", as(pdf) replace 
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
@@ -214,23 +214,23 @@ gl b=e(b_l)
 rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(1) h(${h}) b(${b})
 gl amsep1=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(1) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
+outreg2 using "${tables}\rdd_z_run_dvsnd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "AMSE", ${amsep1}) nonote replace 
 
 rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(2) h(${h}) b(${b})
 gl amsep2=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(2) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
+outreg2 using "${tables}\rdd_z_run_dvsnd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 2, "AMSE", ${amsep2}) nonote append
 
 rdmse nl13_density z_run_dsptd if within_expansion==0 & within_control==0, p(3) h(${h}) b(${b}) 
 gl amsep3=round(e(amse_bc), .001)
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all p(3) h(${h}) b(${b}) kernel(triangular)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
+outreg2 using "${tables}\rdd_z_run_dvsnd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 3, "AMSE", ${amsep3}) nonote append
 
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all h(${h}) b(${b}) kernel(epa)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+outreg2 using "${tables}\rdd_z_run_dvsnd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Epanechnikov") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
 
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all h(${h}) b(${b}) kernel(uni)
-outreg2 using "${tables}\rdd_z_run_dvsnd.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
+outreg2 using "${tables}\rdd_z_run_dvsnd_segm.tex", tex(frag) ctitle("Night light density (2013)") addtext("Kernel", "Uniform") addstat("Bandwidth", ${h},"Polynomial", 1) nonote append
 
 mat coef=J(3,25,.)
 local h=1.2
@@ -251,7 +251,7 @@ forval c=1/25{
 mat coln coef= 1.2 1.4 1.6 1.8 2 2.2 2.4 2.6 2.8 3 3.2 3.4 3.6 3.8 4 4.2 4.4 4.6 4.8 5 5.2 5.4 5.6 5.8 6
 
 coefplot (mat(coef[1]), ci((2 3))), vert recast(connected) ciopts(recast(rcap)) yline(0,lp(dash)) ylabel(,labsize(small)) xlabel(,labsize(vsmall)) ylabel(-10(1)0) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") graphregion(color(white))
-gr export "${plots}\rdd_z_run_dvsnd_h_robustness.pdf", as(pdf) replace 
+gr export "${plots}\rdd_z_run_dvsnd_h_robustness_segm.pdf", as(pdf) replace 
 
 *-------------------------------------------------------------------------------
 * Checking the robustness of results
@@ -283,7 +283,7 @@ rdrobust arcsine_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | 
 outreg2 using "${tables}\rdd_robustness_cvsd_segm_p1.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append 
 
 rdrobust mean_nl_z z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
-outreg2 using "${tables}\rdd_robustness_cvsd_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_robustness_cvsd_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote replace  
 
 rdrobust wmean_nl1 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular) 
 outreg2 using "${tables}\rdd_robustness_cvsd_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append  
@@ -297,6 +297,40 @@ outreg2 using "${tables}\rdd_robustness_cvsd_segm_p2.tex", tex(frag) ctitle("ln(
 rdrobust arcsine_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all covs(elevation) kernel(triangular)
 outreg2 using "${tables}\rdd_robustness_cvsd_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)")addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append 
 
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) 
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p1.tex", tex(frag) ctitle("Night light") addtext("Note", "Main") addstat("Polynomial", 1) nonote replace 
+
+rdrobust nl13_density_v2 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p1.tex", tex(frag) ctitle("Night light") addtext("Note", "Trim p1-p99") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density_v3 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p1.tex", tex(frag) ctitle("Night light") addtext("Note", "Trim p5-p95") addstat("Polynomial", 1) nonote append 
+
+rdrobust ln_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p1.tex", tex(frag) ctitle("ln(Night light)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append 
+
+rdrobust ln_nl13_plus z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p1.tex", tex(frag) ctitle("ln(Night light+0.01)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append  
+
+rdrobust arcsine_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p1.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append 
+
+rdrobust mean_nl_z z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) 
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("Night light (no zeros)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote replace  
+
+rdrobust wmean_nl1 z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) 
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("Night light (weighted)") addtext("Note", "Transformation") addstat("Polynomial", 1) nonote append  
+
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular) 
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("Night light") addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append 
+
+rdrobust ln_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("ln(Night light)") addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append 
+
+rdrobust arcsine_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular)
+outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)")addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append 
+
 *------------------------------------------------------------------------------
 * Sharp RDD plots:
 *-------------------------------------------------------------------------------
@@ -305,10 +339,10 @@ rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | 
 gl h=e(h_l) 
 gl b=e(b_l)
 
-rdplot nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+rdplot nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) nbins(80) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
 gr export "${plots}\rdplot_p1_z_run_cvsd_segm.pdf", as(pdf) replace 
 
-rdplot nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+rdplot nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1) & abs(z_run_cntrl)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) nbins(80) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest controlled zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
 gr export "${plots}\rdplot_p2_z_run_cvsd_segm.pdf", as(pdf) replace 
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
@@ -316,10 +350,10 @@ rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, al
 gl h=e(h_l) 
 gl b=e(b_l)
 
-rdplot nl13_density z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest disputed zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+rdplot nl13_density z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, all p(1) h(${h}) b(${b}) kernel(triangular) nbins(80) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest disputed zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
 gr export "${plots}\rdplot_p1_z_run_dvsnd_segm.pdf", as(pdf) replace 
 
-rdplot nl13_density z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest disputed zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
+rdplot nl13_density z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, all p(2) h(${h}) b(${b}) kernel(triangular) nbins(80) graph_options(graphregion(color(white)) legend(off) xtitle("Normalized distance to the nearest disputed zone border", size(small)) ytitle("Average night light density within bin", size(small)) title("")) 
 gr export "${plots}\rdplot_p2_z_run_dvsnd_segm.pdf", as(pdf) replace 
 
 
@@ -327,75 +361,147 @@ gr export "${plots}\rdplot_p2_z_run_dvsnd_segm.pdf", as(pdf) replace
 * 						Spatial RDD Mechanisms
 *
 *-------------------------------------------------------------------------------
+*Between pixels within FMLN controlled zones and disputed zones (not including pixels in expansion zones)
+*Mechanisms on education 
+rdrobust literacy_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p1.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
+
+rdrobust asiste_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p1.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
+
+rdrobust mean_educ_years z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p1.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
+
+rdrobust work_formal_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p1.tex", tex(frag) ctitle("Formal Workers Share") addstat("Polynomial", 1) nonote append 
+
+rdrobust work_informal_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p1.tex", tex(frag) ctitle("Informal Workers Share") addstat("Polynomial", 1) nonote append 
+
+*Mechanisms on migration
+rdrobust remittance_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p2.tex", tex(frag) ctitle("Remittances Share") addstat("Polynomial", 1) nonote replace 
+
+rdrobust female_migrant z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Female Migrants") addstat("Polynomial", 1) nonote append 
+
+rdrobust male_migrant z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Male Migrants") addstat("Polynomial", 1) nonote append 
+
+rdrobust total_migrant z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Migrants") addstat("Polynomial", 1) nonote append 
+
+rdrobust sex_migrant_sh z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p2.tex", tex(frag) ctitle("Migrant's Gender Share") addstat("Polynomial", 1) nonote append 
+
+*Mechanisms on mortality
+rdrobust total_dead z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Deceased") addstat("Polynomial", 1) nonote replace 
+
+rdrobust female_dead z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Females Deceased") addstat("Polynomial", 1) nonote append 
+
+rdrobust male_dead z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Males Deceased") addstat("Polynomial", 1) nonote append 
+
+rdrobust sex_dead_sh z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p3.tex", tex(frag) ctitle("Deceased's Gender Share") addstat("Polynomial", 1) nonote append 
+
+*Mechanisms on demography 
+rdrobust total_pop z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Population") addstat("Polynomial", 1) nonote replace 
+
+rdrobust female z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Females") addstat("Polynomial", 1) nonote append 
+
+rdrobust male z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Males") addstat("Polynomial", 1) nonote append 
+
+rdrobust sex_sh z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Gender Share") addstat("Polynomial", 1) nonote append 
+
+rdrobust mean_age z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Mean Age") addstat("Polynomial", 1) nonote append 
+
+rdrobust married_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Married Share") addstat("Polynomial", 1) nonote append 
+
+rdrobust had_child_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Fertility Rate") addstat("Polynomial", 1) nonote append 
+
+rdrobust teen_pregnancy_rate z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all kernel(triangular)
+outreg2 using "${tables}\rdd_cvsd_mechanisms_segm_p4.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Polynomial", 1) nonote append 
+
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 *Mechanisms on education  
 rdrobust literacy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p1.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
 
 rdrobust asiste_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p1.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
 
 rdrobust mean_educ_years z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p1.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
 
 rdrobust work_formal_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p1.tex", tex(frag) ctitle("Formal Workers Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Formal Workers Share") addstat("Polynomial", 1) nonote append 
 
 rdrobust work_informal_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p1.tex", tex(frag) ctitle("Informal Workers Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Informal Workers Share") addstat("Polynomial", 1) nonote append 
 
 *Mechanisms on migration
 rdrobust remittance_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p2.tex", tex(frag) ctitle("Remittances Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Remittances Share") addstat("Polynomial", 1) nonote replace 
 
 rdrobust female_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Female Migrants") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Female Migrants") addstat("Polynomial", 1) nonote append 
 
 rdrobust male_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Male Migrants") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Male Migrants") addstat("Polynomial", 1) nonote append 
 
 rdrobust total_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Migrants") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Migrants") addstat("Polynomial", 1) nonote append 
 
 rdrobust sex_migrant_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p2.tex", tex(frag) ctitle("Migrant's Gender Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Migrant's Gender Share") addstat("Polynomial", 1) nonote append 
 
 *Mechanisms on mortality
 rdrobust total_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Deceased") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Deceased") addstat("Polynomial", 1) nonote replace 
 
 rdrobust female_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Females Deceased") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Females Deceased") addstat("Polynomial", 1) nonote append 
 
 rdrobust male_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Males Deceased") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Males Deceased") addstat("Polynomial", 1) nonote append 
 
 rdrobust sex_dead_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p3.tex", tex(frag) ctitle("Deceased's Gender Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Deceased's Gender Share") addstat("Polynomial", 1) nonote append 
 
 *Mechanisms on demography 
 rdrobust total_pop z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Population") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Population") addstat("Polynomial", 1) nonote replace 
 
 rdrobust female z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Females") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Females") addstat("Polynomial", 1) nonote append 
 
 rdrobust male z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Males") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Males") addstat("Polynomial", 1) nonote append 
 
 rdrobust sex_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Gender Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Gender Share") addstat("Polynomial", 1) nonote append 
 
 rdrobust mean_age z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Mean Age") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Mean Age") addstat("Polynomial", 1) nonote append 
 
 rdrobust married_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Married Share") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Married Share") addstat("Polynomial", 1) nonote append 
 
 rdrobust had_child_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Fertility Rate") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Fertility Rate") addstat("Polynomial", 1) nonote append 
 
 rdrobust teen_pregnancy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
-outreg2 using "${tables}\rdd_dsptd_mechanisms_segm_p4.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Polynomial", 1) nonote append 
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Polynomial", 1) nonote append 
 
 
   

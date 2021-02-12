@@ -260,10 +260,10 @@ rdrobust nl13_density z_run_cntrl if within_expansion==0 & (within_control==1 | 
 outreg2 using "${tables}\rdd_robustness_cvsd.tex", tex(frag) ctitle("Night light") addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append  
 
 rdrobust ln_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all covs(elevation) kernel(triangular)
-outreg2 using "${tables}\rdd_robustness_cvsd.tex", tex(frag) ctitle("ln(Night light)") addtext("Control", "Elevation control") addstat("Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_robustness_cvsd.tex", tex(frag) ctitle("ln(Night light)") addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append  
 
 rdrobust arcsine_nl13 z_run_cntrl if within_expansion==0 & (within_control==1 | within_disputed==1), all covs(elevation) kernel(triangular)
-outreg2 using "${tables}\rdd_robustness_cvsd.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Control", "Elevation control") addstat("Polynomial", 1) nonote append
+outreg2 using "${tables}\rdd_robustness_cvsd.tex", tex(frag) ctitle("arcsine(Night light)") addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
