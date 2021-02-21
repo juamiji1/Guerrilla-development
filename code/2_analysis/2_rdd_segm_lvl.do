@@ -364,227 +364,227 @@ gr export "${plots}\rdplot_p2_z_run_dvsnd_segm.pdf", as(pdf) replace
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 
 *Mechanisms on education and labor markets
-rdrobust literacy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust literacy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
 
-rdrobust asiste_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust asiste_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
 
-rdrobust mean_educ_years z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust mean_educ_years z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
 
-rdrobust pet z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pet z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Working Age Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust po z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust po z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Employed Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust wage z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust wage z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Wage Workers") addstat("Polynomial", 1) nonote append 
 
-rdrobust nowage z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust nowage z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("No Wage Workers") addstat("Polynomial", 1) nonote append 
 
-rdrobust pd z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pd z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Unemployed Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust pea z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pea z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Active Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust nea z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust nea z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Inactive Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust to z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust to z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Employment Rate") addstat("Polynomial", 1) nonote append 
 
-rdrobust td z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust td z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Unemployment Rate") addstat("Polynomial", 1) nonote append 
 
-rdrobust work_hours z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust work_hours z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p1.tex", tex(frag) ctitle("Working Hours") addstat("Polynomial", 1) nonote append 
   	
 	
 *Mechanisms on migration
-rdrobust remittance_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust remittance_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Remittances Share") addstat("Polynomial", 1) nonote replace 
 
-rdrobust female_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust female_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Female Migrants") addstat("Polynomial", 1) nonote append 
 
-rdrobust male_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust male_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Male Migrants") addstat("Polynomial", 1) nonote append 
 
-rdrobust war_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust war_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("War Migrants") addstat("Polynomial", 1) nonote append 
 
-rdrobust total_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust total_migrant z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Total Migrants") addstat("Polynomial", 1) nonote append 
 
-rdrobust sex_migrant_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust sex_migrant_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p2.tex", tex(frag) ctitle("Migrant's Gender Share") addstat("Polynomial", 1) nonote append 
 
 *Mechanisms on mortality
-rdrobust total_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust total_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Deceased") addstat("Polynomial", 1) nonote replace 
 
-rdrobust female_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust female_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Females Deceased") addstat("Polynomial", 1) nonote append 
 
-rdrobust male_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust male_dead z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Total Males Deceased") addstat("Polynomial", 1) nonote append 
 
-rdrobust sex_dead_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust sex_dead_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p3.tex", tex(frag) ctitle("Deceased's Gender Share") addstat("Polynomial", 1) nonote append 
 
 *Mechanisms on demography 
-rdrobust total_pop z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust total_pop z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Population") addstat("Polynomial", 1) nonote replace 
 
-rdrobust female z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust female z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Females") addstat("Polynomial", 1) nonote append 
 
-rdrobust male z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust male z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Total Males") addstat("Polynomial", 1) nonote append 
 
-rdrobust sex_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust sex_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Gender Share") addstat("Polynomial", 1) nonote append 
 
-rdrobust mean_age z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust mean_age z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Mean Age") addstat("Polynomial", 1) nonote append 
 
-rdrobust married_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust married_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Married Share") addstat("Polynomial", 1) nonote append 
 
-rdrobust had_child_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust had_child_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Fertility Rate") addstat("Polynomial", 1) nonote append 
 
-rdrobust teen_pregnancy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust teen_pregnancy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p4.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Polynomial", 1) nonote append 
 
 
 *Mechanisms on education and labor markets by gender 
-rdrobust literacy_rate_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust literacy_rate_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
 
-rdrobust asiste_rate_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust asiste_rate_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
 
-rdrobust mean_educ_years_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust mean_educ_years_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
 
-rdrobust pet_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pet_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Working Age Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust po_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust po_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Employed Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust wage_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust wage_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Wage Workers") addstat("Polynomial", 1) nonote append 
 
-rdrobust nowage_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust nowage_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("No Wage Workers") addstat("Polynomial", 1) nonote append 
 
-rdrobust pd_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pd_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Unemployed Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust pea_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pea_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Active Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust nea_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust nea_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Inactive Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust to_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust to_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Employment Rate") addstat("Polynomial", 1) nonote append 
 
-rdrobust td_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust td_f z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p5.tex", tex(frag) ctitle("Unemployment Rate") addstat("Polynomial", 1) nonote append 
 
 
-rdrobust literacy_rate_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust literacy_rate_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
 
-rdrobust asiste_rate_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust asiste_rate_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
 
-rdrobust mean_educ_years_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust mean_educ_years_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
 
-rdrobust pet_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pet_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Working Age Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust po_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust po_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Employed Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust wage_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust wage_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Wage Workers") addstat("Polynomial", 1) nonote append 
 
-rdrobust nowage_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust nowage_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("No Wage Workers") addstat("Polynomial", 1) nonote append 
 
-rdrobust pd_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pd_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Unemployed Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust pea_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust pea_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Active Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust nea_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust nea_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Inactive Pop") addstat("Polynomial", 1) nonote append 
 
-rdrobust to_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust to_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Employment Rate") addstat("Polynomial", 1) nonote append 
 
-rdrobust td_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust td_m z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p6.tex", tex(frag) ctitle("Unemployment Rate") addstat("Polynomial", 1) nonote append 
 
 
 *Mechanisms on education and labor markets by age group 
 local i=7
 local r="_0_14_yrs"
-rdrobust literacy_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust literacy_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
 
-rdrobust asiste_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust asiste_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
 
-rdrobust mean_educ_years`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+rdrobust mean_educ_years`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
 
 local i=8
 foreach r in "_15_29_yrs" "_30_44_yrs" "_45_59_yrs" "_60_more_yrs" {
-	rdrobust literacy_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust literacy_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Literacy Rate") addstat("Polynomial", 1) nonote replace  
 
-	rdrobust asiste_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust asiste_rate`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Assist(ed) FEC") addstat("Polynomial", 1) nonote append 
 
-	rdrobust mean_educ_years`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust mean_educ_years`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Years of Education") addstat("Polynomial", 1) nonote append  
 
-	rdrobust pet`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust pet`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Working Age Pop") addstat("Polynomial", 1) nonote append 
 
-	rdrobust po`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust po`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Employed Pop") addstat("Polynomial", 1) nonote append 
 
-	rdrobust wage`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust wage`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Wage Workers") addstat("Polynomial", 1) nonote append 
 
-	rdrobust nowage`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust nowage`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("No Wage Workers") addstat("Polynomial", 1) nonote append 
 
-	rdrobust pd`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust pd`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Unemployed Pop") addstat("Polynomial", 1) nonote append 
 
-	rdrobust pea`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust pea`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Active Pop") addstat("Polynomial", 1) nonote append 
 
-	rdrobust nea`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust nea`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Inactive Pop") addstat("Polynomial", 1) nonote append 
 
-	rdrobust to`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust to`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Employment Rate") addstat("Polynomial", 1) nonote append 
 
-	rdrobust td`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+	rdrobust td`r' z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 	outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_p`i'.tex", tex(frag) ctitle("Unemployment Rate") addstat("Polynomial", 1) nonote append 
 
 	local ++i
