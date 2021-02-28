@@ -95,6 +95,18 @@ st_crs(slvShp)==st_crs(slvShp_segm)
 slvShp_segm_sp <- as(slvShp_segm, Class='Spatial')
 slvShp_sp <- as(slvShp, Class='Spatial')
 
+#Importing location of hospitals in 2015
+hospitales <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/minsalud/MINSAL_0.csv")
+hospitales_sf <- st_as_sf(hospitales, coords = c("LON", "LAT"), crs = slv_crs)
+
+#Importing location of schools in ???year
+schools <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/mineduc/coorces_2.csv",header=TRUE, sep = ";")
+names(schools)[1] <- 'codigoce'
+names(schools)[2] <- 'nombrece'
+schools <- subset(schools, select = c(codigoce,nombrece,x,y))
+schools <- na.omit(schools) 
+schools_sf <- st_as_sf(schools, coords = c("x", "y"), crs = slv_crs)
+
 
 #---------------------------------------------------------------------------------------
 ## PREPARING RASTERS (NLD, altitude, cacao):
@@ -138,7 +150,7 @@ elev_1500<- reclassify(elevation_mask, c(0,1500, NA, 1500, Inf, 1))
 #Calculating centroid of segments
 slvShp_segm_centroid <-st_centroid(slvShp_segm)
 
-#Calculating the minimum distance of each pixel to the FMLN zones 
+#Calculating the minimum distance of each segment to the FMLN zones 
 slvShp_segm_int <- slvShp_segm
 
 slvShp_segm_int$dist_control<-as.numeric(st_distance(slvShp_segm, control_line))
@@ -149,7 +161,7 @@ slvShp_segm_int$dist_control2<-as.numeric(st_distance(slvShp_segm_centroid, cont
 slvShp_segm_int$dist_expansion2<-as.numeric(st_distance(slvShp_segm_centroid, expansion_line))
 slvShp_segm_int$dist_disputa2<-as.numeric(st_distance(slvShp_segm_centroid, disputa_line))
 
-#Creating indicators for whether the pixel is within each FMLN zone
+#Creating indicators for whether the segment is within each FMLN zone
 slvShp_segm_int <- mutate(slvShp_segm_int, within_control=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
                           within_expansion=as.numeric(st_intersects(slvShp_segm, expansionShp, sparse = FALSE)),
                           within_disputa=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
@@ -158,21 +170,24 @@ slvShp_segm_int <- mutate(slvShp_segm_int, within_control2=as.numeric(st_within(
                           within_expansion2=as.numeric(st_within(slvShp_segm_centroid, expansionShp, sparse = FALSE)),
                           within_disputa2=as.numeric(st_within(slvShp_segm_centroid, disputaShp, sparse = FALSE)))
 
-#Creating indicators for whether the pixel is within each FMLN zone
+#Creating indicators for whether the segment is within each FMLN zone
 slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
                           riv1_int=as.numeric(st_intersects(slvShp_segm, river1Shp, sparse = FALSE)),
                           riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)), 
                           rail_int=as.numeric(st_intersects(slvShp_segm, railShp, sparse = FALSE)),
                           road_int=as.numeric(st_intersects(slvShp_segm, roadShp, sparse = FALSE)))
 
-#Subseting to check the bordering pixels 
+#Subseting to check the bordering segment 
 y1<-subset(slvShp_segm_int, dist_control==0)
 y2<-subset(slvShp_segm_int, dist_control2<800 & within_control2==1)
 
 # Converting from sf to sp object
 slvShp_segm_sp <- as(slvShp_segm_int, Class='Spatial')
 
-#Averaging rasters by night light pixel 
+#---------------------------------------------------------------------------------------
+## AVERAGING RASTERS BY SEGMENT LEVEL:
+#
+#---------------------------------------------------------------------------------------
 detach(package:tidyr)
 
 slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_sp, fun=mean, na.rm=TRUE, sp=TRUE)
@@ -219,6 +234,34 @@ slvShp_segm_info$mean_elev2 <- exact_extract(elevation_mask, slvShp_segm_info, '
 slvShp_segm_info$wmean_nl2 <- exact_extract(nl13_mask, slvShp_segm_info, 'weighted_mean', weights=area(nl13_mask))
 slvShp_segm_info$wmean_elev2 <- exact_extract(elevation_mask, slvShp_segm_info, 'weighted_mean', weights=area(elevation_mask))
 
+#---------------------------------------------------------------------------------------
+## COUNTING OBJECTS OF INTEREST WITHIN SEGMENTS:
+#
+#---------------------------------------------------------------------------------------
+#Counting number of hospitals per segment 
+intersection <- st_intersection(x = slvShp_segm_info, y = hospitales_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  count()
+slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
+slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_hosp'
+
+#Counting number of schools per segment 
+intersection <- st_intersection(x = slvShp_segm_info, y = schools_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  count()
+slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
+slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_sch'
+
+#---------------------------------------------------------------------------------------
+## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
+#
+#---------------------------------------------------------------------------------------
 # Converting from sf to sp object
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
@@ -227,7 +270,7 @@ writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research
 
 
 #---------------------------------------------------------------------------------------
-## VISUAL CHECK:
+## VISUAL CHECKS:
 #
 #---------------------------------------------------------------------------------------
 #Plotting
@@ -254,6 +297,26 @@ tm_shape(y2) +
   tm_borders()+ 
   tm_layout(legend.show=FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_nl13_cntrl_centroid.pdf")
+
+#Hospitals and segments map 
+tm_shape(slvShp_segm_info) + 
+  tm_polygons(col = "n_hosp", lwd=0.02, title="N hosp)")+
+  tm_layout(frame = FALSE)
+
+#Hospitals and segments map 
+tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+  tm_shape(hospitales_sf) + 
+  tm_dots(size=0.2,col="red")+
+  tm_add_legend(type="symbol", col="red", title="Hospital")+
+  tm_layout(frame = FALSE)
+
+tm_shape(slvShp_segm_info) + 
+  tm_polygons(col = "n_hosp", lwd=0.02, title="Number of Hospitals")+
+  tm_layout(frame = FALSE)
+
+
+
 
 
 

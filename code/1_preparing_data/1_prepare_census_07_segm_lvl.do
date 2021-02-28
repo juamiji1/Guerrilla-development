@@ -29,6 +29,46 @@ grstyle color major_grid dimgray
 
 
 *-------------------------------------------------------------------------------
+* 					     	Household conditions 
+*	
+*-------------------------------------------------------------------------------
+use "${data}/censo2007\data\hogar.dta", clear 
+
+*Creating the segment identifier 
+gen segm_id=DEPID+MUNID+SEGID
+
+*Total households
+gen total_household=1
+
+*Home ownership 
+recode S03P04 (2 3 4 = 1) (5 6 7 = 0)
+
+*Sanitary service 
+recode S03P05 (2 3 4 = 1) (5 = 0)
+
+*Sewerage service 
+recode S03P07 (2 3 4 5 6 =0)
+
+*Water pipes 
+recode S03P08 (2 3 = 1) (4 5 6 7 8 9 10 = 0)
+
+*Daily water 
+recode S03P09 (-2 = .) (2 = 1) (3 4 5 6 = 0)
+
+*Electricity service 
+recode S03P11 (2 3 4 5 6 = 0)
+
+*Garbage disposal 
+recode S03P12 (2 = 1) (3 4 5 6 7 8 = 0)
+
+*Collapsing at the segment level 
+collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 (sum) total_household, by(segm_id)
+
+tempfile Household
+save `Household', replace 
+
+
+*-------------------------------------------------------------------------------
 * 					     		Mortality 
 *	
 *-------------------------------------------------------------------------------
@@ -218,16 +258,21 @@ gen total_pop=1
 preserve
 
 	*Collapsing at the segment gender level 
-	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A remittance_rate=S06P15A (sum) pet po pd pea nea wage nowage, by(segm_id S06P02)
+	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A remittance_rate=S06P15A work_hours=S06P23 (sum) pet po pd pea nea wage nowage, by(segm_id S06P02)
 
 	*Tasa de ocupacion 
 	gen to=po/pea
 
 	*Tasa de desempleo 
 	gen td=pd/pea 
+	
+	*Normalizing the active and employed population over pet
+	gen po_pet=po/pet
+	gen pea_pet=pea/pet
+	gen wage_pet=wage/pet
 
 	*Reshaping to leave the segment as unique identifier 
-	reshape wide literacy_rate asiste_rate mean_educ_years remittance_rate pet po pd pea nea to td wage nowage, i(segm_id) j(S06P02)
+	reshape wide literacy_rate asiste_rate mean_educ_years remittance_rate pet po pd pea nea to td wage nowage po_pet pea_pet wage_pet work_hours, i(segm_id) j(S06P02)
 
 	*Renaming vars
 	ren *0 *_f
@@ -243,16 +288,21 @@ restore
 preserve
 
 	*Collapsing at the segment gender level 
-	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A (sum) pet po pd pea nea wage nowage total_pop, by(segm_id age_range)
+	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A work_hours=S06P23 (sum) pet po pd pea nea wage nowage total_pop, by(segm_id age_range)
 
 	*Tasa de ocupacion 
 	gen to=po/pea
 
 	*Tasa de desempleo 
 	gen td=pd/pea 
+	
+	*Normalizing the active and employed population over pet
+	gen po_pet=po/pet
+	gen pea_pet=pea/pet
+	gen wage_pet=wage/pet 
 
 	*Reshaping to leave the segment as unique identifier 
-	reshape wide literacy_rate asiste_rate mean_educ_years pet po pd pea nea to td wage nowage total_pop, i(segm_id) j(age_range)
+	reshape wide literacy_rate asiste_rate mean_educ_years pet po pd pea nea to td wage nowage total_pop po_pet pea_pet wage_pet work_hours, i(segm_id) j(age_range)
 	
 	*Renaming vars
 	ren *1 *_0_14_yrs
@@ -276,7 +326,13 @@ gen to=po/pea
 *Tasa de desempleo 
 gen td=pd/pea 
 
+*Normalizing the active and employed population over pet
+gen po_pet=po/pet
+gen pea_pet=pea/pet
+gen wage_pet=wage/pet 
+
 *Merging the other modules 
+merge 1:1 segm_id using `Household', nogen 
 merge 1:1 segm_id using `Gender', nogen 
 merge 1:1 segm_id using `Age', nogen 
 merge 1:1 segm_id using `Mortality', nogen 
@@ -291,4 +347,5 @@ save "${data}/temp\census07_segm_lvl.dta", replace
 
 
 
+graph close _all
 *END

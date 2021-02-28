@@ -36,9 +36,9 @@ shp2dta using "${data}/gis\nl_segm_lvl_vars\slvShp_segm_info_sp", data("${data}/
 use "${data}/temp\slvShp_segm_info_sp.dta", clear
 
 *Keeping only important vars 
-rename (SEG_ID wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn wmn_nl1 mn_nl_z wmn_nl_ sm_lv_1 sm_lv_2 sm_lv_3 sm_lv_4 men_nl2 men_lv2 wmn_nl2 wmn_lv2 lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 rail_nt road_nt) (segm_id within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean wmean_nl1 mean_nl_z wmean_nl_z sum_elev_1 sum_elev_2 sum_elev_3 sum_elev_4 mean_nl2 mean_elev2 wmean_nl2 wmean_elev2 lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 rail roads) 
+rename (SEG_ID wthn_cn wthn_xp wthn_ds dst_cnt dst_xpn dst_dsp mean_nl mean_lv mean_cc mean_bn wmn_nl1 mn_nl_z wmn_nl_ sm_lv_1 sm_lv_2 sm_lv_3 sm_lv_4 men_nl2 men_lv2 wmn_nl2 wmn_lv2 lake_nt riv1_nt riv2_nt dst_cn2 dst_xp2 dst_ds2 wthn_c2 wthn_x2 wthn_d2 rail_nt road_nt n_hosp n_sch) (segm_id within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean wmean_nl1 mean_nl_z wmean_nl_z sum_elev_1 sum_elev_2 sum_elev_3 sum_elev_4 mean_nl2 mean_elev2 wmean_nl2 wmean_elev2 lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 rail roads total_hospitals total_schools) 
 
-keep segm_id within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean wmean_nl1 mean_nl_z wmean_nl_z sum_elev_1 sum_elev_2 sum_elev_3 sum_elev_4 mean_nl2 mean_elev2 wmean_nl2 wmean_elev2 lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 rail roads
+keep segm_id within_control within_expansion within_disputed dist_control dist_expansion dist_disputed nl13_density elevation cacao bean wmean_nl1 mean_nl_z wmean_nl_z sum_elev_1 sum_elev_2 sum_elev_3 sum_elev_4 mean_nl2 mean_elev2 wmean_nl2 wmean_elev2 lake river1 river2 dist_control_v2 dist_expansion_v2 dist_disputed_v2 within_control_v2 within_expansion_v2 within_disputed_v2 rail roads total_hospitals total_schools
 
 *Creating hydrography var
 gen hydrography=1 if lake==1 | river1==1 | river2==1
@@ -47,6 +47,10 @@ replace hydrography=0 if hydrography==.
 *Creating infraestructure var
 gen rail_road=1 if rail==1 | road==1
 replace rail_road=0 if rail_road==.
+
+*Fixing missings 
+replace total_hospitals=0 if total_hospitals==.
+replace total_schools=0 if total_schools==.
 
 *Changing units to Kms
 replace dist_control=dist_control/1000
