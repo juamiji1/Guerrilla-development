@@ -54,6 +54,7 @@ do "${do}\1_preparing_data\1_prepare_night_light_13_segm_lvl.do"
 *-------------------------------------------------------------------------------
 do "${do}\2_analysis\2_rdd_pixel_lvl.do"
 do "${do}\2_analysis\2_rdd_segm_lvl.do"
+do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms.do"
 
 
 
