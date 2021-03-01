@@ -38,6 +38,7 @@ grstyle color major_grid dimgray
 *	 						1. Preparing the Data
 *
 *-------------------------------------------------------------------------------
+do "${do}\1_preparing_data\1_prepare_matricula_coords_07.do"
 *NOTE: before running the do-files, should run the following R scripts that prepare
 *      the GIS data. 
 *			- 1_geo_fmln_zones_night_light_pixel_lvl.R
@@ -58,7 +59,12 @@ do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms.do"
 
 
 
+
 graph close _all
+
+
+
+
 
 
 

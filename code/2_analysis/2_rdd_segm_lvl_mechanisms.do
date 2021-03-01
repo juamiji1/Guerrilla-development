@@ -114,6 +114,11 @@ local h=e(h_l)
 local n=e(N_h_l)+e(N_h_r)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_educ.tex", tex(frag) ctitle("Number of Schools") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote replace  
 
+rdrobust total_matricula z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_educ.tex", tex(frag) ctitle("Total Enrollment") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
+
 rdrobust literacy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 local h=e(h_l) 
 local n=e(N_h_l)+e(N_h_r)

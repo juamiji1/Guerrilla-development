@@ -100,10 +100,8 @@ hospitales <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Develop
 hospitales_sf <- st_as_sf(hospitales, coords = c("LON", "LAT"), crs = slv_crs)
 
 #Importing location of schools in ???year
-schools <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/mineduc/coorces_2.csv",header=TRUE, sep = ";")
+schools <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/mineduc/matricula_coords_2007.csv",header=TRUE)
 names(schools)[1] <- 'codigoce'
-names(schools)[2] <- 'nombrece'
-schools <- subset(schools, select = c(codigoce,nombrece,x,y))
 schools <- na.omit(schools) 
 schools_sf <- st_as_sf(schools, coords = c("x", "y"), crs = slv_crs)
 
@@ -243,6 +241,7 @@ intersection <- st_intersection(x = slvShp_segm_info, y = hospitales_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
   count()
+
 slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
 slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
 names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
@@ -252,7 +251,8 @@ names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_hosp'
 intersection <- st_intersection(x = slvShp_segm_info, y = schools_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  count()
+  summarise(n=n(), matricula=sum(matricula))
+
 slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
 slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
 names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
@@ -310,10 +310,23 @@ tm_shape(slvShp_segm_info) +
   tm_dots(size=0.2,col="red")+
   tm_add_legend(type="symbol", col="red", title="Hospital")+
   tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_hospitals.pdf")
+
 
 tm_shape(slvShp_segm_info) + 
   tm_polygons(col = "n_hosp", lwd=0.02, title="Number of Hospitals")+
   tm_layout(frame = FALSE)
+
+#Schools and segments map 
+tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+  tm_shape(schools_sf) + 
+  tm_dots(size=0.2,col="blue")+
+  tm_add_legend(type="symbol", col="blue", title="Centro Educativo")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_schools.pdf")
+
+
 
 
 
