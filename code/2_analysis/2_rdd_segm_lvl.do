@@ -331,7 +331,31 @@ outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("ln
 rdrobust arcsine_nl13 z_run_dsptd if within_expansion==0 & within_control==0, all covs(elevation) kernel(triangular)
 outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("arcsine(Night light)")addtext("Note", "Elevation control") addstat("Polynomial", 1) nonote append 
 
-*------------------------------------------------------------------------------
+*-------------------------------------------------------------------------------
+* Robustness with disputed line breaks FE:
+*-------------------------------------------------------------------------------
+*Checking the specification 
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(uniform)
+gl h=e(h_l) 
+
+reg nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+
+*RDD with break fe and triangular weights  
+rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
+gl h=e(h_l) 
+
+cap drop weights
+gen weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd<0 & z_run_dsptd>=-${h}
+replace weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd>=0 & z_run_dsptd<=${h}
+
+reg nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+
+reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_400)
+reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_200)
+reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_100)
+reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_50)
+
+*-------------------------------------------------------------------------------
 * Sharp RDD plots:
 *-------------------------------------------------------------------------------
 *Between pixels within FMLN controlled zones and disputed zones (not including pixels in expansion zones)

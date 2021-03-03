@@ -36,6 +36,7 @@ library(gifski)
 library(transformr)
 library(tmap)
 library(raster)
+library(matrixStats)
 
 
 #---------------------------------------------------------------------------------------
@@ -61,6 +62,10 @@ expansionShp <- st_transform(expansionShp, crs = slv_crs)
 #Importing FMLN disputed zones
 disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa")
 disputaShp <- st_transform(disputaShp, crs = slv_crs)
+
+#Importing the line break for each 5 kms
+#disputaBrk <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa_segments")
+#disputaBrk <- st_transform(disputaBrk, crs = slv_crs)
 
 #Importing hidrography shapes
 lakeShp <- st_read(dsn = "gis/Hidrografia", layer = "lagoA_merge")
@@ -149,7 +154,7 @@ y2<-subset(nl13Shp_pixels_int, dist_control2<800 & within_control2==1)
 
 
 #---------------------------------------------------------------------------------------
-## EXPORTING THE SHAPEFILE AS AN SP OBJECT:
+## cALCULATING THE NL DENSITY AT THE PIXEL LEVEL:
 #
 #---------------------------------------------------------------------------------------
 nl13Shp_pixels_sp <- as(nl13Shp_pixels_int, Class='Spatial')
@@ -189,10 +194,122 @@ names(nl13Shp_pixels_info_sp)[23] <- 'mean_cacao'
 nl13Shp_pixels_info_sp <- extract(bean, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(nl13Shp_pixels_info_sp)[24] <- 'mean_bean'
 
-nl13Shp_pixels_info <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
+#TRansforming from sp to sf 
+nl13Shp_pixels_info_v2 <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
+
+#---------------------------------------------------------------------------------------
+## INCLUDING THE LINE BREAK FE:
+#
+#---------------------------------------------------------------------------------------
+#Sampling points int he borders for the RDD
+set.seed(1234)
+
+disputa_line_sample <- st_sample(disputa_line, 400, type="regular")
+pnt_disputaBrk_400 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 200, type="regular")
+pnt_disputaBrk_200 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 100, type="regular")
+pnt_disputaBrk_100 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 50, type="regular")
+pnt_disputaBrk_50 <- st_cast(disputa_line_sample, "POINT")
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_disputaBrk_400, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$dist_brk400<-distMin
+nl13Shp_pixels_info_v2$brkfe400<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_disputaBrk_200, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$dist_brk200<-distMin
+nl13Shp_pixels_info_v2$brkfe200<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_disputaBrk_100, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$dist_brk100<-distMin
+nl13Shp_pixels_info_v2$brkfe100<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_disputaBrk_50, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$dist_brk50<-distMin
+nl13Shp_pixels_info_v2$brkfe50<-brkIndexUnique[, 'col']
+
+
+#---------------------------------------------------------------------------------------
+## EXPORTING THE SHAPEFILE AS AN SP OBJECT:
+#
+#---------------------------------------------------------------------------------------
+# Converting from sf to sp object
+nl13Shp_pixels_info_sp_v2 <- as(nl13Shp_pixels_info_v2, Class='Spatial')
 
 #Exporting the shape with additional info 
-writeOGR(obj=nl13Shp_pixels_info_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=nl13Shp_pixels_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #---------------------------------------------------------------------------------------
@@ -282,7 +399,10 @@ tm_shape(nl13Shp_pixels_info) +
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/bean_pixel.pdf")
 
 
-
+tm_shape(slvShp) + 
+  tm_borders(col='black', lwd = 2, lty = "solid", alpha = NA)+
+  tm_shape(pnt_disputaBrk_200) +
+  tm_symbols(col = "pink", scale = .5) 
 
 
 

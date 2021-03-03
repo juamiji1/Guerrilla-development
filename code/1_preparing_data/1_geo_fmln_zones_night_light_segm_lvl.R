@@ -38,7 +38,7 @@ library(transformr)
 library(tmap)
 library(raster)
 library(exactextractr)
-
+library(matrixStats)
 
 #---------------------------------------------------------------------------------------
 ## PREPARING SHAPEFILES OF FMLN ZONES:
@@ -63,6 +63,10 @@ expansionShp <- st_transform(expansionShp, crs = slv_crs)
 #Importing FMLN disputed zones
 disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa")
 disputaShp <- st_transform(disputaShp, crs = slv_crs)
+
+#Importing the line break for each 5 kms
+#disputaBrk <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa_segments")
+#disputaBrk <- st_transform(disputaBrk, crs = slv_crs)
 
 #Importing hidrography shapes
 lakeShp <- st_read(dsn = "gis/Hidrografia", layer = "lagoA_merge")
@@ -240,7 +244,7 @@ slvShp_segm_info$wmean_elev2 <- exact_extract(elevation_mask, slvShp_segm_info, 
 intersection <- st_intersection(x = slvShp_segm_info, y = hospitales_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  count()
+  summarise(n=n())
 
 slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
 slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
@@ -259,6 +263,109 @@ names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
 names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_sch'
 
 #---------------------------------------------------------------------------------------
+## INCLUDING THE LINE BREAK FE:
+#
+#---------------------------------------------------------------------------------------
+#Sampling points int he borders for the RDD
+set.seed(1234)
+
+disputa_line_sample <- st_sample(disputa_line, 400, type="regular")
+pnt_disputaBrk_400 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 200, type="regular")
+pnt_disputaBrk_200 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 100, type="regular")
+pnt_disputaBrk_100 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 50, type="regular")
+pnt_disputaBrk_50 <- st_cast(disputa_line_sample, "POINT")
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_400, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk400<-distMin
+slvShp_segm_info$brkfe400<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_200, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk200<-distMin
+slvShp_segm_info$brkfe200<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_100, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk100<-distMin
+slvShp_segm_info$brkfe100<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_50, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk50<-distMin
+slvShp_segm_info$brkfe50<-brkIndexUnique[, 'col']
+
+#---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
 #
 #---------------------------------------------------------------------------------------
@@ -267,7 +374,6 @@ slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
 #Exporting the shapefile 
 writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-
 
 #---------------------------------------------------------------------------------------
 ## VISUAL CHECKS:

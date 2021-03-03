@@ -93,9 +93,13 @@ tm_shape(slvShp) +
   tm_shape(control_line_sample) +
   tm_symbols(col = "red", scale = .5) 
 
+tm_shape(slvShp) + 
+  tm_borders(col='black', lwd = 2, lty = "solid", alpha = NA)+
+  tm_shape(disputa_line_sample) +
+  tm_symbols(col = "pink", scale = .5) 
 
 
 
-
-
-
+#Calculating the distance of each census segment to disputed border breaks
+y<-head(nl13Shp_pixels_info_v2, n=50)
+distBrk<-st_distance(y, pnt_disputa_line_sample, by_element = FALSE)
