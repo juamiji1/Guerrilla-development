@@ -105,6 +105,32 @@ local h=e(h_l)
 local n=e(N_h_l)+e(N_h_r)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
 
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+rdrobust total_pop_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog_always.tex", tex(frag) ctitle("Total Population") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote replace 
+
+rdrobust sex_sh_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog_always.tex", tex(frag) ctitle("Gender Share") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
+
+rdrobust mean_age_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog_always.tex", tex(frag) ctitle("Mean Age") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append   
+
+rdrobust had_child_rate_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog_always.tex", tex(frag) ctitle("Fertility Rate") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
+
+rdrobust teen_pregnancy_rate_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog_always.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
+
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to education
 *-------------------------------------------------------------------------------
@@ -134,6 +160,23 @@ local h=e(h_l)
 local n=e(N_h_l)+e(N_h_r)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_educ.tex", tex(frag) ctitle("Years of Education") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
 
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+rdrobust literacy_rate_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_educ_always.tex", tex(frag) ctitle("Literacy Rate") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote replace  
+
+rdrobust asiste_rate_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_educ_always.tex", tex(frag) ctitle("Assist(ed) School") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
+
+rdrobust mean_educ_years_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_educ_always.tex", tex(frag) ctitle("Years of Education") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
+
+
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to labor markets
 *-------------------------------------------------------------------------------
@@ -158,6 +201,27 @@ local h=e(h_l)
 local n=e(N_h_l)+e(N_h_r)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_labor.tex", tex(frag) ctitle("Weekly Working Hours") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
 
+*Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
+rdrobust pea_pet_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_labor_always.tex", tex(frag) ctitle("Active Population") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote replace 
+
+rdrobust po_pet_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_labor_always.tex", tex(frag) ctitle("Working Population") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
+
+rdrobust wage_pet_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_labor_always.tex", tex(frag) ctitle("Salaried Population") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
+
+rdrobust work_hours_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_labor_always.tex", tex(frag) ctitle("Weekly Working Hours") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
+
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to migration
 *-------------------------------------------------------------------------------
@@ -181,6 +245,16 @@ rdrobust remittance_rate z_run_dsptd if within_expansion==0 & within_control==0,
 local h=e(h_l) 
 local n=e(N_h_l)+e(N_h_r)
 outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_migr.tex", tex(frag) ctitle("Remittances Share") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
+
+rdrobust always_sh z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_migr.tex", tex(frag) ctitle("Non Moving Share") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
+
+rdrobust always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
+local h=e(h_l) 
+local n=e(N_h_l)+e(N_h_r)
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_migr.tex", tex(frag) ctitle("Non Moving Population") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append 
 
 
 *-------------------------------------------------------------------------------

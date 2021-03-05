@@ -164,6 +164,10 @@ recode S06P02 (2=0)
 gen female=1 if S06P02==0 
 gen male=1 if S06P02==1
 
+*Has always lived in the same place 
+tab S06P08A1 
+recode S06P08A1 (2 3=0), gen(always)  
+
 *Age
 tab S06P03A
 gen age_range=1 if S06P03A<15
@@ -317,8 +321,36 @@ preserve
 
 restore 
 
+preserve
+
+	*Keeping only population that never left the segment 
+	keep if always==1
+		
+	*Collapsing at the segment level 
+	collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male, by(segm_id)
+
+	*Tasa de ocupacion 
+	gen to=po/pea
+
+	*Tasa de desempleo 
+	gen td=pd/pea 
+
+	*Normalizing the active and employed population over pet
+	gen po_pet=po/pet
+	gen pea_pet=pea/pet
+	gen wage_pet=wage/pet 
+	
+	*Renaming variables
+	rename sex_sh-wage_pet =_always
+	
+	*Saving the data 
+	tempfile Always
+	save `Always', replace 	
+
+restore
+
 *Collapsing at the segment level 
-collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 (sum) pet po pd pea nea wage nowage total_pop female male, by(segm_id)
+collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male always, by(segm_id)
 
 *Tasa de ocupacion 
 gen to=po/pea
@@ -337,10 +369,12 @@ merge 1:1 segm_id using `Gender', nogen
 merge 1:1 segm_id using `Age', nogen 
 merge 1:1 segm_id using `Mortality', nogen 
 merge 1:1 segm_id using `Migration', nogen 
+merge 1:1 segm_id using `Always', nogen 
 
 
 *Saving the data 
 save "${data}/temp\census07_segm_lvl.dta", replace 
+
 
 
 

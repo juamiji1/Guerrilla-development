@@ -152,6 +152,12 @@ elev_1500<- reclassify(elevation_mask, c(0,1500, NA, 1500, Inf, 1))
 #Calculating centroid of segments
 slvShp_segm_centroid <-st_centroid(slvShp_segm)
 
+#Extracting coordinates as matrix for future use
+segm_centroid_coords <- do.call(rbind, st_geometry(slvShp_segm_centroid)) %>% 
+  as_tibble() %>% setNames(c("lon","lat"))
+segm_centroid_coords <- segm_centroid_coords %>% as.data.frame() %>%
+  data.matrix()
+
 #Calculating the minimum distance of each segment to the FMLN zones 
 slvShp_segm_int <- slvShp_segm
 
@@ -269,6 +275,9 @@ names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_sch'
 #Sampling points int he borders for the RDD
 set.seed(1234)
 
+disputa_line_sample <- st_sample(disputa_line, 1000, type="regular")
+pnt_disputaBrk_1000 <- st_cast(disputa_line_sample, "POINT")
+
 disputa_line_sample <- st_sample(disputa_line, 400, type="regular")
 pnt_disputaBrk_400 <- st_cast(disputa_line_sample, "POINT")
 
@@ -280,6 +289,33 @@ pnt_disputaBrk_100 <- st_cast(disputa_line_sample, "POINT")
 
 disputa_line_sample <- st_sample(disputa_line, 50, type="regular")
 pnt_disputaBrk_50 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 25, type="regular")
+pnt_disputaBrk_25 <- st_cast(disputa_line_sample, "POINT")
+
+disputa_line_sample <- st_sample(disputa_line, 10, type="regular")
+pnt_disputaBrk_10 <- st_cast(disputa_line_sample, "POINT")
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_1000, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk1000<-distMin
+slvShp_segm_info$brkfe1000<-brkIndexUnique[, 'col']
 
 #Calculating the distance of each census segment to disputed border breaks
 distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_400, by_element = FALSE)
@@ -365,10 +401,56 @@ brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
 slvShp_segm_info$dist_brk50<-distMin
 slvShp_segm_info$brkfe50<-brkIndexUnique[, 'col']
 
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_25, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk25<-distMin
+slvShp_segm_info$brkfe25<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_10, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$dist_brk10<-distMin
+slvShp_segm_info$brkfe10<-brkIndexUnique[, 'col']
+
 #---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
 #
 #---------------------------------------------------------------------------------------
+#Adding segment centroid coordinates to the shape 
+#slvShp_segm_info$xxx<-segm_centroid_coords[,1]
+#slvShp_segm_info$yyy<-segm_centroid_coords[,2]
+
 # Converting from sf to sp object
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 

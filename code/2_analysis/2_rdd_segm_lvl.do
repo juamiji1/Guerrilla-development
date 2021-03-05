@@ -334,26 +334,32 @@ outreg2 using "${tables}\rdd_robustness_dvsnd_segm_p2.tex", tex(frag) ctitle("ar
 *-------------------------------------------------------------------------------
 * Robustness with disputed line breaks FE:
 *-------------------------------------------------------------------------------
-*Checking the specification 
-rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(uniform)
-gl h=e(h_l) 
-
-reg nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
-
 *RDD with break fe and triangular weights  
 rdrobust nl13_density z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular)
 gl h=e(h_l) 
 
-cap drop weights
-gen weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd<0 & z_run_dsptd>=-${h}
-replace weights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & z_run_dsptd>=0 & z_run_dsptd<=${h}
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_dsptd/${h})) if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}
 
-reg nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+gl segments "10 25 50 100 200 400 1000"
+foreach s of global segments{
+	 *Main specification
+	reg nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=tweights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, r
+	outreg2 using "${tables}\rdd_dvsnd_segm_`s'.tex", tex(frag) keep(within_disputed) ctitle("Night light") addtext("Controls", "dist", "N breaks FE", "0") addstat("Bandwidth", ${h}) nocons nonote replace 
+	
+	*Specification including break FE
+	reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=tweights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_`s')
+	outreg2 using "${tables}\rdd_dvsnd_segm_`s'.tex", tex(frag) keep(within_disputed) ctitle("Night light") addtext("Controls", "dist", "N breaks FE", "`s'") addstat("Bandwidth", ${h}) nocons nonote append
+	 *Dell specification including xy coord and break FE
+	reghdfe nl13_density within_disputed x_coord y_coord [aw=tweights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_`s')
+	outreg2 using "${tables}\rdd_dvsnd_segm_`s'.tex", tex(frag) keep(within_disputed) ctitle("Night light") addtext("Controls", "XY", "N breaks FE", "`s'") addstat("Bandwidth", ${h}) nocons nonote append 
+	
+	*Combined specification
+	reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd x_coord y_coord [aw=tweights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_`s')
+	outreg2 using "${tables}\rdd_dvsnd_segm_`s'.tex", tex(frag) keep(within_disputed) ctitle("Night light") addtext("Controls", "distXY", "N breaks FE", "`s'") addstat("Bandwidth", ${h}) nocons nonote append 
 
-reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_400)
-reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_200)
-reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_100)
-reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=weights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_50)
+}
 
 *-------------------------------------------------------------------------------
 * Sharp RDD plots:
