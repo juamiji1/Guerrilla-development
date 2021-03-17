@@ -13,7 +13,7 @@
 #install.packages('bit64')
 #install.packages('raster')
 #install.packages('exactextractr')
- 
+
 library(data.table)
 library(rgdal)
 library(rgeos)
@@ -54,16 +54,16 @@ slvShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_borders_census2007"
 slv_crs <- st_crs(slvShp)
 
 #Importing FMLN control zones
-controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_control")
-controlShp <- st_transform(controlShp, crs = slv_crs)
+controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_control_onu_91")
+st_crs(controlShp) <- slv_crs
 
 #Importing FMLN expansion zones
 expansionShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_expansion")
 expansionShp <- st_transform(expansionShp, crs = slv_crs)
 
 #Importing FMLN disputed zones
-disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa")
-disputaShp <- st_transform(disputaShp, crs = slv_crs)
+disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_fmln_onu_91")
+st_crs(disputaShp) <- slv_crs
 
 #Importing the line break for each 5 kms
 #disputaBrk <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa_segments")
@@ -461,7 +461,7 @@ slvShp_segm_info$brkfe10<-brkIndexUnique[, 'col']
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
 #Exporting the shapefile 
-writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #---------------------------------------------------------------------------------------
@@ -469,57 +469,10 @@ writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research
 #
 #---------------------------------------------------------------------------------------
 #Plotting
-tm_shape(slvShp_segm_info) + 
-  tm_polygons(col = "mean_nl", lwd=0.02, title="Mean of Night Light (2013)")+
-  tm_layout(frame = FALSE)
-
-tm_shape(y1) + 
-  tm_polygons(col = "dist_control", lwd=0.02, title="")+
-  tm_layout(frame = FALSE)+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_shape(slvShp) + 
-  tm_borders()+ 
-  tm_layout(legend.show=FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_nl13_cntrl_intersect.pdf")
-
-tm_shape(y2) + 
-  tm_polygons(col = "within_control", lwd=0.02, title="Within control")+
-  tm_layout(frame = FALSE)+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_shape(slvShp) + 
-  tm_borders()+ 
-  tm_layout(legend.show=FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_nl13_cntrl_centroid.pdf")
-
-#Hospitals and segments map 
-tm_shape(slvShp_segm_info) + 
-  tm_polygons(col = "n_hosp", lwd=0.02, title="N hosp)")+
-  tm_layout(frame = FALSE)
-
-#Hospitals and segments map 
-tm_shape(slvShp_segm_info) + 
-  tm_borders()+
-  tm_shape(hospitales_sf) + 
-  tm_dots(size=0.2,col="red")+
-  tm_add_legend(type="symbol", col="red", title="Hospital")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_hospitals.pdf")
-
-
-tm_shape(slvShp_segm_info) + 
-  tm_polygons(col = "n_hosp", lwd=0.02, title="Number of Hospitals")+
-  tm_layout(frame = FALSE)
-
-#Schools and segments map 
-tm_shape(slvShp_segm_info) + 
-  tm_borders()+
-  tm_shape(schools_sf) + 
-  tm_dots(size=0.2,col="blue")+
-  tm_add_legend(type="symbol", col="blue", title="Centro Educativo")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_schools.pdf")
+tm_shape(disputa_line)+
+  tm_lines(col='pink') +
+  tm_shape(slvShp_segm) + 
+  tm_borders()
 
 
 
@@ -527,7 +480,4 @@ tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/
 
 
 
-
-
-
-#END.
+#END

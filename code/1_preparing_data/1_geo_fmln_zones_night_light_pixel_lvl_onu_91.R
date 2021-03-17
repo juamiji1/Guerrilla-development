@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------------------------------------
 # PROJECT: Guerrillas and Development 
-# TOPIC: This file prepare the spatial data at the pixel level 
+# TOPIC: This file prepare the spatial data at the pixel level for the ONU map 
 # AUTHOR: JMJR
 # DATE: 
 #--------------------------------------------------------------------------------------------------
@@ -52,20 +52,16 @@ slvShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_borders_census2007"
 slv_crs <- st_crs(slvShp)
 
 #Importing FMLN control zones
-controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_control")
-controlShp <- st_transform(controlShp, crs = slv_crs)
+controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_control_onu_91")
+st_crs(controlShp) <- slv_crs
 
 #Importing FMLN expansion zones
 expansionShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_expansion")
 expansionShp <- st_transform(expansionShp, crs = slv_crs)
 
 #Importing FMLN disputed zones
-disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa")
-disputaShp <- st_transform(disputaShp, crs = slv_crs)
-
-#Importing the line break for each 5 kms
-#disputaBrk <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa_segments")
-#disputaBrk <- st_transform(disputaBrk, crs = slv_crs)
+disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_fmln_onu_91")
+st_crs(disputaShp) <- slv_crs
 
 #Importing hidrography shapes
 lakeShp <- st_read(dsn = "gis/Hidrografia", layer = "lagoA_merge")
@@ -380,49 +376,22 @@ nl13Shp_pixels_info_v2$brkfe10<-brkIndexUnique[, 'col']
 nl13Shp_pixels_info_sp_v2 <- as(nl13Shp_pixels_info_v2, Class='Spatial')
 
 #Exporting the shape with additional info 
-writeOGR(obj=nl13Shp_pixels_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=nl13Shp_pixels_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_pixel_lvl_vars", layer="nl13Shp_pixels_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #---------------------------------------------------------------------------------------
 ## PLOTTING VISUALIZATION CHECKS:
 #
 #---------------------------------------------------------------------------------------
-tm_shape(nl13Shp_pixels_int) + 
-  tm_polygons('within_control', palette='Greys', alpha= .25) +
-  tm_shape(slvShp) + 
-  tm_borders()
-
 tm_shape(control_line)+
   tm_lines(col='red') +
   tm_shape(slvShp) + 
   tm_borders()
 
 tm_shape(disputa_line)+
-  tm_lines(col='red') +
+  tm_lines(col='pink') +
   tm_shape(slvShp) + 
   tm_borders()
-
-tmap_mode("plot")
-
-tm_shape(y1) + 
-  tm_polygons(col = "dist_control", lwd=0.02, title="")+
-  tm_layout(frame = FALSE)+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_shape(slvShp) + 
-  tm_borders()+ 
-  tm_layout(legend.show=FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_intersect.pdf")
-
-tm_shape(y2) + 
-  tm_polygons(col = "within_control", lwd=0.02, title="Within control")+
-  tm_layout(frame = FALSE)+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_shape(slvShp) + 
-  tm_borders()+ 
-  tm_layout(legend.show=FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/pixel_nl13_cntrl_centroid.pdf")
 
 #Exporting map of night light density and FMLN zones
 tm_shape(nl13_mask) + 
@@ -431,60 +400,16 @@ tm_shape(nl13_mask) +
   tm_borders()+
   tm_shape(disputaShp) + 
   tm_borders(col='pink', lwd = 3, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="pink", lwd=10, title="Disputed FMLN zone")+
-  tm_shape(expansionShp) + 
-  tm_borders(col='blue', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="blue", lwd=10, title="Expansion FMLN zone")+
+  tm_add_legend(type="line", col="pink", lwd=10, title="FMLN-Disputed Zone")+
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="Controlled FMLN zone")+
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Controlled Zone")+
   tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
-
-
-tm_shape(nl13Shp_pixels) + 
-  tm_borders()
-
-tm_shape(elevation) + 
-  tm_raster(title='Elevation')
-
-tm_shape(cacao) + 
-  tm_raster(title='Cacao')
-
-tm_shape(bean) + 
-  tm_raster(title='Bean')
-
-tm_shape(nl13Shp_pixels_info) +
-  tm_polygons("value", title="Night light")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/night_light_13_pixel.pdf")
-
-tm_shape(nl13Shp_pixels_info) +
-  tm_polygons("mean_elev", title="Elevation")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elevation_pixel.pdf")
-
-tm_shape(nl13Shp_pixels_info) +
-  tm_polygons("mean_cacao", title="Cacao yield")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/cacao_pixel.pdf")
-
-tm_shape(nl13Shp_pixels_info) +
-  tm_polygons("mean_bean", title="Bean yield")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/bean_pixel.pdf")
-
-
-tm_shape(slvShp) + 
-  tm_borders(col='black', lwd = 1, lty = "solid", alpha = NA)+
-  tm_shape(pnt_disputaBrk_200) +
-  tm_symbols(col = "pink", scale = .5)+
-  tm_add_legend(type="symbol", col="pink", title="Border break")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/disputa_border_break_fe.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/night_light_13_salvador_onu_91.pdf")
 
 
 
 
-#END.
 
+
+#END

@@ -313,6 +313,7 @@ foreach s of global segments{
 	*Specification including break FE
 	reghdfe nl13_density within_disputed z_run_dsptd i.within_disputed#c.z_run_dsptd [aw=tweights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_`s')
 	outreg2 using "${tables}\rdd_dvsnd_`s'.tex", tex(frag) keep(within_disputed) ctitle("Night light") addtext("Controls", "dist", "N breaks FE", "`s'") addstat("Bandwidth", ${h}) nocons nonote append
+	
 	 *Dell specification including xy coord and break FE
 	reghdfe nl13_density within_disputed x_coord y_coord [aw=tweights] if within_expansion==0 & within_control==0 & abs(z_run_dsptd)<=${h}, vce(r) a(i.disputa_break_fe_`s')
 	outreg2 using "${tables}\rdd_dvsnd_`s'.tex", tex(frag) keep(within_disputed) ctitle("Night light") addtext("Controls", "XY", "N breaks FE", "`s'") addstat("Bandwidth", ${h}) nocons nonote append 

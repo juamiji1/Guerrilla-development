@@ -103,7 +103,7 @@ outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog.tex", tex(frag) ctitle(
 rdrobust teen_pregnancy_rate z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
 local h=e(h_l) 
 local n=e(N_h_l)+e(N_h_r)
-outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog.tex", tex(frag) ctitle("Teenage Pregnancy Rate") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
+outreg2 using "${tables}\rdd_dvsnd_mechanisms_segm_demog.tex", tex(frag) ctitle("Teen Pregnancy Rate") addstat("Eff. Observations",`n',"Bandwidth", `h',"Polynomial", 1) nonote append  
 
 *Between pixels within and outside disputed FMLN zones (not including pixels in controlled and expansion zones)
 rdrobust total_pop_always z_run_dsptd if within_expansion==0 & within_control==0, all kernel(triangular) covs(elevation)
