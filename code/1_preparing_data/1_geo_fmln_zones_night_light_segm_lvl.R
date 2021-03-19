@@ -301,6 +301,15 @@ pnt_disputaBrk_25 <- st_cast(disputa_line_sample, "POINT")
 disputa_line_sample <- st_sample(disputa_line, 10, type="regular")
 pnt_disputaBrk_10 <- st_cast(disputa_line_sample, "POINT")
 
+control_line_sample <- st_sample(control_line, 200, type="regular")
+pnt_controlBrk_200 <- st_cast
+
+control_line_sample <- st_sample(control_line, 100, type="regular")
+pnt_controlBrk_100 <- st_cast(control_line_sample, "POINT")
+
+control_line_sample <- st_sample(control_line, 50, type="regular")
+pnt_controlBrk_50 <- st_cast(control_line_sample, "POINT")
+
 #Calculating the distance of each census segment to disputed border breaks
 distBrk<-st_distance(slvShp_segm_info, pnt_disputaBrk_1000, by_element = FALSE)
 

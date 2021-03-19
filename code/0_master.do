@@ -56,13 +56,24 @@ do "${do}\1_preparing_data\1_prepare_night_light_13_segm_lvl.do"
 *
 *-------------------------------------------------------------------------------
 *Results using the 1981 map
-do "${do}\2_analysis\2_rdd_pixel_lvl.do"
-do "${do}\2_analysis\2_rdd_segm_lvl.do"
-do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms.do"
+*do "${do}\2_analysis\2_rdd_pixel_lvl.do"
+*do "${do}\2_analysis\2_rdd_segm_lvl.do"
+*do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms.do"
 
 *Results using the 1991 map
-do "${do}\2_analysis\2_rdd_pixel_lvl_onu_91.do"
-do "${do}\2_analysis\2_rdd_segm_lvl_onu_91.do"
+do "${do}\2_analysis\2_rdd_pixel_lvl_onu_91_dvsnd.do"
+do "${do}\2_analysis\2_rdd_pixel_lvl_onu_91_gvsng.do"
+do "${do}\2_analysis\2_rdd_pixel_lvl_onu_91_gvsng_interac.do"
+
+do "${do}\2_analysis\2_rdd_segm_lvl_onu_91_dvsnd.do"
+do "${do}\2_analysis\2_rdd_segm_lvl_onu_91_gvsng.do"
+do "${do}\2_analysis\2_rdd_segm_lvl_onu_91_gvsng_interac.do"
+
+do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms_onu_91_dvsnd.do"
+do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms_onu_91_gvsng.do"
+do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms_onu_91_gvsng_interac.do"
+
+
 
 
 
