@@ -154,7 +154,7 @@ y2<-subset(nl13Shp_pixels_int, dist_control2<800 & within_control2==1)
 
 
 #---------------------------------------------------------------------------------------
-## cALCULATING THE NL DENSITY AT THE PIXEL LEVEL:
+## cALCULATING RASTER OUTCOMES AT THE PIXEL LEVEL:
 #
 #---------------------------------------------------------------------------------------
 nl13Shp_pixels_sp <- as(nl13Shp_pixels_int, Class='Spatial')
@@ -174,6 +174,10 @@ nl_crs <- crs(nl13)
 elevation <- projectRaster(elevation, crs=nl_crs)
 cacao <- projectRaster(cacao, crs=nl_crs)
 bean <- projectRaster(bean, crs=nl_crs)
+
+#Masking Elevation
+elevation_crop <- crop(elevation, slvShp_sp)
+elevation_mask <- mask(elevation_crop, mask=slvShp_sp)
 
 #Checking the CRS 
 crs(elevation)
@@ -224,6 +228,15 @@ pnt_disputaBrk_25 <- st_cast(disputa_line_sample, "POINT")
 
 disputa_line_sample <- st_sample(disputa_line, 10, type="regular")
 pnt_disputaBrk_10 <- st_cast(disputa_line_sample, "POINT")
+
+control_line_sample <- st_sample(control_line, 200, type="regular")
+pnt_controlBrk_200 <- st_cast(control_line_sample, "POINT")
+
+control_line_sample <- st_sample(control_line, 100, type="regular")
+pnt_controlBrk_100 <- st_cast(control_line_sample, "POINT")
+
+control_line_sample <- st_sample(control_line, 50, type="regular")
+pnt_controlBrk_50 <- st_cast(control_line_sample, "POINT")
 
 #Calculating the distance of each census segment to disputed border breaks
 distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_disputaBrk_1000, by_element = FALSE)
@@ -372,6 +385,70 @@ brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
 nl13Shp_pixels_info_v2$dist_brk10<-distMin
 nl13Shp_pixels_info_v2$brkfe10<-brkIndexUnique[, 'col']
 
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_controlBrk_200, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$cntrldist_brk200<-distMin
+nl13Shp_pixels_info_v2$cntrlbrkfe200<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_controlBrk_100, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$cntrldist_brk100<-distMin
+nl13Shp_pixels_info_v2$cntrlbrkfe100<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(nl13Shp_pixels_info_v2, pnt_controlBrk_50, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+nl13Shp_pixels_info_v2$cntrldist_brk50<-distMin
+nl13Shp_pixels_info_v2$cntrlbrkfe50<-brkIndexUnique[, 'col']
+
+
 #---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE AS AN SP OBJECT:
 #
@@ -431,15 +508,32 @@ tm_shape(nl13_mask) +
   tm_borders()+
   tm_shape(disputaShp) + 
   tm_borders(col='pink', lwd = 3, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="pink", lwd=10, title="Disputed FMLN zone")+
+  tm_add_legend(type="line", col="pink", lwd=10, title="FMLN-Disputed zone")+
   tm_shape(expansionShp) + 
   tm_borders(col='blue', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="blue", lwd=10, title="Expansion FMLN zone")+
+  tm_add_legend(type="line", col="blue", lwd=10, title="FMLN-Expansion zone")+
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="Controlled FMLN zone")+
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated zone")+
   tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/4-Results/Salvador/plots/night_light_13_salvador.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/night_light_13_salvador.pdf")
+
+#Exporting map of elevation and FMLN zones
+tm_shape(elevation_mask) + 
+  tm_raster(title='Elevation', palette="-RdYlGn") +
+  tm_shape(slvShp) + 
+  tm_borders()+
+  tm_shape(disputaShp) + 
+  tm_borders(col='pink', lwd = 3, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="pink", lwd=10, title="FMLN-Disputed Zone")+
+  tm_shape(expansionShp) + 
+  tm_borders(col='blue', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="blue", lwd=10, title="FMLN-Expansion zone")+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elevation_salvador.pdf")
 
 
 tm_shape(nl13Shp_pixels) + 
@@ -482,6 +576,17 @@ tm_shape(slvShp) +
   tm_add_legend(type="symbol", col="pink", title="Border break")+
   tm_layout(frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/disputa_border_break_fe.pdf")
+
+tm_shape(slvShp) + 
+  tm_borders(col='black', lwd = 1, lty = "solid", alpha = NA)+
+  tm_shape(pnt_controlBrk_200) +
+  tm_symbols(col = "red", scale = .5)+
+  tm_add_legend(type="symbol", col="red", title="Border break")+
+  tm_layout(frame = FALSE)
+
+
+
+
 
 
 

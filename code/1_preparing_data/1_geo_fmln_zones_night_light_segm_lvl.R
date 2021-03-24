@@ -302,7 +302,7 @@ disputa_line_sample <- st_sample(disputa_line, 10, type="regular")
 pnt_disputaBrk_10 <- st_cast(disputa_line_sample, "POINT")
 
 control_line_sample <- st_sample(control_line, 200, type="regular")
-pnt_controlBrk_200 <- st_cast
+pnt_controlBrk_200 <- st_cast(control_line_sample, "POINT")
 
 control_line_sample <- st_sample(control_line, 100, type="regular")
 pnt_controlBrk_100 <- st_cast(control_line_sample, "POINT")
@@ -456,6 +456,71 @@ brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
 #Adding information to shapefile
 slvShp_segm_info$dist_brk10<-distMin
 slvShp_segm_info$brkfe10<-brkIndexUnique[, 'col']
+
+
+
+#Calculating the distance of each census segment to control border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_200, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$cntrldist_brk200<-distMin
+slvShp_segm_info$cntrlbrkfe200<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_100, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$cntrldist_brk100<-distMin
+slvShp_segm_info$cntrlbrkfe100<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_50, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+slvShp_segm_info$cntrldist_brk50<-distMin
+slvShp_segm_info$cntrlbrkfe50<-brkIndexUnique[, 'col']
 
 
 #---------------------------------------------------------------------------------------
