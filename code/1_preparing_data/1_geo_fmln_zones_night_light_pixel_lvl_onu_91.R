@@ -162,37 +162,51 @@ writeOGR(obj=nl13Shp_pixels_sp, dsn="guerrilla_map", layer="nl13Shp_pixels_sp", 
 #Importing rasters 
 nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
 elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
+elevation2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/DEM.tif')
 cacao <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
 bean <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
 elevation <- projectRaster(elevation, crs=nl_crs)
+elevation2 <- projectRaster(elevation2, crs=nl_crs)
 cacao <- projectRaster(cacao, crs=nl_crs)
 bean <- projectRaster(bean, crs=nl_crs)
 
+elevation2<-resample(elevation2, elevation, method="bilinear")
+slope <- terrain(elevation2, opt='slope', unit='degrees', neighbors=4)
+
 #Checking the CRS 
 crs(elevation)
+crs(elevation2)
 crs(cacao)
 crs(bean)
 
 #Checking resolution
 res(nl13)
 res(elevation)
+res(elevation2)
 res(cacao)
 res(bean)
 
 #Cropping and masking the elevation raster to fit el salvador size
 elevation_crop <- crop(elevation, slvShp_sp)
+elevation2_crop <- crop(elevation2, slvShp_sp)
 elevation_mask <- mask(elevation_crop, mask=slvShp_sp)
+elevation2_mask <- mask(elevation2_crop, mask=slvShp_sp)
 
 #Averaging rasters by night light pixel 
+.rs.unloadPackage("tidyr")
 nl13Shp_pixels_info_sp <- extract(elevation, nl13Shp_pixels_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(nl13Shp_pixels_info_sp)[22] <- 'mean_elev'
 nl13Shp_pixels_info_sp <- extract(cacao, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(nl13Shp_pixels_info_sp)[23] <- 'mean_cacao'
 nl13Shp_pixels_info_sp <- extract(bean, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(nl13Shp_pixels_info_sp)[24] <- 'mean_bean'
+nl13Shp_pixels_info_sp <- extract(elevation2, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[25] <- 'mean_elev2'
+nl13Shp_pixels_info_sp <- extract(slope, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[26] <- 'mean_slope'
 
 #TRansforming from sp to sf 
 nl13Shp_pixels_info_v2 <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
@@ -518,6 +532,21 @@ tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/
 
 
 
+tm_shape(elevation_mask) + 
+  tm_raster(title='Elevation', palette="-RdYlGn") +
+  tm_shape(slvShp) + 
+  tm_borders()
+
+tm_shape(elev2) + 
+  tm_raster(title='Elevation2', palette="-RdYlGn") +
+  tm_shape(slvShp) + 
+  tm_borders()
+
+
+tm_shape(slope) + 
+  tm_raster(title='Elevation2', palette="-RdYlGn") +
+  tm_shape(slvShp) + 
+  tm_borders()
 
 
 #END

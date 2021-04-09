@@ -100,6 +100,18 @@ st_crs(slvShp)==st_crs(slvShp_segm)
 slvShp_segm_sp <- as(slvShp_segm, Class='Spatial')
 slvShp_sp <- as(slvShp, Class='Spatial')
 
+#Importing location of parroquias
+parroquias <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/parroquias/parroquias_coord.csv")
+parroquias_sf <- st_as_sf(parroquias, coords = c("longitude", "latitude"), crs = slv_crs)
+
+#Importing location of parroquias
+parr80 <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/parroquias/parr80_coord.csv")
+parr80_sf <- st_as_sf(parr80, coords = c("longitude", "latitude"), crs = slv_crs)
+
+#Importing location of parroquias franciscanas
+francis <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/parroquias/francis_coord.csv")
+francis_sf <- st_as_sf(francis, coords = c("longitude", "latitude"), crs = slv_crs)
+
 #Importing location of hospitals in 2015
 hospitales <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/minsalud/MINSAL_0.csv")
 hospitales_sf <- st_as_sf(hospitales, coords = c("LON", "LAT"), crs = slv_crs)
@@ -118,6 +130,7 @@ schools_sf <- st_as_sf(schools, coords = c("x", "y"), crs = slv_crs)
 #Importing the rasters 
 nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
 elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
+elevation2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/DEM.tif')
 cacao <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
 bean <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
 
@@ -127,11 +140,17 @@ elevation <- projectRaster(elevation, crs=nl_crs)
 cacao <- projectRaster(cacao, crs=nl_crs)
 bean <- projectRaster(bean, crs=nl_crs)
 
+#Resampling elevation and creating slope raster
+elevation2<-resample(elevation2, elevation, method="bilinear")
+slope <- terrain(elevation2, opt='slope', unit='degrees', neighbors=4)
+
 #Cropping and masking the raster to fit el salvador size
 nl13_crop <- crop(nl13, slvShp_sp)
 nl13_mask <- mask(nl13_crop, mask=slvShp_sp)
 elevation_crop <- crop(elevation, slvShp_sp)
 elevation_mask <- mask(elevation_crop, mask=slvShp_sp)
+elevation2_crop <- crop(elevation2, slvShp_sp)
+elevation2_mask <- mask(elevation2_crop, mask=slvShp_sp)
 cacao_crop <- crop(cacao, slvShp_sp)
 cacao_mask <- mask(cacao_crop, mask=slvShp_sp)
 bean_crop <- crop(bean, slvShp_sp)
@@ -237,6 +256,12 @@ names(slvShp_segm_info_sp)[43] <- 'sum_elev_3'
 slvShp_segm_info_sp <- extract(elev_1500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
 names(slvShp_segm_info_sp)[44] <- 'sum_elev_4'
 
+slvShp_segm_info_sp <- extract(elevation2, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[45] <- 'mean_elev2'
+
+slvShp_segm_info_sp <- extract(slope, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[46] <- 'mean_slope'
+
 #Transforming sp object to sf object 
 slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))
 
@@ -271,6 +296,39 @@ slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
 slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
 names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
 names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_sch'
+
+#Counting number of parroquias per segment 
+intersection <- st_intersection(x = slvShp_segm_info, y = parroquias_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  summarise(n=n())
+
+slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
+slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_parr'
+
+#Counting number of parroquias before 1980 per segment 
+intersection <- st_intersection(x = slvShp_segm_info, y = parr80_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  summarise(n=n())
+
+slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
+slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_pa80'
+
+#Counting number of parroquias franciscanas per segment 
+intersection <- st_intersection(x = slvShp_segm_info, y = francis_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  summarise(n=n())
+
+slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
+slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_fran'
 
 
 #---------------------------------------------------------------------------------------
@@ -456,7 +514,6 @@ brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
 #Adding information to shapefile
 slvShp_segm_info$dist_brk10<-distMin
 slvShp_segm_info$brkfe10<-brkIndexUnique[, 'col']
-
 
 
 #Calculating the distance of each census segment to control border breaks
