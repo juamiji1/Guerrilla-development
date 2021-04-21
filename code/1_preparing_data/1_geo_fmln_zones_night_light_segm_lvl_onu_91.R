@@ -133,6 +133,16 @@ elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Developmen
 elevation2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/DEM.tif')
 cacao <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
 bean <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
+cocoa <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Cocoa/data.asc')
+coffee <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Coffee/data.asc')
+cotton <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Cotton/data.asc')
+drice <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Dryland rice/data.asc')
+maize <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Maize/data.asc')
+bean2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Phaseaolus bean/data.asc')
+sugarcane <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Sugarcane/data.asc')
+wrice <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Wetland rice/data.asc')
+dhydro <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/dwater30.tif')
+kmhydro <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/kmwater30.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
@@ -142,18 +152,31 @@ bean <- projectRaster(bean, crs=nl_crs)
 
 #Resampling elevation and creating slope raster
 elevation2<-resample(elevation2, elevation, method="bilinear")
+dhydro<-resample(dhydro, elevation, method="bilinear")
+kmhydro<-resample(kmhydro, elevation, method="bilinear")
+
 slope <- terrain(elevation2, opt='slope', unit='degrees', neighbors=4)
 
 #Cropping and masking the raster to fit el salvador size
 nl13_crop <- crop(nl13, slvShp_sp)
 nl13_mask <- mask(nl13_crop, mask=slvShp_sp)
 elevation_crop <- crop(elevation, slvShp_sp)
-elevation_mask <- mask
 elevation2_crop <- crop(elevation2, slvShp_sp)
-elevation2_mask <- mask(elevation2_crop, mask=slvShp_sp)
 cacao_crop <- crop(cacao, slvShp_sp)
-cacao_mask <- mask(cacao_crop, mask=slvShp_sp)
 bean_crop <- crop(bean, slvShp_sp)
+cocoa_crop <- crop(cocoa, slvShp_sp)
+coffee_crop <- crop(coffee, slvShp_sp)
+cotton_crop <- crop(cotton, slvShp_sp)
+drice_crop <- crop(drice, slvShp_sp)
+maize_crop <- crop(maize, slvShp_sp)
+bean2_crop <- crop(bean2, slvShp_sp)
+sugarcane_crop <- crop(sugarcane, slvShp_sp)
+wrice_crop <- crop(wrice, slvShp_sp)
+
+#Masking 
+elevation_mask <- mask(elevation_crop, mask=slvShp_sp)
+elevation2_mask <- mask(elevation2_crop, mask=slvShp_sp)
+cacao_mask <- mask(cacao_crop, mask=slvShp_sp)
 bean_mask <- mask(bean_crop, mask=slvShp_sp)
 
 #Not considering zeros 
@@ -164,6 +187,7 @@ elev_0<- reclassify(elevation_mask, c(0,500, 1, 500, Inf, NA))
 elev_500<- reclassify(elevation_mask, c(0,500, NA, 500, 1000, 1, 1000, Inf, NA))
 elev_1000<- reclassify(elevation_mask, c(0,1000, NA, 1000, 1500, 1, 1500, Inf, NA))
 elev_1500<- reclassify(elevation_mask, c(0,1500, NA, 1500, Inf, 1))
+elev_high<- reclassify(elevation2_mask, c(0,399, NA))
 
 
 #---------------------------------------------------------------------------------------
@@ -261,6 +285,29 @@ names(slvShp_segm_info_sp)[45] <- 'mean_elev2'
 
 slvShp_segm_info_sp <- extract(slope, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(slvShp_segm_info_sp)[46] <- 'mean_slope'
+
+slvShp_segm_info_sp <- extract(cocoa_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[47] <- 'mean_cocoa'
+slvShp_segm_info_sp <- extract(coffee_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[48] <- 'mean_coffee'
+slvShp_segm_info_sp <- extract(cotton_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[49] <- 'mean_cotton'
+slvShp_segm_info_sp <- extract(drice_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[50] <- 'mean_drice'
+slvShp_segm_info_sp <- extract(maize_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[51] <- 'mean_maize'
+slvShp_segm_info_sp <- extract(bean2_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[52] <- 'mean_bean2'
+slvShp_segm_info_sp <- extract(sugarcane_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[53] <- 'mean_sugarcane'
+slvShp_segm_info_sp <- extract(wrice_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[54] <- 'mean_wrice'
+slvShp_segm_info_sp <- extract(elevation2, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[55] <- 'max_elev2'
+slvShp_segm_info_sp <- extract(dhydro, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[56] <- 'sum_dhydro'
+slvShp_segm_info_sp <- extract(kmhydro, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[57] <- 'sum_kmhydro'
 
 #Transforming sp object to sf object 
 slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))
@@ -588,6 +635,9 @@ slvShp_segm_info$cntrlbrkfe50<-brkIndexUnique[, 'col']
 #slvShp_segm_info$xxx<-segm_centroid_coords[,1]
 #slvShp_segm_info$yyy<-segm_centroid_coords[,2]
 
+slvShp_segm_info<-mutate(slvShp_segm_info, high_elev=mean_elev2)
+slvShp_segm_info$high_elev[slvShp_segm_info$high_elev < 300] <-NA
+
 # Converting from sf to sp object
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
@@ -627,6 +677,44 @@ tm_shape(slvShp_segm_info) +
   tm_add_legend(type="symbol", col="blue", title="Franciscana")+
   tm_layout(frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_parroquias.pdf")
+
+
+#Exporting map of elevation and FMLN zones
+tm_shape(elev_high) + 
+  tm_raster(title='Elevation', palette="-RdYlGn") +
+  tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
+
+
+tm_shape(elevation2_mask) + 
+  tm_raster(title='Elevation', palette="-RdYlGn") +
+  tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
+
+
+tm_shape(slvShp_segm_info) + 
+  tm_polygons(col='mean_elev2', title='Elevation', palette="-RdYlGn")+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_segm.pdf")
+
+tm_shape(slvShp_segm_info) + 
+  tm_polygons(col='high_elev', title='Elevation', palette="-RdYlGn")+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_high_segm.pdf")
 
 
 

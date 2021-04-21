@@ -156,8 +156,6 @@ y2<-subset(nl13Shp_pixels_int, dist_control2<800 & within_control2==1)
 nl13Shp_pixels_sp <- as(nl13Shp_pixels_int, Class='Spatial')
 crs(nl13Shp_pixels_sp)
 
-writeOGR(obj=nl13Shp_pixels_sp, dsn="guerrilla_map", layer="nl13Shp_pixels_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-
 ##Adding geographical controls information to the pixel shape
 #Importing rasters 
 nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
@@ -165,15 +163,25 @@ elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Developmen
 elevation2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/DEM.tif')
 cacao <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Cacao/res02_crav6190h_coco000a_yld.tif')
 bean <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/Phaseolus bean/res02_crav6190h_bean000a_yld.tif')
+cocoa <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Cocoa/data.asc')
+coffee <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Coffee/data.asc')
+cotton <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Cotton/data.asc')
+drice <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Dryland rice/data.asc')
+maize <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Maize/data.asc')
+bean2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Phaseaolus bean/data.asc')
+sugarcane <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Sugarcane/data.asc')
+wrice <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Wetland rice/data.asc')
+dhydro <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/dwater30.tif')
+kmhydro <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/kmwater30.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
 elevation <- projectRaster(elevation, crs=nl_crs)
-elevation2 <- projectRaster(elevation2, crs=nl_crs)
-cacao <- projectRaster(cacao, crs=nl_crs)
-bean <- projectRaster(bean, crs=nl_crs)
 
 elevation2<-resample(elevation2, elevation, method="bilinear")
+dhydro<-resample(dhydro, elevation, method="bilinear")
+kmhydro<-resample(kmhydro, elevation, method="bilinear")
+
 slope <- terrain(elevation2, opt='slope', unit='degrees', neighbors=4)
 
 #Checking the CRS 
@@ -192,8 +200,20 @@ res(bean)
 #Cropping and masking the elevation raster to fit el salvador size
 elevation_crop <- crop(elevation, slvShp_sp)
 elevation2_crop <- crop(elevation2, slvShp_sp)
+cocoa_crop <- crop(cocoa, slvShp_sp)
+coffee_crop <- crop(coffee, slvShp_sp)
+cotton_crop <- crop(cotton, slvShp_sp)
+drice_crop <- crop(drice, slvShp_sp)
+maize_crop <- crop(maize, slvShp_sp)
+bean2_crop <- crop(bean2, slvShp_sp)
+sugarcane_crop <- crop(sugarcane, slvShp_sp)
+wrice_crop <- crop(wrice, slvShp_sp)
+
+#Masking
 elevation_mask <- mask(elevation_crop, mask=slvShp_sp)
 elevation2_mask <- mask(elevation2_crop, mask=slvShp_sp)
+cocoa_mask <- mask(cocoa_crop, mask=slvShp_sp)
+
 
 #Averaging rasters by night light pixel 
 .rs.unloadPackage("tidyr")
@@ -207,6 +227,29 @@ nl13Shp_pixels_info_sp <- extract(elevation2, nl13Shp_pixels_info_sp, fun=mean, 
 names(nl13Shp_pixels_info_sp)[25] <- 'mean_elev2'
 nl13Shp_pixels_info_sp <- extract(slope, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
 names(nl13Shp_pixels_info_sp)[26] <- 'mean_slope'
+nl13Shp_pixels_info_sp <- extract(cocoa_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[27] <- 'mean_cocoa'
+nl13Shp_pixels_info_sp <- extract(coffee_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[28] <- 'mean_coffee'
+nl13Shp_pixels_info_sp <- extract(cotton_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[29] <- 'mean_cotton'
+nl13Shp_pixels_info_sp <- extract(drice_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[30] <- 'mean_drice'
+nl13Shp_pixels_info_sp <- extract(maize_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[31] <- 'mean_maize'
+nl13Shp_pixels_info_sp <- extract(bean2_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[32] <- 'mean_bean2'
+nl13Shp_pixels_info_sp <- extract(sugarcane_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[33] <- 'mean_sugarcane'
+nl13Shp_pixels_info_sp <- extract(wrice_crop, nl13Shp_pixels_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[34] <- 'mean_wrice'
+nl13Shp_pixels_info_sp <- extract(elevation2, nl13Shp_pixels_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[35] <- 'max_elev2'
+nl13Shp_pixels_info_sp <- extract(dhydro, nl13Shp_pixels_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[36] <- 'sum_dhydro'
+nl13Shp_pixels_info_sp <- extract(kmhydro, nl13Shp_pixels_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
+names(nl13Shp_pixels_info_sp)[37] <- 'sum_kmhydro'
+
 
 #TRansforming from sp to sf 
 nl13Shp_pixels_info_v2 <- st_as_sf(nl13Shp_pixels_info_sp, coords = c('y', 'x'))
@@ -547,6 +590,20 @@ tm_shape(slope) +
   tm_raster(title='Elevation2', palette="-RdYlGn") +
   tm_shape(slvShp) + 
   tm_borders()
+
+
+
+tm_shape(dhydro) + 
+  tm_raster(title='', palette="-RdYlGn") +
+  tm_shape(slvShp) + 
+  tm_borders()
+
+tm_shape(kmhydro) + 
+  tm_raster(title='', palette="-RdYlGn") +
+  tm_shape(slvShp) + 
+  tm_borders()
+
+
 
 
 #END
