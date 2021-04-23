@@ -701,7 +701,7 @@ tm_shape(elevation2_mask) +
 
 
 tm_shape(slvShp_segm_info) + 
-  tm_polygons(col='mean_elev2', title='Elevation', palette="-RdYlGn")+
+  tm_polygons(col='mean_elev2', title='Altitude', palette="-RdYlGn")+
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
   tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
@@ -709,13 +709,21 @@ tm_shape(slvShp_segm_info) +
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_segm.pdf")
 
 tm_shape(slvShp_segm_info) + 
-  tm_polygons(col='high_elev', title='Elevation', palette="-RdYlGn")+
+  tm_polygons(col='high_elev', title='Altitude', palette="-RdYlGn")+
   tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
   tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
   tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_high_segm.pdf")
 
+
+tm_shape(slvShp) + 
+  tm_borders()+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/fmln_dominated.pdf")
 
 
 

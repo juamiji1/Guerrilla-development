@@ -141,7 +141,7 @@ forval c=1/40{
 	mat coef4[3,`c']= r(ub)
 	
 	*Estimating rail results
-	reghdfe rail within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe rail_road within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	lincom within_control	
 	mat coef5[1,`c']= r(estimate) 
 	mat coef5[2,`c']= r(lb)
@@ -245,7 +245,7 @@ coefplot (mat(coef4[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert re
 gr export "${plots}\rdd_dvsnd_road_bw_robustness_segm_91_p25.pdf", as(pdf) replace 
 
 coefplot (mat(coef5[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)")
-gr export "${plots}\rdd_dvsnd_rail_bw_robustness_segm_91_p25.pdf", as(pdf) replace 
+gr export "${plots}\rdd_dvsnd_rail_road_bw_robustness_segm_91_p25.pdf", as(pdf) replace 
 
 coefplot (mat(coef6[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)")
 gr export "${plots}\rdd_dvsnd_cacao_bw_robustness_segm_91_p25.pdf", as(pdf) replace 
@@ -331,7 +331,7 @@ forval c=1/40{
 	mat coef4[3,`c']= r(ub)
 	
 	*Estimating rail results
-	reghdfe rail within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe rail_road within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	lincom within_control	
 	mat coef5[1,`c']= r(estimate) 
 	mat coef5[2,`c']= r(lb)
@@ -435,7 +435,7 @@ coefplot (mat(coef4[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert re
 gr export "${plots}\rdd_dvsnd_road_bw_robustness_segm_91_p50.pdf", as(pdf) replace 
 
 coefplot (mat(coef5[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)")
-gr export "${plots}\rdd_dvsnd_rail_bw_robustness_segm_91_p50.pdf", as(pdf) replace 
+gr export "${plots}\rdd_dvsnd_rail_road_bw_robustness_segm_91_p50.pdf", as(pdf) replace 
 
 coefplot (mat(coef6[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)")
 gr export "${plots}\rdd_dvsnd_cacao_bw_robustness_segm_91_p50.pdf", as(pdf) replace 
