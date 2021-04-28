@@ -143,6 +143,7 @@ sugarcane <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Developmen
 wrice <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/FAO/New/Wetland rice/data.asc')
 dhydro <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/dwater30.tif')
 kmhydro <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/kmwater30.tif')
+flow <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/Hidrografia/flow.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
@@ -154,6 +155,7 @@ bean <- projectRaster(bean, crs=nl_crs)
 elevation2<-resample(elevation2, elevation, method="bilinear")
 dhydro<-resample(dhydro, elevation, method="bilinear")
 kmhydro<-resample(kmhydro, elevation, method="bilinear")
+flow<-resample(flow, elevation, method="bilinear")
 
 slope <- terrain(elevation2, opt='slope', unit='degrees', neighbors=4)
 
@@ -308,6 +310,9 @@ slvShp_segm_info_sp <- extract(dhydro, slvShp_segm_info_sp, fun=sum, na.rm=TRUE,
 names(slvShp_segm_info_sp)[56] <- 'sum_dhydro'
 slvShp_segm_info_sp <- extract(kmhydro, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
 names(slvShp_segm_info_sp)[57] <- 'sum_kmhydro'
+
+slvShp_segm_info_sp <- extract(flow, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
+names(slvShp_segm_info_sp)[58] <- 'mean_flow'
 
 #Transforming sp object to sf object 
 slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))
