@@ -176,6 +176,9 @@ replace age_range=3 if S06P03A>=30 & S06P03A<45
 replace age_range=4 if S06P03A>=45 & S06P03A<60 
 replace age_range=5 if S06P03A>=60
 
+*Lived the war 
+gen age_war=1 if S06P03A>=27
+
 *Literacy 
 tab S06P09
 recode S06P09 (-2=.) (2=0) 
@@ -244,6 +247,13 @@ gen wage=1 if (S06P16A==1 | S06P16B==1) & pet==1
 *Non salaried workers 
 gen nowage=1 if S06P16C<7 & pet==1
 
+*Type of worker
+recode S06P22 (-2=.)
+gen public=1 if S06P16A==1 & S06P22==1
+gen private=1 if S06P16A==1 & S06P22==2
+gen boss=1 if S06P16A==1 & S06P22==3
+gen independent=1 if S06P16A==1 & S06P22==6
+
 *Having a son or daughter 
 tab S06P25
 recode S06P25 (-2=.) (2=0)		
@@ -262,7 +272,7 @@ gen total_pop=1
 preserve
 
 	*Collapsing at the segment gender level 
-	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A remittance_rate=S06P15A work_hours=S06P23 (sum) pet po pd pea nea wage nowage, by(segm_id S06P02)
+	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A remittance_rate=S06P15A work_hours=S06P23 (sum) pet po pd pea nea wage nowage public private boss independent, by(segm_id S06P02)
 
 	*Tasa de ocupacion 
 	gen to=po/pea
@@ -274,9 +284,13 @@ preserve
 	gen po_pet=po/pet
 	gen pea_pet=pea/pet
 	gen wage_pet=wage/pet
-
+	gen public_pet=public/pet
+	gen private_pet=private/pet
+	gen boss_pet=boss/pet
+	gen independent_pet=independent/pet
+		
 	*Reshaping to leave the segment as unique identifier 
-	reshape wide literacy_rate asiste_rate mean_educ_years remittance_rate pet po pd pea nea to td wage nowage po_pet pea_pet wage_pet work_hours, i(segm_id) j(S06P02)
+	reshape wide literacy_rate asiste_rate mean_educ_years remittance_rate pet po pd pea nea to td wage nowage public private boss independent po_pet pea_pet wage_pet work_hours public_pet private_pet boss_pet independent_pet, i(segm_id) j(S06P02)
 
 	*Renaming vars
 	ren *0 *_f
@@ -292,7 +306,7 @@ restore
 preserve
 
 	*Collapsing at the segment gender level 
-	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A work_hours=S06P23 (sum) pet po pd pea nea wage nowage total_pop, by(segm_id age_range)
+	collapse (mean) literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A work_hours=S06P23 (sum) pet po pd pea nea wage nowage total_pop public private boss independent, by(segm_id age_range)
 
 	*Tasa de ocupacion 
 	gen to=po/pea
@@ -304,9 +318,13 @@ preserve
 	gen po_pet=po/pet
 	gen pea_pet=pea/pet
 	gen wage_pet=wage/pet 
-
+	gen public_pet=public/pet
+	gen private_pet=private/pet
+	gen boss_pet=boss/pet
+	gen independent_pet=independent/pet
+	
 	*Reshaping to leave the segment as unique identifier 
-	reshape wide literacy_rate asiste_rate mean_educ_years pet po pd pea nea to td wage nowage total_pop po_pet pea_pet wage_pet work_hours, i(segm_id) j(age_range)
+	reshape wide literacy_rate asiste_rate mean_educ_years pet po pd pea nea to td wage nowage public private boss independent total_pop po_pet pea_pet wage_pet work_hours public_pet private_pet boss_pet independent_pet, i(segm_id) j(age_range)
 	
 	*Renaming vars
 	ren *1 *_0_14_yrs
@@ -327,7 +345,7 @@ preserve
 	keep if always==1
 		
 	*Collapsing at the segment level 
-	collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male, by(segm_id)
+	collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male public private boss independent, by(segm_id)
 
 	*Tasa de ocupacion 
 	gen to=po/pea
@@ -339,9 +357,13 @@ preserve
 	gen po_pet=po/pet
 	gen pea_pet=pea/pet
 	gen wage_pet=wage/pet 
+	gen public_pet=public/pet
+	gen private_pet=private/pet
+	gen boss_pet=boss/pet
+	gen independent_pet=independent/pet
 	
 	*Renaming variables
-	rename sex_sh-wage_pet =_always
+	rename sex_sh-independent_pet =_always
 	
 	*Saving the data 
 	tempfile Always
@@ -349,8 +371,41 @@ preserve
 
 restore
 
+preserve
+
+	*Keeping only population that never left the segment and endured the war according to their age
+	keep if always==1 & age_war==1
+	
+	*Collapsing at the segment level 
+	collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male public private boss independent, by(segm_id)
+
+	*Tasa de ocupacion 
+	gen to=po/pea
+
+	*Tasa de desempleo 
+	gen td=pd/pea 
+
+	*Normalizing the active and employed population over pet
+	gen po_pet=po/pet
+	gen pea_pet=pea/pet
+	gen wage_pet=wage/pet 
+	gen public_pet=public/pet
+	gen private_pet=private/pet
+	gen boss_pet=boss/pet
+	gen independent_pet=independent/pet
+	
+	*Renaming variables
+	rename sex_sh-independent_pet =_waralways
+	
+	*Saving the data 
+	tempfile Waralways
+	save `Waralways', replace 	
+
+restore
+
+
 *Collapsing at the segment level 
-collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male always, by(segm_id)
+collapse (mean) sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always (sum) pet po pd pea nea wage nowage total_pop female male always public private boss independent, by(segm_id)
 
 *Tasa de ocupacion 
 gen to=po/pea
@@ -362,6 +417,10 @@ gen td=pd/pea
 gen po_pet=po/pet
 gen pea_pet=pea/pet
 gen wage_pet=wage/pet 
+gen public_pet=public/pet
+gen private_pet=private/pet
+gen boss_pet=boss/pet
+gen independent_pet=independent/pet
 
 *Merging the other modules 
 merge 1:1 segm_id using `Household', nogen 
@@ -370,6 +429,7 @@ merge 1:1 segm_id using `Age', nogen
 merge 1:1 segm_id using `Mortality', nogen 
 merge 1:1 segm_id using `Migration', nogen 
 merge 1:1 segm_id using `Always', nogen 
+merge 1:1 segm_id using `Waralways', nogen 
 
 
 *Saving the data 
