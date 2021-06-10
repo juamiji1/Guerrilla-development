@@ -15,30 +15,32 @@ NOTES:
 use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
-gl breakfe="fmln_break_fe_400"
+gl breakfe="control_break_fe_400"
 	
 *-------------------------------------------------------------------------------
 * 				Mechanisms related to household conditions
 *-------------------------------------------------------------------------------
-gl hh "total_household owner_sh sanitary_sh sewerage_sh pipes_sh daily_water_sh electricity_sh garbage_sh total_hospitals"
+gl hh "sewerage_sh pipes_sh electricity_sh garbage_sh total_hospitals total_schools "
+*out: total_household owner_sh sanitary_sh daily_water_sh
 
 *Labeling for tables 
 la var total_household "Total Households"
 la var owner_sh "Ownership Rate"
 la var sanitary_sh "Sanitary Service Rate"
 la var sewerage_sh  "Sewerage Service Rate"
-la var pipes_sh "Pipes Rate"
+la var pipes_sh "Water Access Rate"
 la var daily_water_sh "Daily Water Rate"
 la var electricity_sh "Electricity Rate"
 la var garbage_sh "Garbage Rate"
 la var total_hospitals "Total Hospitals"
+la var total_schools "Total Schools"
 
 *Erasing files 
 cap erase "${tables}\rdd_dvsnd_hh_mechanisms_onu_91.tex"
 cap erase "${tables}\rdd_dvsnd_hh_mechanisms_onu_91.txt"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=300, all kernel(triangular)
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
 
@@ -46,22 +48,23 @@ gl b=e(b_l)
 foreach var of global hh{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
-	*Total Households
+	*Table
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_hh_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_hh_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -69,7 +72,7 @@ foreach var of global hh{
 foreach var of global hh{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
 	*Creating matrix to export estimates
@@ -80,11 +83,11 @@ foreach var of global hh{
 	forval c=1/40{
 
 		*Conditional for all specifications
-		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=300"
+		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=200 & river1==0"
 
 		*Replicating triangular weights
 		cap drop tweights
-		gen tweights=(1-abs(z_run_cntrl/`h')) if abs(z_run_cntrl)<=`h'
+		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
 		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
@@ -108,22 +111,25 @@ foreach var of global hh{
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to demographics
 *-------------------------------------------------------------------------------
-gl dem1 "total_pop sex_sh mean_age had_child_rate teen_pregnancy_rate"
-gl dem2 "total_pop_always sex_sh_always mean_age_always had_child_rate_always teen_pregnancy_rate_always"
-gl dem3 "total_pop_waralways sex_sh_waralways mean_age_waralways had_child_rate_waralways teen_pregnancy_rate_waralways"
+gl dem1 "total_pop female_head sex_sh mean_age had_child_rate"
+gl dem2 "total_pop_always female_head_always sex_sh_always mean_age_always had_child_rate_always teen_pregnancy_rate_always"
+gl dem3 "total_pop_waralways female_head_waralways sex_sh_waralways mean_age_waralways had_child_rate_waralways"
 
 *Labeling for tables 
 la var total_pop "Total Population"
+la var female_head "Female Head Rate"
 la var sex_sh "Gender Rate"
 la var mean_age "Average Age"
 la var had_child_rate  "Fertility Rate"
 la var teen_pregnancy_rate "Teen Pregnancy Rate"
 la var total_pop_always "Total Population"
+la var female_head_always "Female Head Rate"
 la var sex_sh_always "Gender Rate"
 la var mean_age_always "Average Age"
 la var had_child_rate_always "Fertility Rate"
 la var teen_pregnancy_rate_always "Teen Pregnancy Rate"
 la var total_pop_waralways "Total Population"
+la var female_head_waralways "Female Head Rate"
 la var sex_sh_waralways "Gender Rate"
 la var mean_age_waralways "Average Age"
 la var had_child_rate_waralways "Fertility Rate"
@@ -138,7 +144,7 @@ cap erase "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91.tex"
 cap erase "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91.txt"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=300, all kernel(triangular)
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
 
@@ -146,67 +152,70 @@ gl b=e(b_l)
 foreach var of global dem1{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_dem_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_dem_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 foreach var of global dem2{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	dis "reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) "
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_dem_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_dem_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 foreach var of global dem3{
 	
 	*Dependent's var mean
-	cap nois summ `var' if elevation2>=300, d
+	cap nois summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	cap gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	cap gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	cap reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	cap outreg2 using "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	outreg2 using "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -216,7 +225,7 @@ gl dem "total_pop sex_sh mean_age had_child_rate teen_pregnancy_rate total_pop_a
 foreach var of global dem{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
 	*Creating matrix to export estimates
@@ -227,11 +236,11 @@ foreach var of global dem{
 	forval c=1/40{
 
 		*Conditional for all specifications
-		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=300"
+		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=200 & river1==0"
 
 		*Replicating triangular weights
 		cap drop tweights
-		gen tweights=(1-abs(z_run_cntrl/`h')) if abs(z_run_cntrl)<=`h'
+		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
 		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
@@ -255,9 +264,10 @@ foreach var of global dem{
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to education
 *-------------------------------------------------------------------------------
-gl educ1 "total_schools total_matricula literacy_rate asiste_rate mean_educ_years"
-gl educ2 "literacy_rate_always asiste_rate_always mean_educ_years_always"
-gl educ3 "literacy_rate_waralways asiste_rate_waralways mean_educ_years_waralways"
+gl educ1 "mean_educ_years literacy_rate asiste_rate"
+gl educ2 "mean_educ_years_always literacy_rate_always asiste_rate_always"
+gl educ3 "mean_educ_years_waralways literacy_rate_waralways asiste_rate_waralways"
+*out: total_matricula 
 
 *Labeling for tables 
 la var total_schools "Total Schools"
@@ -281,7 +291,7 @@ cap erase "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91.tex"
 cap erase "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91.txt"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=300, all kernel(triangular)
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
 
@@ -289,66 +299,69 @@ gl b=e(b_l)
 foreach var of global educ1{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_educ_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_educ_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 foreach var of global educ2{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_educ_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_educ_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 foreach var of global educ3{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -358,7 +371,7 @@ gl educ "total_schools total_matricula literacy_rate asiste_rate mean_educ_years
 foreach var of global educ{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
 	*Creating matrix to export estimates
@@ -369,11 +382,11 @@ foreach var of global educ{
 	forval c=1/40{
 
 		*Conditional for all specifications
-		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=300"
+		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=200 & river1==0"
 
 		*Replicating triangular weights
 		cap drop tweights
-		gen tweights=(1-abs(z_run_cntrl/`h')) if abs(z_run_cntrl)<=`h'
+		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
 		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
@@ -436,7 +449,7 @@ cap erase "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91.tex"
 cap erase "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91.txt"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=300, all kernel(triangular)
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
 
@@ -444,66 +457,69 @@ gl b=e(b_l)
 foreach var of global lab1{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_lab_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_lab_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 foreach var of global lab2{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_lab_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_lab_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 foreach var of global lab3{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -513,7 +529,7 @@ gl lab "pea_pet po_pet wage_pet work_hours pea_pet_always po_pet_always wage_pet
 foreach var of global lab{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
 	*Creating matrix to export estimates
@@ -524,11 +540,11 @@ foreach var of global lab{
 	forval c=1/40{
 
 		*Conditional for all specifications
-		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=300"
+		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=200 & river1==0"
 
 		*Replicating triangular weights
 		cap drop tweights
-		gen tweights=(1-abs(z_run_cntrl/`h')) if abs(z_run_cntrl)<=`h'
+		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
 		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
@@ -552,20 +568,25 @@ foreach var of global lab{
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to migration
 *-------------------------------------------------------------------------------
-gl migr "total_migrant war_migrant sex_migrant_sh remittance_rate"
+gl migr "total_pop total_migrant war_migrant sex_migrant_sh remittance_rate arrived_war moving_pop moving_sh"
 
 *Labeling for tables 
-la var total_migrant "Total Migrants"
+la var total_pop "Total Population"
+la var total_migrant "International Migrants"
 la var war_migrant "Total War Migrants"
 la var sex_migrant_sh "Migrants' Gender Rate"
 la var remittance_rate "Remittances Rate"
+la var moving_pop "Moving Population"
+la var moving_sh "Moving Population Share"
+la var moving_incntry_pop "Moving Population (Internal)"
+la var moving_outcntry_pop "Moving Population (International)"
 
 *Erasing files 
 cap erase "${tables}\rdd_dvsnd_migr_mechanisms_onu_91.tex"
 cap erase "${tables}\rdd_dvsnd_migr_mechanisms_onu_91.txt"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=300, all kernel(triangular)
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
 
@@ -573,32 +594,33 @@ gl b=e(b_l)
 foreach var of global migr{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
-	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
 
 	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=300"
+	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
 
 	*Replicating triangular weights
 	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) if abs(z_run_cntrl)<=${h}
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
 	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_migr_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_migr_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	*Rdplot
+	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
+	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
 *Plots
-gl migr "total_migrant war_migrant sex_migrant_sh remittance_rate always_sh always"
+gl migr "total_migrant war_migrant sex_migrant_sh remittance_rate always_sh always arrived_war moving_pop moving_sh moving_incntry_pop moving_outcntry_pop"
 
 foreach var of global migr{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=300, d
+	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
 	*Creating matrix to export estimates
@@ -609,11 +631,11 @@ foreach var of global migr{
 	forval c=1/40{
 
 		*Conditional for all specifications
-		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=300"
+		gl if "if abs(z_run_cntrl)<=`h' & elevation2>=200 & river1==0"
 
 		*Replicating triangular weights
 		cap drop tweights
-		gen tweights=(1-abs(z_run_cntrl/`h')) if abs(z_run_cntrl)<=`h'
+		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
 		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 

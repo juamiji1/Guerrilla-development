@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------------------------------------
 # PROJECT: Guerrillas and Development 
-# TOPIC: This file prepare the spatial data at the segment level 
+# TOPIC: 
 # AUTHOR: JMJR
 # DATE: 
 #--------------------------------------------------------------------------------------------------
@@ -13,6 +13,8 @@
 #install.packages('bit64')
 #install.packages('raster')
 #install.packages('exactextractr')
+#install.packages('rmapshaper')
+#install.packages('geojsonio')
 
 library(data.table)
 library(rgdal)
@@ -39,38 +41,61 @@ library(tmap)
 library(raster)
 library(exactextractr)
 library(matrixStats)
+library(rgeos)
 library(rmapshaper)
 library(geojsonio)
+library(plyr)
+library(spatialEco)
 
-
-#---------------------------------------------------------------------------------------
-## PREPARING SHAPEFILES OF FMLN ZONES:
-#
-#---------------------------------------------------------------------------------------
 #Directory: 
 current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
 setwd(current_path)
 
+
+#---------------------------------------------------------------------------------------
+## PREPARING SHAPEFILES:
+#
+#---------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------
+# Preparing Administrative boundaries:
+#---------------------------------------------------------------------------------------
 #Importing El salvador shapefile
 slvShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_borders_census2007")
 slv_crs <- st_crs(slvShp)
 
+#Importing El salvador shapefile of segments 
+slvShp_segm <- st_read(dsn='censo2007/shapefiles', layer = "DIGESTYC_Segmentos2007")
+st_crs(slvShp)==st_crs(slvShp_segm)
+slvShp_segm <-st_transform(slvShp_segm, crs=slv_crs)
+st_crs(slvShp)==st_crs(slvShp_segm)
+
+#Transforming sf object to sp object 
+slvShp_sp <- as(slvShp, Class='Spatial')
+
+#Importing San Salvador location 
+capital <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/slv_adm_2020_shp/san_salvador.csv")
+capital_sf <- st_as_sf(capital, coords = c("lon", "lat"), crs = slv_crs)
+
+#---------------------------------------------------------------------------------------
+# Preparing Guerrilla boundaries:
+#---------------------------------------------------------------------------------------
 #Importing FMLN control zones
 controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_control_onu_91")
 st_crs(controlShp) <- slv_crs
-
-#Importing FMLN expansion zones
-expansionShp <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_expansion")
-expansionShp <- st_transform(expansionShp, crs = slv_crs)
 
 #Importing FMLN disputed zones
 disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_fmln_onu_91")
 st_crs(disputaShp) <- slv_crs
 
-#Importing the line break for each 5 kms
-#disputaBrk <- st_read(dsn = "gis/guerrilla_map", layer = "Zonas_disputa_segments")
-#disputaBrk <- st_transform(disputaBrk, crs = slv_crs)
+#Converting polygons to polylines
+control_line <- st_cast(controlShp,"MULTILINESTRING")
+expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
+disputa_line <- st_cast(disputaShp,"MULTILINESTRING")
 
+#---------------------------------------------------------------------------------------
+# Preparing other Geographic data:
+#---------------------------------------------------------------------------------------
 #Importing hidrography shapes
 lakeShp <- st_read(dsn = "gis/Hidrografia", layer = "lagoA_merge")
 lakeShp <- st_transform(lakeShp, crs = slv_crs)
@@ -87,20 +112,12 @@ railShp <- st_transform(railShp, crs = slv_crs)
 roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
 roadShp <- st_transform(roadShp, crs = slv_crs)
 
-#Converting polygons to polylines
-control_line <- st_cast(controlShp,"MULTILINESTRING")
-expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
-disputa_line <- st_cast(disputaShp,"MULTILINESTRING")
-
-#Importing El salvador shapefile of segments 
-slvShp_segm <- st_read(dsn='censo2007/shapefiles', layer = "DIGESTYC_Segmentos2007")
-st_crs(slvShp)==st_crs(slvShp_segm)
-slvShp_segm <-st_transform(slvShp_segm, crs=slv_crs)
-st_crs(slvShp)==st_crs(slvShp_segm)
-
-#Transforming sf object to sp object 
-slvShp_segm_sp <- as(slvShp_segm, Class='Spatial')
-slvShp_sp <- as(slvShp, Class='Spatial')
+#Importing and simplifying Coast shapefile 
+coastShp <- st_read(dsn = "gis/Hidrografia", layer = "coast")
+coastShp <- st_transform(coastShp, crs = slv_crs)
+coastShp_sp <-as(coastShp, Class='Spatial')
+coastShp_sp_simp <- ms_simplify(coastShp_sp, keep = 0.01)
+coastSimp_sf<-st_as_sf(coastShp_sp_simp)
 
 #Importing location of parroquias
 parroquias <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/parroquias/parroquias_coord.csv")
@@ -124,21 +141,30 @@ names(schools)[1] <- 'codigoce'
 schools <- na.omit(schools) 
 schools_sf <- st_as_sf(schools, coords = c("x", "y"), crs = slv_crs)
 
-#Importing San Salvador location 
-capital <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/slv_adm_2020_shp/san_salvador.csv")
-capital_sf <- st_as_sf(capital, coords = c("lon", "lat"), crs = slv_crs)
+#Importing El salvador political boundaries shapefile
+deptoShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_admbnda_adm1_2020")
+muniShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_admbnda_adm2_2020")
 
-#Importing and simplifying Coast shapefile 
-coastShp <- st_read(dsn = "gis/Hidrografia", layer = "coast")
-coastShp <- st_transform(coastShp, crs = slv_crs)
-coastShp_sp <-as(coastShp, Class='Spatial')
-coastShp_sp_simp <- ms_simplify(coastShp_sp, keep = 0.01)
-coastSimp_sf<-st_as_sf(coastShp_sp_simp)
+deptoShp_sp <-as(deptoShp, Class='Spatial')
+muniShp_sp <-as(muniShp, Class='Spatial')
+
+deptoShp_sp_simp <- ms_simplify(deptoShp_sp, keep = 0.01)
+muniShp_sp_simp <- ms_simplify(muniShp_sp, keep = 0.01)
+
+deptoSimp_sf<-st_as_sf(deptoShp_sp_simp)
+muniSimp_sf<-st_as_sf(muniShp_sp_simp)
+
+deptoLine <- st_cast(deptoSimp_sf,"MULTILINESTRING")
+muniLine <- st_cast(muniSimp_sf,"MULTILINESTRING")
 
 
 #---------------------------------------------------------------------------------------
-## PREPARING RASTERS (NLD, altitude, cacao):
+## PREPARING RASTERS FILES:
 #
+#---------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------
+# Preparing Raster Layers:
 #---------------------------------------------------------------------------------------
 #Importing the rasters 
 nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
@@ -171,6 +197,7 @@ kmhydro<-resample(kmhydro, elevation, method="bilinear")
 flow<-resample(flow, elevation, method="bilinear")
 
 slope <- terrain(elevation2, opt='slope', unit='degrees', neighbors=4)
+ruggedness<- spatialEco::tri(elevation2) 
 
 #Cropping and masking the raster to fit el salvador size
 nl13_crop <- crop(nl13, slvShp_sp)
@@ -204,11 +231,73 @@ elev_1000<- reclassify(elevation_mask, c(0,1000, NA, 1000, 1500, 1, 1500, Inf, N
 elev_1500<- reclassify(elevation_mask, c(0,1500, NA, 1500, Inf, 1))
 elev_high<- reclassify(elevation2_mask, c(0,399, NA))
 
+#---------------------------------------------------------------------------------------
+# Preparing Raster Staks:
+#---------------------------------------------------------------------------------------
+rastlist <- list.files(path = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/precipitation", 
+                       pattern='.tif$', all.files=TRUE, full.names=TRUE)
+rainStack <- stack(rastlist)
+rainStack <- crop(rainStack, slvShp_sp)
+rainMean <- stackApply(rainStack, indices =  rep(1,nlayers(rainStack)), fun = "mean", na.rm = T)
+rainMean_mask<-mask(rainMean,slvShp_sp)
+
+rastlist <- list.files(path = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/temperature/maxtemp", 
+                       pattern='.tif$', all.files=TRUE, full.names=TRUE)
+maxtempStack <- stack(rastlist)
+maxtempStack <- crop(maxtempStack, slvShp_sp)
+maxtempMean <- stackApply(maxtempStack, indices =  rep(1,nlayers(maxtempStack)), fun = "mean", na.rm = T)
+maxtempMean_mask<-mask(maxtempMean,slvShp_sp)
+
+rastlist <- list.files(path = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/temperature/mintemp", 
+                       pattern='.tif$', all.files=TRUE, full.names=TRUE)
+mintempStack <- stack(rastlist)
+mintempStack <- crop(mintempStack, slvShp_sp)
+mintempMean <- stackApply(mintempStack, indices =  rep(1,nlayers(mintempStack)), fun = "mean", na.rm = T)
+mintempMean_mask<-mask(mintempMean,slvShp_sp)
+
+
+#---------------------------------------------------------------------------------------
+## AVERAGING RASTERS BY SEGMENT LEVEL:
+#
+#---------------------------------------------------------------------------------------
+slvShp_segm_info1<-slvShp_segm
+
+#Extracting mean
+slvShp_segm_info1$nl <- exact_extract(nl13_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$elev <- exact_extract(elevation_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$elev2 <- exact_extract(elevation2, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$slope <- exact_extract(slope, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$rugged <- exact_extract(ruggedness, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$cocoa <- exact_extract(cocoa_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$coffee <- exact_extract(coffee_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$cotton <- exact_extract(cotton_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$drice <- exact_extract(drice_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$maize <- exact_extract(maize_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$bean <- exact_extract(bean2_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$sugarcane <- exact_extract(sugarcane_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$wrice <- exact_extract(wrice_crop, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$flow <- exact_extract(flow, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$rain <- exact_extract(rainMean_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$maxtemp <- exact_extract(maxtempMean_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$mintemp <- exact_extract(mintempMean_mask, slvShp_segm_info1, 'mean')
+
+#Extracting sum
+slvShp_segm_info1$sum_dhydro <- exact_extract(dhydro, slvShp_segm_info1, 'sum')
+slvShp_segm_info1$sum_kmhydro <- exact_extract(kmhydro, slvShp_segm_info1, 'sum')
+
+#Extracting weighted mean
+slvShp_segm_info1$wmean_nl <- exact_extract(nl13_mask, slvShp_segm_info1, 'weighted_mean', weights=area(nl13_mask))
+
+#High elevation segments only
+slvShp_segm_info1<-mutate(slvShp_segm_info1, high_elev=elev2)
+slvShp_segm_info1$high_elev[slvShp_segm_info1$high_elev < 200] <-NA
 
 #---------------------------------------------------------------------------------------
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
 #
 #---------------------------------------------------------------------------------------
+slvShp_segm_info2<-slvShp_segm_info1
+
 #Calculating centroid of segments
 slvShp_segm_centroid <-st_centroid(slvShp_segm)
 
@@ -219,191 +308,105 @@ segm_centroid_coords <- segm_centroid_coords %>% as.data.frame() %>%
   data.matrix()
 
 #Calculating the minimum distance of each segment to the FMLN zones 
-slvShp_segm_int <- slvShp_segm
+slvShp_segm_info2$dist_control<-as.numeric(st_distance(slvShp_segm, control_line))
+slvShp_segm_info2$dist_disputa<-as.numeric(st_distance(slvShp_segm, disputa_line))
 
-slvShp_segm_int$dist_control<-as.numeric(st_distance(slvShp_segm, control_line))
-slvShp_segm_int$dist_expansion<-as.numeric(st_distance(slvShp_segm, expansion_line))
-slvShp_segm_int$dist_disputa<-as.numeric(st_distance(slvShp_segm, disputa_line))
-
-slvShp_segm_int$dist_control2<-as.numeric(st_distance(slvShp_segm_centroid, control_line))
-slvShp_segm_int$dist_expansion2<-as.numeric(st_distance(slvShp_segm_centroid, expansion_line))
-slvShp_segm_int$dist_disputa2<-as.numeric(st_distance(slvShp_segm_centroid, disputa_line))
+slvShp_segm_info2$dist_control2<-as.numeric(st_distance(slvShp_segm_centroid, control_line))
+slvShp_segm_info2$dist_disputa2<-as.numeric(st_distance(slvShp_segm_centroid, disputa_line))
 
 #Creating indicators for whether the segment is within each FMLN zone
-slvShp_segm_int <- mutate(slvShp_segm_int, within_control=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
-                          within_expansion=as.numeric(st_intersects(slvShp_segm, expansionShp, sparse = FALSE)),
+slvShp_segm_info2 <- mutate(slvShp_segm_info2, within_control=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
                           within_disputa=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
 
-slvShp_segm_int <- mutate(slvShp_segm_int, within_control2=as.numeric(st_within(slvShp_segm_centroid, controlShp, sparse = FALSE)), 
-                          within_expansion2=as.numeric(st_within(slvShp_segm_centroid, expansionShp, sparse = FALSE)),
+slvShp_segm_info2 <- mutate(slvShp_segm_info2, within_control2=as.numeric(st_within(slvShp_segm_centroid, controlShp, sparse = FALSE)), 
                           within_disputa2=as.numeric(st_within(slvShp_segm_centroid, disputaShp, sparse = FALSE)))
 
-#Creating indicators for whether the segment is within each FMLN zone
-slvShp_segm_int <- mutate(slvShp_segm_int, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
+#Creating indicators for whether the segment has a river, lake or road
+slvShp_segm_info2 <- mutate(slvShp_segm_info2, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
                           riv1_int=as.numeric(st_intersects(slvShp_segm, river1Shp, sparse = FALSE)),
                           riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)), 
                           rail_int=as.numeric(st_intersects(slvShp_segm, railShp, sparse = FALSE)),
                           road_int=as.numeric(st_intersects(slvShp_segm, roadShp, sparse = FALSE)))
 
 #Subseting to check the bordering segment 
-y1<-subset(slvShp_segm_int, dist_control==0)
-y2<-subset(slvShp_segm_int, dist_control2<800 & within_control2==1)
+y1<-subset(slvShp_segm_info2, dist_control==0)
+y2<-subset(slvShp_segm_info2, dist_control2<800 & within_control2==1)
 
 #Distance to capital and coast 
-slvShp_segm_int$dist_coast<-as.numeric(st_distance(slvShp_segm, coastSimp_sf))
-slvShp_segm_int$dist_capital<-as.numeric(st_distance(slvShp_segm, capital_sf))
-
-# Converting from sf to sp object
-slvShp_segm_sp <- as(slvShp_segm_int, Class='Spatial')
-
-
-#---------------------------------------------------------------------------------------
-## AVERAGING RASTERS BY SEGMENT LEVEL:
-#
-#---------------------------------------------------------------------------------------
-detach(package:tidyr)
-
-slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[34] <- 'mean_nl'
-
-slvShp_segm_info_sp <- extract(elevation_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[35] <- 'mean_elev'
-
-slvShp_segm_info_sp <- extract(cacao_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[36] <- 'mean_cacao'
-
-slvShp_segm_info_sp <- extract(bean_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[37] <- 'mean_bean'
-
-#Weighted mean of night light pixel 
-slvShp_segm_info_sp <- extract(nl13_mask, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE, weights=TRUE)
-names(slvShp_segm_info_sp)[38] <- 'wmean_nl1'
-
-#Not taking into account the zeros 
-slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[39] <- 'mean_nl_z'
-
-slvShp_segm_info_sp <- extract(nl13_mask_zeros, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE, weights=TRUE)
-names(slvShp_segm_info_sp)[40] <- 'wmean_nl_z'
-
-#Count of different elevations
-slvShp_segm_info_sp <- extract(elev_0, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[41] <- 'sum_elev_1'
-
-slvShp_segm_info_sp <- extract(elev_500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[42] <- 'sum_elev_2'
-
-slvShp_segm_info_sp <- extract(elev_1000, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[43] <- 'sum_elev_3'
-
-slvShp_segm_info_sp <- extract(elev_1500, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[44] <- 'sum_elev_4'
-
-slvShp_segm_info_sp <- extract(elevation2, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[45] <- 'mean_elev2'
-
-slvShp_segm_info_sp <- extract(slope, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[46] <- 'mean_slope'
-
-slvShp_segm_info_sp <- extract(cocoa_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[47] <- 'mean_cocoa'
-slvShp_segm_info_sp <- extract(coffee_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[48] <- 'mean_coffee'
-slvShp_segm_info_sp <- extract(cotton_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[49] <- 'mean_cotton'
-slvShp_segm_info_sp <- extract(drice_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[50] <- 'mean_drice'
-slvShp_segm_info_sp <- extract(maize_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[51] <- 'mean_maize'
-slvShp_segm_info_sp <- extract(bean2_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[52] <- 'mean_bean2'
-slvShp_segm_info_sp <- extract(sugarcane_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[53] <- 'mean_sugarcane'
-slvShp_segm_info_sp <- extract(wrice_crop, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[54] <- 'mean_wrice'
-slvShp_segm_info_sp <- extract(elevation2, slvShp_segm_info_sp, fun=max, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[55] <- 'max_elev2'
-slvShp_segm_info_sp <- extract(dhydro, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[56] <- 'sum_dhydro'
-slvShp_segm_info_sp <- extract(kmhydro, slvShp_segm_info_sp, fun=sum, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[57] <- 'sum_kmhydro'
-
-slvShp_segm_info_sp <- extract(flow, slvShp_segm_info_sp, fun=mean, na.rm=TRUE, sp=TRUE)
-names(slvShp_segm_info_sp)[58] <- 'mean_flow'
-
-#Transforming sp object to sf object 
-slvShp_segm_info <- st_as_sf(slvShp_segm_info_sp, coords = c('y', 'x'))
-
-slvShp_segm_info$mean_nl2 <- exact_extract(nl13_mask, slvShp_segm_info, 'mean')
-slvShp_segm_info$mean_elev2 <- exact_extract(elevation_mask, slvShp_segm_info, 'mean')
-slvShp_segm_info$wmean_nl2 <- exact_extract(nl13_mask, slvShp_segm_info, 'weighted_mean', weights=area(nl13_mask))
-slvShp_segm_info$wmean_elev2 <- exact_extract(elevation_mask, slvShp_segm_info, 'weighted_mean', weights=area(elevation_mask))
+slvShp_segm_info2$dist_coast<-as.numeric(st_distance(slvShp_segm, coastSimp_sf))
+slvShp_segm_info2$dist_capital<-as.numeric(st_distance(slvShp_segm, capital_sf))
+slvShp_segm_info$dist_depto<-as.numeric(st_distance(slvShp_segm_info, deptoLine, by_element = TRUE))
+slvShp_segm_info$dist_muni<-as.numeric(st_distance(slvShp_segm_info, muniLine, by_element = TRUE))
 
 
 #---------------------------------------------------------------------------------------
 ## COUNTING OBJECTS OF INTEREST WITHIN SEGMENTS:
 #
 #---------------------------------------------------------------------------------------
+slvShp_segm_info3<-slvShp_segm_info2
+
 #Counting number of hospitals per segment 
-intersection <- st_intersection(x = slvShp_segm_info, y = hospitales_sf)
+intersection <- st_intersection(x = slvShp_segm_info3, y = hospitales_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
   summarise(n=n())
 
-slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
-slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_hosp'
+slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_hosp'
 
 #Counting number of schools per segment 
-intersection <- st_intersection(x = slvShp_segm_info, y = schools_sf)
+intersection <- st_intersection(x = slvShp_segm_info3, y = schools_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
   summarise(n=n(), matricula=sum(matricula))
 
-slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
-slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_sch'
+slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_sch'
 
 #Counting number of parroquias per segment 
-intersection <- st_intersection(x = slvShp_segm_info, y = parroquias_sf)
+intersection <- st_intersection(x = slvShp_segm_info3, y = parroquias_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
   summarise(n=n())
 
-slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
-slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_parr'
+slvShp_segm_info3 <-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_parr'
 
 #Counting number of parroquias before 1980 per segment 
-intersection <- st_intersection(x = slvShp_segm_info, y = parr80_sf)
+intersection <- st_intersection(x = slvShp_segm_info3, y = parr80_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
   summarise(n=n())
 
-slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
-slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_pa80'
+slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_pa80'
 
 #Counting number of parroquias franciscanas per segment 
-intersection <- st_intersection(x = slvShp_segm_info, y = francis_sf)
+intersection <- st_intersection(x = slvShp_segm_info3, y = francis_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
   summarise(n=n())
 
-slvShp_segm_info<-st_join(slvShp_segm_info,int_result)
-slvShp_segm_info <- subset(slvShp_segm_info, select = -SEG_ID.y)
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'SEG_ID.x'] <- 'SEG_ID'
-names(slvShp_segm_info)[names(slvShp_segm_info) == 'n'] <- 'n_fran'
+slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_fran'
 
 
 #---------------------------------------------------------------------------------------
 ## INCLUDING THE LINE BREAK FE:
 #
 #---------------------------------------------------------------------------------------
+slvShp_segm_info<-slvShp_segm_info3
+
 #Sampling points int he borders for the RDD
 set.seed(1234)
 
@@ -700,109 +703,11 @@ slvShp_segm_info$cntrlbrkfe50<-brkIndexUnique[, 'col']
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
 #
 #---------------------------------------------------------------------------------------
-#Adding segment centroid coordinates to the shape 
-#slvShp_segm_info$xxx<-segm_centroid_coords[,1]
-#slvShp_segm_info$yyy<-segm_centroid_coords[,2]
-
-slvShp_segm_info<-mutate(slvShp_segm_info, high_elev=mean_elev2)
-slvShp_segm_info$high_elev[slvShp_segm_info$high_elev < 300] <-NA
-
 # Converting from sf to sp object
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
 #Exporting the shapefile 
 writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-
-
-#---------------------------------------------------------------------------------------
-## VISUAL CHECKS:
-#
-#---------------------------------------------------------------------------------------
-#Plotting
-tm_shape(disputa_line)+
-  tm_lines(col='pink') +
-  tm_shape(slvShp_segm) + 
-  tm_borders()
-
-#Parroquias and segments map 
-tm_shape(slvShp_segm_info) + 
-  tm_borders()+
-  tm_shape(disputaShp) + 
-  tm_borders(col='pink', lwd = 3, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="pink", lwd=10, title="FMLN Zone")+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-dominated Zone")+
-  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)+
-  tm_shape(parroquias_sf) + 
-  tm_dots(size=0.2,col="red")+
-  tm_add_legend(type="symbol", col="red", title="Parroquia")+
-  tm_shape(parr80_sf) + 
-  tm_dots(size=0.2,col="green")+
-  tm_add_legend(type="symbol", col="green", title="Parroquia (1980)")+
-  tm_layout(frame = FALSE)+
-  tm_shape(francis_sf) + 
-  tm_dots(size=0.2,col="blue")+
-  tm_add_legend(type="symbol", col="blue", title="Franciscana")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_parroquias.pdf")
-
-
-#Exporting map of elevation and FMLN zones
-tm_shape(elev_high) + 
-  tm_raster(title='Elevation', palette="-RdYlGn") +
-  tm_shape(slvShp_segm_info) + 
-  tm_borders()+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
-  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-
-
-tm_shape(elevation2_mask) + 
-  tm_raster(title='Elevation', palette="-RdYlGn") +
-  tm_shape(slvShp_segm_info) + 
-  tm_borders()+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
-  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-
-
-tm_shape(slvShp_segm_info) + 
-  tm_polygons(col='mean_elev2', title='Altitude', palette="-RdYlGn")+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
-  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_segm.pdf")
-
-tm_shape(slvShp_segm_info) + 
-  tm_polygons(col='high_elev', title='Altitude', palette="-RdYlGn")+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
-  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.15, legend.title.size =1, frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_high_segm.pdf")
-
-
-tm_shape(slvShp) + 
-  tm_borders()+
-  tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="FMLN-Dominated Zone")+
-  tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/fmln_dominated.pdf")
-
-tm_shape(slvShp) + 
-  tm_borders()+
-  tm_shape(pnt_controlBrk_400)+
-  tm_dots(size=0.2,col="red")+
-  tm_shape(pnt_disputaBrk_400)+
-  tm_dots(size=0.2,col="pink")
-
-
-
 
 
 

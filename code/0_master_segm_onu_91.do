@@ -50,9 +50,24 @@ do "${do}\1_preparing_data\1_prepare_night_light_13_segm_lvl.do"
 *	 						   2. RDD Analysis
 *
 *-------------------------------------------------------------------------------
-do "${do}\2_analysis\2_rdd_segm_lvl_local_continuity_onu_91_dvsnd_high_elev.do"
-do "${do}\2_analysis\2_rdd_segm_lvl_night_light_onu_91_dvsnd_high_elev.do"
-do "${do}\2_analysis\2_rdd_segm_lvl_mechanisms_onu_91_dvsnd_high_elev.do"
+do "${do}\2_analysis\20_segm_lvl_descriptives_onu_91_high_elev.do"
+do "${do}\2_analysis\21_rdd_segm_lvl_local_continuity_onu_91_dvsnd_high_elev.do"
+do "${do}\2_analysis\22_rdd_segm_lvl_night_light_onu_91_dvsnd_high_elev.do"
+do "${do}\2_analysis\23_rdd_segm_lvl_mechanisms_onu_91_dvsnd_high_elev.do"
+do "${do}\2_analysis\24_rdd_segm_lvl_mechanisms_warage_onu_91_dvsnd_high_elev.do"
+
+*-------------------------------------------------------------------------------
+*	 						   3. Robust Analysis
+*
+*-------------------------------------------------------------------------------
+do "${do}\2_analysis\25_rdd_segm_lvl_local_continuity_onu_91_dvsnd_high_elev_robust.do"
+do "${do}\2_analysis\26_rdd_segm_lvl_night_light_onu_91_dvsnd_high_elev_robust.do"
+do "${do}\2_analysis\27_rdd_segm_lvl_mechanisms_onu_91_dvsnd_high_elev_robust.do"
+
+
+
+
+
 
 
 

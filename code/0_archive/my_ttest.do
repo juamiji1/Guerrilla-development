@@ -17,6 +17,7 @@ program my_ttest, eclass
 	mat T = J(n,8,.)
 	local final=0
 	foreach var of local varlist{
+		dis "`var'"
 		ttest `var' `if', by(`by')
 		local inicial = 1 + `final'
 		mat T[`inicial',1] = r(mu_1)
