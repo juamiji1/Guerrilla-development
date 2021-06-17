@@ -16,6 +16,7 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
+gl controls "within_control w_cntrl_age_war_2 age_war_2 i.within_control#c.z_run_cntrl c.z_run_cntrl#ib1.age_war_range i.within_control#c.z_run_cntrl#ib1.age_war_range z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
 
 *Capturing the bandwidth 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
@@ -25,7 +26,7 @@ gl b=e(b_l)
 *-------------------------------------------------------------------------------
 *	Using only the popoulation who endured the war and never moved
 *-------------------------------------------------------------------------------
-keep segm_id within_control x_coord y_coord z_run_cntrl elevation2 *_break_fe* *_waral river1
+keep segm_id within_control x_coord y_coord z_run_cntrl elevation2 *_break_fe* *_waral river1 dist_capital dist_coast
 
 *Renaming vars 
 ren *_27_43_yrs_waral *1  
@@ -78,7 +79,7 @@ foreach var of global educ{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 	*Estimations 
-	reghdfe `var' within_control w_cntrl_age_war_2 age_war_2 i.within_control#c.z_run_cntrl c.z_run_cntrl#ib1.age_war_range i.within_control#c.z_run_cntrl#ib1.age_war_range z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_agewaralways_mechanisms_onu_91.tex", tex(frag) keep(within_control w_cntrl_age_war_2) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -116,7 +117,7 @@ foreach var of global lab{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 	*Estimations 
-	reghdfe `var' within_control w_cntrl_age_war_2 age_war_2 i.within_control#c.z_run_cntrl c.z_run_cntrl#ib1.age_war_range i.within_control#c.z_run_cntrl#ib1.age_war_range z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_agewaralways_mechanisms_onu_91.tex", tex(frag) keep(within_control w_cntrl_age_war_2) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }

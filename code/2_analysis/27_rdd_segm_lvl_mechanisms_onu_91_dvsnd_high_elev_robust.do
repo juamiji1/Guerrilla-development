@@ -16,6 +16,7 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
 
 *Creating the sample for robustness
 gen sampler=1 if within_control==0 & within_fmln==0
@@ -68,7 +69,7 @@ foreach var of global hh{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_hh_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -128,7 +129,7 @@ foreach var of global dem1{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -147,8 +148,8 @@ foreach var of global dem2{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	dis "reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) "
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	dis "reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) "
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_always_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -167,7 +168,7 @@ foreach var of global dem3{
 	cap gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -220,7 +221,7 @@ foreach var of global educ1{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -239,7 +240,7 @@ foreach var of global educ2{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_always_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -258,7 +259,7 @@ foreach var of global educ3{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -324,7 +325,7 @@ foreach var of global lab1{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -343,7 +344,7 @@ foreach var of global lab2{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_always_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -362,7 +363,7 @@ foreach var of global lab3{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -407,7 +408,7 @@ foreach var of global migr{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_migr_mechanisms_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -457,7 +458,7 @@ foreach var of global hh{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_hh_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -517,7 +518,7 @@ foreach var of global dem1{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -536,8 +537,8 @@ foreach var of global dem2{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	dis "reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) "
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	dis "reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) "
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_always_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -556,7 +557,7 @@ foreach var of global dem3{
 	cap gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -609,7 +610,7 @@ foreach var of global educ1{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -628,7 +629,7 @@ foreach var of global educ2{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_always_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -647,7 +648,7 @@ foreach var of global educ3{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -713,7 +714,7 @@ foreach var of global lab1{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -732,7 +733,7 @@ foreach var of global lab2{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_always_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -751,7 +752,7 @@ foreach var of global lab3{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -796,7 +797,7 @@ foreach var of global migr{
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
 	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_migr_mechanisms_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }

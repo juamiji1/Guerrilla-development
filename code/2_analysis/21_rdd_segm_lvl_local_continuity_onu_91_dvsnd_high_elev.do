@@ -13,6 +13,19 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
+gl h=e(h_l)
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *-------------------------------------------------------------------------------
 * Local continuity using Percentile 25 and up of elevation (Table)
@@ -45,29 +58,14 @@ cap erase "${tables}\rdd_dvsnd_local_continuity_onu_91_p1.txt"
 cap erase "${tables}\rdd_dvsnd_local_continuity_onu_91_p2.tex"
 cap erase "${tables}\rdd_dvsnd_local_continuity_onu_91_p2.txt"
 
-*RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
-gl h=e(h_l)
-gl b=e(b_l)
-
 foreach var of global lc1{
 	
 	*Dependent's var mean
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
-
-	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
-
-	*Replicating triangular weights
-	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
-	
 	*Table 
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_local_continuity_onu_91_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 	*Rdplot
@@ -82,18 +80,8 @@ foreach var of global lc2{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Creating matrix to export estimates
-	mat coef=J(3,40,.)
-
-	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
-
-	*Replicating triangular weights
-	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
-	
 	*Table 
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_local_continuity_onu_91_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 	*Rdplot
@@ -130,7 +118,7 @@ foreach var of global lc{
 		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
-		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+		reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 		lincom within_control	
 		mat coef[1,`c']= r(estimate) 
 		mat coef[2,`c']= r(lb)
@@ -175,7 +163,7 @@ foreach var of global lc{
 		gen tweights=(1-abs(z_run_cntrl/`h')) ${if}
 		
 		*Total Households
-		reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+		reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 		lincom within_control	
 		mat coef[1,`c']= r(estimate) 
 		mat coef[2,`c']= r(lb)

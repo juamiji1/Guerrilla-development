@@ -335,8 +335,8 @@ y2<-subset(slvShp_segm_info2, dist_control2<800 & within_control2==1)
 #Distance to capital and coast 
 slvShp_segm_info2$dist_coast<-as.numeric(st_distance(slvShp_segm, coastSimp_sf))
 slvShp_segm_info2$dist_capital<-as.numeric(st_distance(slvShp_segm, capital_sf))
-slvShp_segm_info$dist_depto<-as.numeric(st_distance(slvShp_segm_info, deptoLine, by_element = TRUE))
-slvShp_segm_info$dist_muni<-as.numeric(st_distance(slvShp_segm_info, muniLine, by_element = TRUE))
+slvShp_segm_info2$dist_depto<-as.numeric(st_distance(slvShp_segm, deptoLine, by_element = TRUE))
+slvShp_segm_info2$dist_muni<-as.numeric(st_distance(slvShp_segm, muniLine, by_element = TRUE))
 
 
 #---------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ slvShp_segm_info3<-slvShp_segm_info2
 intersection <- st_intersection(x = slvShp_segm_info3, y = hospitales_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  summarise(n=n())
+  dplyr::summarise(n=n())
 
 slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
@@ -360,7 +360,7 @@ names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_hosp'
 intersection <- st_intersection(x = slvShp_segm_info3, y = schools_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  summarise(n=n(), matricula=sum(matricula))
+  dplyr::summarise(n=n(), matricula=sum(matricula))
 
 slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
@@ -371,7 +371,7 @@ names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_sch'
 intersection <- st_intersection(x = slvShp_segm_info3, y = parroquias_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  summarise(n=n())
+  dplyr::summarise(n=n())
 
 slvShp_segm_info3 <-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
@@ -382,7 +382,7 @@ names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_parr'
 intersection <- st_intersection(x = slvShp_segm_info3, y = parr80_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  summarise(n=n())
+  dplyr::summarise(n=n())
 
 slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
@@ -393,7 +393,7 @@ names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_pa80'
 intersection <- st_intersection(x = slvShp_segm_info3, y = francis_sf)
 int_result <- intersection %>% 
   group_by(SEG_ID) %>% 
-  summarise(n=n())
+  dplyr::summarise(n=n())
 
 slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)

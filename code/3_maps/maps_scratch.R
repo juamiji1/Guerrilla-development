@@ -44,6 +44,9 @@ library(matrixStats)
 library("rgeos")
 library(rmapshaper)
 library(geojsonio)
+library("viridis") 
+library("qpdf")  
+library("tools")  
 
 
 #---------------------------------------------------------------------------------------
@@ -77,6 +80,17 @@ slvShp_segm_info <- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "slvShp_segm_i
 slvShp_segm_sample <- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "segm_info_sample")
 control_line_sample <- st_read(dsn = "gis/guerrilla_map", layer = "control_line_sample")
 
+#Importing predicted outcomes
+predicted <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/predicted_outcomes.csv")
+
+#Joining predictions to shape with info 
+slvShp_segm_info$SEG_ID<-as.integer(slvShp_segm_info$SEG_ID)
+slvShp_segm_info_join <- left_join(slvShp_segm_info, predicted, by = c("SEG_ID" = "segm_id"))
+
+#Subseting to check the bordering segment 
+y1<-subset(slvShp_segm_info_join, dst_cnt==0)
+y2<-subset(slvShp_segm_info_join, dst_cn2<1250 & wthn_c2==1)
+
 
 #---------------------------------------------------------------------------------------
 ## PLOTS:
@@ -104,36 +118,158 @@ tm_shape(muniShp) +
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/muni_control_91.pdf")
 
 tm_shape(slvShp_segm_info) + 
-  tm_polygons(col='men_lv2', title='Altitude', palette="-RdYlGn", colorNA = "white", textNA = "Missing data")+
+  tm_polygons(col='men_lv2', title='Altitude', palette="-RdYlGn", colorNA = "white", textNA = "Missing data", n=10, style='pretty', border.col=NA, border.alpha=0)+
   tm_shape(controlShp) + 
-  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="Guerrilla Control")+
+  tm_borders(col='red2', lwd = 3, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red2", lwd=10, title="Guerrilla Control")+
   tm_shape(river1Shp)+
-  tm_borders(col='blue', lwd = 2, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="blue", lwd=10, title="Main Rivers")+
-  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.17, legend.title.size =1.1,frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_segm.pdf")
+  tm_borders(col='deepskyblue3', lwd = 2, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="deepskyblue3", lwd=10, title="Main Rivers")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/elev_segm.png")
 
 tm_shape(slvShp_segm_sample)+
-  tm_fill(col='deepskyblue', alpha=NA)+
-  tm_add_legend(type="line", col="deepskyblue", lwd=10, title="Sample of Census Tracts")+
+  tm_fill(col='slateblue1', alpha=NA)+
+  tm_add_legend(type="line", col="slateblue1", lwd=10, title="Sample of Census Tracts")+
   tm_shape(slvShp_segm_info) + 
   tm_borders()+
   tm_shape(control_line_sample) + 
-  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA) +
-  tm_add_legend(type="line", col="red", lwd=10, title="Guerrilla-Controlled Boundary")+
+  tm_lines(col='red2', lwd = 3, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red2", lwd=10, title="Guerrilla-Controlled Boundary")+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
   tm_layout(frame = FALSE)
-tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_sample.pdf")
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_sample.png")
   
 
 
 
 
 
+sample<-subset(slvShp_segm_info_join, sample_reg==1)
+
+#Using prediction on all census tracts 
+tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(slvShp_segm_info_join) + 
+  tm_polygons(col='arcsine_nl13_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.col=NA, border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/arcsine_nl13_xb_all.png")
+
+tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(slvShp_segm_info_join) + 
+  tm_polygons(col='nl13_density_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/nl13_density_xb_all.png")
+
+tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(slvShp_segm_info_join) + 
+  tm_polygons(col='z_wi_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/z_wi_xb_all.png")
+
+tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(slvShp_segm_info_join) + 
+  tm_polygons(col='mean_educ_years_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='fisher', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mean_educ_years_xb_all.png")
+
+#Using prediction only on census tracts within Cattaneo BW 
+m<-tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(sample) + 
+  tm_polygons(col='arcsine_nl13_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(m, filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/arcsine_nl13_xb_sample.png")
+
+m<-tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(sample) + 
+  tm_polygons(col='nl13_density_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(m, filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/nl13_density_xb_sample.png")
+
+m<-tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(sample) + 
+  tm_polygons(col='z_wi_xb', title='Quantile cuts', palette="plasma", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(m, filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/z_wi_xb_sample.png")
+
+m<-tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(sample) + 
+  tm_polygons(col='mean_educ_years_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(m, filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mean_educ_years_xb_sample.png")
+
+
+
+#Checking the sample border
+tm_shape(y1) + 
+  tm_polygons(col = "dst_cnt", lwd=0.02, title="",  palette =cm.colors(1), legend.show = FALSE)+
+  tm_layout(frame = FALSE)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.show=FALSE, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_intersect.png")
+
+tm_shape(y2) + 
+  tm_polygons(col = "wthn_c2", lwd=0.02,  palette =cm.colors(1), legend.show = FALSE)+
+  tm_layout(frame = FALSE)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_shape(slvShp) + 
+  tm_borders()+ 
+  tm_layout(legend.show=FALSE, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_centroid.png")
 
 
 
 
+
+
+
+
+
+#END.
 
 
 
