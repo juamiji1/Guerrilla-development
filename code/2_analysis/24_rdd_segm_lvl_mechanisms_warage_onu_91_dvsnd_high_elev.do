@@ -16,7 +16,7 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
-gl controls "within_control w_cntrl_age_war_2 age_war_2 i.within_control#c.z_run_cntrl c.z_run_cntrl#ib1.age_war_range i.within_control#c.z_run_cntrl#ib1.age_war_range z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
+gl controls "within_control w_cntrl_age_war_2 age_war_2 i.within_control#c.z_run_cntrl c.z_run_cntrl#ib1.age_war_range i.within_control#c.z_run_cntrl#ib1.age_war_range z_run_cntrl x_coord y_coord dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
 
 *Capturing the bandwidth 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)

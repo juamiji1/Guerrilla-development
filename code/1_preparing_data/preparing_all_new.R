@@ -234,26 +234,63 @@ elev_high<- reclassify(elevation2_mask, c(0,399, NA))
 #---------------------------------------------------------------------------------------
 # Preparing Raster Staks:
 #---------------------------------------------------------------------------------------
+#Rain
 rastlist <- list.files(path = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/precipitation", 
                        pattern='.tif$', all.files=TRUE, full.names=TRUE)
+rastlist7579 <- rastlist[169:228]
+
 rainStack <- stack(rastlist)
 rainStack <- crop(rainStack, slvShp_sp)
-rainMean <- stackApply(rainStack, indices =  rep(1,nlayers(rainStack)), fun = "mean", na.rm = T)
-rainMean_mask<-mask(rainMean,slvShp_sp)
+rainMean<-raster::calc(rainStack, fun=mean, na.rm = T)
+#rainMean <- stackApply(rainStack, indices =  rep(1,nlayers(rainStack)), fun = "mean", na.rm = T)
+rainSd <- raster::calc(rainStack, fun=sd, na.rm = T)
+rainMean_mask<-mask(rainMean ,slvShp_sp)
+rainSd_mask<-mask(rainSd ,slvShp_sp)
 
+rainStack7579 <- stack(rastlist7579)
+rainStack7579 <- crop(rainStack7579, slvShp_sp)
+rainMean7579 <- raster::calc(rainStack7579, fun=mean, na.rm = T)
+rainMean_mask7579<-mask(rainMean7579 ,slvShp_sp)
+
+rain_z_mask=(rainMean_mask7579-rainMean_mask)/rainSd_mask
+
+#Maxtemp
 rastlist <- list.files(path = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/temperature/maxtemp", 
                        pattern='.tif$', all.files=TRUE, full.names=TRUE)
+rastlist7579 <- rastlist[169:228]
+
 maxtempStack <- stack(rastlist)
 maxtempStack <- crop(maxtempStack, slvShp_sp)
-maxtempMean <- stackApply(maxtempStack, indices =  rep(1,nlayers(maxtempStack)), fun = "mean", na.rm = T)
+maxtempMean <- raster::calc(maxtempStack, fun=mean, na.rm = T)
+maxtempSd <- raster::calc(maxtempStack, fun=sd, na.rm = T)
 maxtempMean_mask<-mask(maxtempMean,slvShp_sp)
+maxtempSd_mask<-mask(maxtempSd,slvShp_sp)
 
+maxtempStack7579 <- stack(rastlist7579)
+maxtempStack7579 <- crop(maxtempStack7579, slvShp_sp)
+maxtempMean7579 <- raster::calc(maxtempStack7579, fun=mean, na.rm = T)
+maxtempMean_mask7579<-mask(maxtempMean7579 ,slvShp_sp)
+
+maxtemp_z_mask=(maxtempMean_mask7579-maxtempMean_mask)/maxtempSd_mask
+
+#Mintemp
 rastlist <- list.files(path = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/temperature/mintemp", 
                        pattern='.tif$', all.files=TRUE, full.names=TRUE)
+rastlist7579 <- rastlist[169:228]
+
 mintempStack <- stack(rastlist)
 mintempStack <- crop(mintempStack, slvShp_sp)
-mintempMean <- stackApply(mintempStack, indices =  rep(1,nlayers(mintempStack)), fun = "mean", na.rm = T)
+mintempMean <- raster::calc(mintempStack, fun=mean, na.rm = T)
+mintempSd <- raster::calc(mintempStack, fun=sd, na.rm = T)
 mintempMean_mask<-mask(mintempMean,slvShp_sp)
+mintempSd_mask<-mask(mintempSd,slvShp_sp)
+
+mintempStack7579 <- stack(rastlist7579)
+mintempStack7579 <- crop(mintempStack7579, slvShp_sp)
+mintempMean7579 <- raster::calc(mintempStack7579, fun=mean, na.rm = T)
+mintempMean_mask7579<-mask(mintempMean7579 ,slvShp_sp)
+
+mintemp_z_mask=(mintempMean_mask7579-mintempMean_mask)/mintempSd_mask
 
 
 #---------------------------------------------------------------------------------------
@@ -278,8 +315,11 @@ slvShp_segm_info1$sugarcane <- exact_extract(sugarcane_crop, slvShp_segm_info1, 
 slvShp_segm_info1$wrice <- exact_extract(wrice_crop, slvShp_segm_info1, 'mean')
 slvShp_segm_info1$flow <- exact_extract(flow, slvShp_segm_info1, 'mean')
 slvShp_segm_info1$rain <- exact_extract(rainMean_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$rainz <- exact_extract(rain_z_mask, slvShp_segm_info1, 'mean')
 slvShp_segm_info1$maxtemp <- exact_extract(maxtempMean_mask, slvShp_segm_info1, 'mean')
 slvShp_segm_info1$mintemp <- exact_extract(mintempMean_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$maxtempz <- exact_extract(maxtemp_z_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$mintempz <- exact_extract(mintemp_z_mask, slvShp_segm_info1, 'mean')
 
 #Extracting sum
 slvShp_segm_info1$sum_dhydro <- exact_extract(dhydro, slvShp_segm_info1, 'sum')
@@ -407,7 +447,7 @@ names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_fran'
 #---------------------------------------------------------------------------------------
 slvShp_segm_info<-slvShp_segm_info3
 
-#Sampling points int he borders for the RDD
+#Sampling points int the borders for the RDD
 set.seed(1234)
 
 disputa_line_sample <- st_sample(disputa_line, 1000, type="regular")
@@ -432,7 +472,7 @@ disputa_line_sample <- st_sample(disputa_line, 10, type="regular")
 pnt_disputaBrk_10 <- st_cast(disputa_line_sample, "POINT")
 
 control_line_sample <- st_sample(control_line, 1000, type="regular")
-pnt_controlBrk_400 <- st_cast(control_line_sample, "POINT")
+pnt_controlBrk_1000 <- st_cast(control_line_sample, "POINT")
 
 control_line_sample <- st_sample(control_line, 400, type="regular")
 pnt_controlBrk_400 <- st_cast(control_line_sample, "POINT")
@@ -706,8 +746,30 @@ slvShp_segm_info$cntrlbrkfe50<-brkIndexUnique[, 'col']
 # Converting from sf to sp object
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
-#Exporting the shapefile 
+#Exporting the all data shapefile
 writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+
+
+#---------------------------------------------------------------------------------------
+## EXPORTING THE ADDITIONAL SHAPEFILES:
+#
+#---------------------------------------------------------------------------------------
+#Exporting FE breaks shapefiles
+pnt_controlBrk_400_sp <- as(pnt_controlBrk_400, Class='Spatial')
+pnt_controlBrk_400_sp <-as(pnt_controlBrk_400_sp,"SpatialPointsDataFrame")
+
+pnt_controlBrk_1000_sp <- as(pnt_controlBrk_1000, Class='Spatial')
+pnt_controlBrk_1000_sp <-as(pnt_controlBrk_1000_sp,"SpatialPointsDataFrame")
+
+writeOGR(obj=pnt_controlBrk_400_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="pnt_controlBrk_400", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=pnt_controlBrk_1000_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="pnt_controlBrk_1000", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+
+
+
+
+
+
+
 
 
 

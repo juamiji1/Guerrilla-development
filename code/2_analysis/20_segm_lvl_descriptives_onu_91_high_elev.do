@@ -40,7 +40,7 @@ tabstat elevation2, by(within_control) s(N mean sd p1 p5 p10 p25 p50 p75 p90 p95
 gl breakfe="control_break_fe_400"
 
 *Creating matrices to export estimates
-forval i=1/4{
+forval i=1/3{
 	mat coef`i'=J(3,40,.)
 }
 
@@ -79,17 +79,10 @@ forval c=1/40{
 	mat coef3[2,`c']= r(lb)
 	mat coef3[3,`c']= r(ub)
 	
-	*Estimating elevation results
-	reghdfe max_elev within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] if abs(z_run_cntrl)<=`h' & river1==0, vce(r) a(i.${breakfe}) 
-	lincom within_control	
-	mat coef4[1,`c']= r(estimate) 
-	mat coef4[2,`c']= r(lb)
-	mat coef4[3,`c']= r(ub)
-	
 	local h=`h'+0.1
 }
 
-forval i=1/4{
+forval i=1/3{
 	mat coln coef`i'= .1 .2 .3 .4 .5 .6 .7 .8 .9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3 3.1 3.2 3.3 3.4 3.5 3.6 3.7 3.8 3.9 4
 }
 
@@ -102,9 +95,6 @@ gr export "${plots}\rdd_dvsnd_elev_bw_robustness_segm_91_low.pdf", as(pdf) repla
 
 coefplot (mat(coef3[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Km)")
 gr export "${plots}\rdd_dvsnd_elev_bw_robustness_segm_91_all.pdf", as(pdf) replace 
-
-coefplot (mat(coef4[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Km)")
-gr export "${plots}\rdd_dvsnd_max_elev_bw_robustness_segm_91.pdf", as(pdf) replace 
 
 *-------------------------------------------------------------------------------
 * Summary stats 
@@ -122,7 +112,7 @@ tabstat within_control z_run_cntrl if elevation2>=200 & river1==0, s(mean sd min
 tabstatmat A
 mat A=A'
 
-tabstat nl13_density arcsine_nl13 ln_nl13 wmean_nl1 elevation2 slope rugged hydrography mean_coffee mean_cotton mean_dryrice mean_wetrice mean_bean mean_sugarcane mean_rain min_temp rail_road dist_coast dist_capital if elevation2>=200 & river1==0, s(mean sd min max N) save
+tabstat nl13_density arcsine_nl13 ln_nl13 wmean_nl1 elevation2 slope rugged hydrography mean_coffee mean_cotton mean_dryrice mean_wetrice mean_bean mean_sugarcane rain_z min_temp_z max_temp_z rail_road dist_coast dist_capital if elevation2>=200 & river1==0, s(mean sd min max N) save
 tabstatmat B
 mat B=B'
 

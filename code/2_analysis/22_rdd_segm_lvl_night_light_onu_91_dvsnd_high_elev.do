@@ -9,15 +9,15 @@ NOTES:
 
 
 *-------------------------------------------------------------------------------
-* 						Spatial RDD Mechanisms
+* 						Main outcomes 
 *
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimate
 gl breakfe="control_break_fe_400"
-gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
-gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
@@ -93,6 +93,25 @@ foreach var of global educ1{
 *-------------------------------------------------------------------------------
 * 								Plots
 *-------------------------------------------------------------------------------
+*Against the distance
+gl out "arcsine_nl13_r nl13_density_r wmean_nl1_r z_wi_r mean_educ_years_r literacy_rate_r" 
+
+preserve
+
+	gen x=round(z_run_cntrl, 0.1)
+	gen n=1
+	
+	collapse (mean) ${out} (sum) n, by(x)
+
+	foreach var of global out{
+		gl hr=round(${h},0.1)
+		two (scatter `var' x if abs(x)<${h}, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-${hr}(0.2)${hr}) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") 
+		gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
+		
+	}
+	
+restore
+
 *Using different bandwidths
 foreach var of global nl{
 	
@@ -133,19 +152,6 @@ foreach var of global nl{
 
 }
 
-*Against the distance
-gl out "arcsine_nl13_r nl13_density_r wmean_nl1_r z_wi_r mean_educ_years_r literacy_rate_r" 
-
-gen x=round(z_run_cntrl, 0.1)
-gen n=1
-
-collapse (mean) ${out} (sum) n, by(x)
-
-foreach var of global out{
-	two (scatter `var' x if abs(x)<${h}, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") 
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-	
-}
 
 
 

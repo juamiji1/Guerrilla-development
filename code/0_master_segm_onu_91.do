@@ -56,6 +56,7 @@ do "${do}\2_analysis\22_rdd_segm_lvl_night_light_onu_91_dvsnd_high_elev.do"
 do "${do}\2_analysis\23_rdd_segm_lvl_mechanisms_onu_91_dvsnd_high_elev.do"
 do "${do}\2_analysis\24_rdd_segm_lvl_mechanisms_warage_onu_91_dvsnd_high_elev.do"
 
+end
 *-------------------------------------------------------------------------------
 *	 						   3. Robust Analysis
 *

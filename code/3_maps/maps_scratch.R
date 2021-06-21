@@ -65,6 +65,10 @@ slv_crs <- st_crs(slvShp)
 controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_control_onu_91")
 st_crs(controlShp) <- slv_crs
 
+#Importing breaks of controlled zones
+pnt_controlBrk_400<- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "pnt_controlBrk_400")
+pnt_controlBrk_1000<- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "pnt_controlBrk_1000")
+
 #Importing El salvador shapefile
 deptoShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_admbnda_adm1_2020")
 muniShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_admbnda_adm2_2020")
@@ -141,7 +145,15 @@ tm_shape(slvShp_segm_sample)+
   tm_layout(frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_sample.png")
   
-
+tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+  tm_shape(pnt_controlBrk_400)+
+  tm_dots(size=0.3, col='red')+
+  tm_add_legend(type="symbol", col="red", title="Border breaks")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/control_breaks.png")
+  
+  
 
 
 

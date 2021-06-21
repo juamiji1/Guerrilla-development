@@ -16,7 +16,7 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
-gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
 	
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
@@ -62,11 +62,6 @@ foreach var of global hh{
 	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_hh_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-
 }
 
 *Plots
@@ -151,14 +146,9 @@ foreach var of global dem1{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-
 }
 
 foreach var of global dem2{
@@ -167,14 +157,10 @@ foreach var of global dem2{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
-	dis "reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) "
+	*Table
+	dis "reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})"
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -184,13 +170,9 @@ foreach var of global dem3{
 	cap nois summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_dem_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -272,13 +254,9 @@ foreach var of global educ1{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -288,13 +266,9 @@ foreach var of global educ2{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -304,13 +278,9 @@ foreach var of global educ3{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_educ_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -404,13 +374,9 @@ foreach var of global lab1{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -420,13 +386,9 @@ foreach var of global lab2{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_always_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -436,13 +398,9 @@ foreach var of global lab3{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_lab_waralways_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -515,13 +473,9 @@ foreach var of global migr{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Total Households
+	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_migr_mechanisms_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
 
 }
 
@@ -566,6 +520,7 @@ foreach var of global migr{
 	gr export "${plots}\rdd_dvsnd_`var'_bw_robustness_segm_91_p25.pdf", as(pdf) replace 
 
 }
+
 
 
 

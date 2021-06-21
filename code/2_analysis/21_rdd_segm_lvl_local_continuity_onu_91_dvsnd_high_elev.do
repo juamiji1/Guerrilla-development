@@ -13,12 +13,14 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
-gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord c.x_coord#c.z_run_cntrl c.y_coord#c.z_run_cntrl"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord"
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
+
+*gl h=round(${h}, 0.1)
 
 *Conditional for all specifications
 gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0"
@@ -31,14 +33,15 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 * Local continuity using Percentile 25 and up of elevation (Table)
 *-------------------------------------------------------------------------------
 *Global of local continuity vars to check 
-gl lc1 "elevation2 slope rugged hydrography mean_rain min_temp rail_road dist_capital" 
-gl lc2 "dist_coast dist_depto mean_coffee mean_cotton mean_dryrice mean_wetrice mean_bean mean_sugarcane"
+gl lc1 "elevation2 slope rugged hydrography rain_z min_temp_z max_temp_z rail_road dist_capital" 
+gl lc2 "dist_coast dist_depto mean_cocoa mean_coffee mean_cotton mean_dryrice mean_wetrice mean_bean mean_sugarcane"
 
 *Labeling for tables 
 la var elevation2 "Altitude"
 la var slope "Slope"
 la var hydrography "Hydrography"
 la var rail_road  "Roads and Railway"
+la var mean_cocoa "Cocoa Yield"
 la var mean_coffee "Coffe Yield"
 la var mean_cotton "Cotton Yield"
 la var mean_dryrice "Dry Rice Yield"
@@ -47,9 +50,9 @@ la var mean_bean "Bean Yield"
 la var mean_sugarcane "Sugarcane Yield"
 la var dist_coast "Distance to Coast"
 la var dist_capital "Distance to Capital"
-la var mean_rain "Mean Rainfall"
-*la var max_temp "Maximum Temperature"
-la var min_temp "Temperature"
+la var rain_z "Rainfall"
+la var max_temp_z "Max Temperature"
+la var min_temp_z "Min Temperature"
 la var rugged "Ruggedness"
 
 *Erasing files 
@@ -67,11 +70,6 @@ foreach var of global lc1{
 	*Table 
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	outreg2 using "${tables}\rdd_dvsnd_local_continuity_onu_91_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-
 }
 
 foreach var of global lc2{
@@ -80,21 +78,23 @@ foreach var of global lc2{
 	summ `var' if elevation2>=200 & river1==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*Table 
-	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_local_continuity_onu_91_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-	*Rdplot
-	rdplot `var' z_run_cntrl ${if}, ci(95) covs_drop(fe_*) kernel(triangular) nbins(10) p(1) graph_options(title(""))
-	gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-
+	if "`var'"!="mean_cotton"{
+		*Table 
+		reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+		outreg2 using "${tables}\rdd_dvsnd_local_continuity_onu_91_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	}
+	else{
+		*Table 
+		reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) keepsing
+		outreg2 using "${tables}\rdd_dvsnd_local_continuity_onu_91_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 	
+	}
 }
 
 
 *-------------------------------------------------------------------------------
 * Local continuity using Percentile 25 and up of elevation (Plot)
 *-------------------------------------------------------------------------------
-gl lc "elevation2 slope hydrography roads rail_road cacao bean mean_cocoa mean_bean mean_coffee mean_cotton mean_dryrice mean_maize mean_sugarcane mean_wetrice lake river2 dist_coast dist_capital mean_rain max_temp min_temp rugged"
+gl lc "elevation2 slope rugged hydrography rain_z min_temp_z max_temp_z rail_road dist_capital dist_coast dist_depto mean_cocoa mean_coffee mean_cotton mean_dryrice mean_wetrice mean_bean mean_sugarcane"
 *mean_flow
 
 foreach var of global lc{
