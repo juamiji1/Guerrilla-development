@@ -68,7 +68,7 @@ foreach var of global nl{
 	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
 	cap drop `var'_r
 	predict `var'_r, resid
-	replace `var'_r=. if e(sample)!=1
+	*replace `var'_r=. if e(sample)!=1
 
 }
 
@@ -86,7 +86,7 @@ foreach var of global educ1{
 	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
 	cap drop `var'_r
 	predict `var'_r, resid
-	replace `var'_r=. if e(sample)!=1	
+	*replace `var'_r=. if e(sample)!=1	
 	
 }
 
@@ -94,23 +94,38 @@ foreach var of global educ1{
 * 								Plots
 *-------------------------------------------------------------------------------
 *Against the distance
-gl out "arcsine_nl13_r nl13_density_r wmean_nl1_r z_wi_r mean_educ_years_r literacy_rate_r" 
+gl main "arcsine_nl13 ln_nl13 nl13_density wmean_nl1 z_wi mean_educ_years literacy_rate"
+
+gl if "if abs(z_run_cntrl)<=3 & elevation2>=200 & river1==0"
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/3)) ${if}
+
+foreach var of global main{
+	*Predicting outcomes
+	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	cap drop `var'_r
+	predict `var'_r, resid
+}
+
+gl resid "arcsine_nl13_r nl13_density_r wmean_nl1_r z_wi_r mean_educ_years_r literacy_rate_r" 
 
 preserve
 
-	gen x=round(z_run_cntrl, 0.1)
+	gen x=round(z_run_cntrl, 0.08)
 	gen n=1
 	
-	collapse (mean) ${out} (sum) n, by(x)
+	collapse (mean) ${resid} (sum) n, by(x)
 
 	foreach var of global out{
-		gl hr=round(${h},0.1)
-		two (scatter `var' x if abs(x)<${h}, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-${hr}(0.2)${hr}) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") 
+		two (scatter `var' x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-1(0.2)1) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var', replace)
 		gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-		
+
+				
 	}
 	
 restore
+
 
 *Using different bandwidths
 foreach var of global nl{
