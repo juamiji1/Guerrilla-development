@@ -95,6 +95,22 @@ slvShp_segm_info_join <- left_join(slvShp_segm_info, predicted, by = c("SEG_ID" 
 y1<-subset(slvShp_segm_info_join, dst_cnt==0)
 y2<-subset(slvShp_segm_info_join, dst_cn2<1250 & wthn_c2==1)
 
+#Mesas de votacion
+mesas12 <- st_read(dsn = "gis/electoral_results", layer = "mesas2012")
+mesas14 <- st_read(dsn = "gis/electoral_results", layer = "mesas2014")
+mesas15 <- st_read(dsn = "gis/electoral_results", layer = "mesas2015")
+
+#Counting number of mesas per segment 
+intersection <- st_intersection(x = slvShp_segm_info_join, y = mesas14)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  dplyr::summarise(n=n())
+
+slvShp_segm_info_join<-st_join(slvShp_segm_info_join,int_result)
+slvShp_segm_info_join <- subset(slvShp_segm_info_join, select = -SEG_ID.y)
+names(slvShp_segm_info_join)[names(slvShp_segm_info_join) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info_join)[names(slvShp_segm_info_join) == 'n'] <- 'n_mesas14'
+
 
 #---------------------------------------------------------------------------------------
 ## PLOTS:
@@ -272,6 +288,25 @@ tm_shape(y2) +
   tm_borders()+ 
   tm_layout(legend.show=FALSE, frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_centroid.png")
+
+
+
+
+#Mesas:
+tm_shape(slvShp_segm_info_join) + 
+  tm_polygons(col='n_mesas14', title='Quantile cuts', palette="-Blues", colorNA = "white", textNA = "Missing data", n=1)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mesas1.png")
+
+tm_shape(slvShp_segm_info_join) + 
+  tm_borders()+
+  tm_shape(mesas14)+
+  tm_dots(size=0.2, col='red')+
+  tm_add_legend(type="symbol", col="red", title="Mesas 2014")+
+  tm_layout(legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mesas2.png")
+
+
+
 
 
 
