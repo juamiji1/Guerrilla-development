@@ -139,7 +139,8 @@ merge m:1 seg_id using `R', keep(1 3) nogen
 
 *Preparing voting vars 
 gen sh_left=fmln/votos_validos
-gen sh_right=(arena+fps+unidad)/votos_validos
+*gen sh_right=(arena+fps+unidad)/votos_validos
+gen sh_right=(arena)/votos_validos
 gen turnout=vv_mas_otros/electores
 gen sh_blanco=abstenciones/votos_validos
 
