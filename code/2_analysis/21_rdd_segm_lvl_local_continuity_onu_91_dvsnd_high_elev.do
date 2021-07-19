@@ -14,6 +14,7 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord"
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
@@ -95,8 +96,33 @@ foreach var of global lc2{
 * Local continuity using Percentile 25 and up of elevation (Plot)
 *-------------------------------------------------------------------------------
 gl lc "elevation2 slope rugged hydrography rain_z min_temp_z max_temp_z rail_road dist_capital dist_coast dist_depto mean_cocoa mean_coffee mean_cotton mean_dryrice mean_wetrice mean_bean mean_sugarcane"
-*mean_flow
+gl resid "elevation2_r slope_r rugged_r hydrography_r rain_z_r min_temp_z_r max_temp_z_r rail_road_r dist_capital_r dist_coast_r dist_depto_r mean_cocoa_r mean_coffee_r mean_cotton_r mean_dryrice_r mean_wetrice_r mean_bean_r mean_sugarcane_r"
 
+*Against the distance
+foreach var of global lc{
+	*Predicting outcomes
+	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	cap drop `var'_r
+	predict `var'_r, resid
+}
+
+preserve
+
+	gen x=round(z_run_cntrl, 0.08)
+	gen n=1
+	
+	collapse (mean) ${resid} (sum) n, by(x)
+
+	foreach var of global resid{
+		two (scatter `var' x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-1(0.2)1) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var', replace)
+		gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
+
+				
+	}
+	
+restore
+
+*Different Badwidths
 foreach var of global lc{
 	
 	*Dependent's var mean
