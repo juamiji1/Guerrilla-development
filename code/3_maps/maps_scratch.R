@@ -97,8 +97,11 @@ y2<-subset(slvShp_segm_info_join, dst_cn2<1250 & wthn_c2==1)
 
 #Mesas de votacion
 mesas12 <- st_read(dsn = "gis/electoral_results", layer = "mesas2012")
-mesas14 <- st_read(dsn = "gis/electoral_results", layer = "mesas2014")
+mesas14 <- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "mesas14_info_sp_onu_91")
 mesas15 <- st_read(dsn = "gis/electoral_results", layer = "mesas2015")
+
+shares09 <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/mesas09_sh.csv")
+shares14 <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/mesas14_sh.csv")
 
 #Counting number of mesas per segment 
 intersection <- st_intersection(x = slvShp_segm_info_join, y = mesas14)
@@ -110,6 +113,18 @@ slvShp_segm_info_join<-st_join(slvShp_segm_info_join,int_result)
 slvShp_segm_info_join <- subset(slvShp_segm_info_join, select = -SEG_ID.y)
 names(slvShp_segm_info_join)[names(slvShp_segm_info_join) == 'SEG_ID.x'] <- 'SEG_ID'
 names(slvShp_segm_info_join)[names(slvShp_segm_info_join) == 'n'] <- 'n_mesas14'
+
+#Joining mesas to voting shares 
+mesas14_join09 <- left_join(mesas14, shares09, by = c("Name" = "mesa_shape"))
+mesas14_join14 <- left_join(mesas14, shares14, by = c("Name" = "mesa_shape"))
+
+mesas14_join09 <- na.omit(mesas14_join09, col="sh_left")
+mesas14_join14 <- na.omit(mesas14_join14, col="sh_left")
+
+winl09<-subset(mesas14_join09, win_left==1)
+winr09<-subset(mesas14_join09, win_left==0)
+winl14<-subset(mesas14_join14, win_left==1)
+winr14<-subset(mesas14_join14, win_left==0)
 
 
 #---------------------------------------------------------------------------------------
@@ -307,6 +322,29 @@ tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/
 
 
 
+tm_shape(slvShp) + 
+  tm_borders()+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_shape(winr09)+
+  tm_dots(size=0.4, col='blue2', alpha = 0.4)+
+  tm_shape(winl09)+
+  tm_dots(size=0.6, col='red3')+
+  tm_add_legend(type="symbol", col="red3", title="Won left in 2009")+
+  tm_layout(legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mesas09_left.png")
+
+tm_shape(slvShp) + 
+  tm_borders()+
+  tm_shape(winr14)+
+  tm_dots(size=0.4, col='blue2', alpha = 0.4)+
+  tm_shape(winl14)+
+  tm_dots(size=0.6, col='red3', alpha = 0.4)+
+  tm_add_legend(type="symbol", col="red3", title="Won left in 2014")+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
+  tm_layout(legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mesas14_left.png")
 
 
 

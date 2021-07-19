@@ -98,6 +98,7 @@ disputa_line <- st_cast(disputaShp,"MULTILINESTRING")
 #---------------------------------------------------------------------------------------
 mesas14 <- st_read(dsn = "gis/electoral_results", layer = "mesas2014_depmuni")
 mesas15 <- st_read(dsn = "gis/electoral_results", layer = "mesas2015_depmuni")
+mesas12 <- st_read(dsn = "gis/electoral_results", layer = "mesas2012")
 
 
 #---------------------------------------------------------------------------------------
@@ -124,6 +125,15 @@ mesas15_2$dist_disputa<-as.numeric(st_distance(mesas15_2, disputa_line))
 mesas15_2 <- mutate(mesas15_2, within_control=as.numeric(st_intersects(mesas15_2, controlShp, sparse = FALSE)), 
                     within_disputa=as.numeric(st_intersects(mesas15_2, disputaShp, sparse = FALSE)))
 
+mesas12_2<-mesas12
+
+#Calculating the minimum distance of each mesa to the FMLN zones 
+mesas12_2$dist_control<-as.numeric(st_distance(mesas12_2, control_line))
+mesas12_2$dist_disputa<-as.numeric(st_distance(mesas12_2, disputa_line))
+
+#Creating indicators for whether the segment is within each FMLN zone
+mesas12_2 <- mutate(mesas12_2, within_control=as.numeric(st_intersects(mesas12_2, controlShp, sparse = FALSE)), 
+                    within_disputa=as.numeric(st_intersects(mesas12_2, disputaShp, sparse = FALSE)))
 
 #---------------------------------------------------------------------------------------
 ## INCLUDING THE LINE BREAK FE:
@@ -239,6 +249,62 @@ mesas15_info$cntrlbrkfe400<-brkIndexUnique[, 'col']
 
 
 
+# Mesas 2012
+mesas12_info<-mesas12_2
+
+#Sampling points int the borders for the RDD
+set.seed(1234)
+
+disputa_line_sample <- st_sample(disputa_line, 400, type="regular")
+pnt_disputaBrk_400 <- st_cast(disputa_line_sample, "POINT")
+
+control_line_sample <- st_sample(control_line, 400, type="regular")
+pnt_controlBrk_400 <- st_cast(control_line_sample, "POINT")
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(mesas12_info, pnt_disputaBrk_400, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+mesas12_info$dist_brk400<-distMin
+mesas12_info$brkfe400<-brkIndexUnique[, 'col']
+
+#Calculating the distance of each census segment to disputed border breaks
+distBrk<-st_distance(mesas12_info, pnt_controlBrk_400, by_element = FALSE)
+
+#Converting from units object to numeric array
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+
+#Calculating the min for each row
+distMin<-rowMins(distMatrix)
+
+#Extracting the column indexes as the breaks FE 
+brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+
+#Dropping duplicates and sorting by row 
+brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+
+#Adding information to shapefile
+mesas12_info$cntrldist_brk400<-distMin
+mesas12_info$cntrlbrkfe400<-brkIndexUnique[, 'col']
+
+
+
 #---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
 #
@@ -246,11 +312,15 @@ mesas15_info$cntrlbrkfe400<-brkIndexUnique[, 'col']
 # Converting from sf to sp object
 mesas14_info_sp <- as(mesas14_info, Class='Spatial')
 mesas15_info_sp <- as(mesas15_info, Class='Spatial')
+mesas12_info_sp <- as(mesas12_info, Class='Spatial')
 
 #Exporting the all data shapefile
 writeOGR(obj=mesas14_info_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="mesas14_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE, layer_options = "ENCODING=UTF-8")
 
 writeOGR(obj=mesas15_info_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="mesas15_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE, layer_options = "ENCODING=UTF-8")
+
+writeOGR(obj=mesas12_info_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="mesas12_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE, layer_options = "ENCODING=UTF-8")
+
 
 
 

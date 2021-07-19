@@ -20,67 +20,6 @@ gen altitude_river_sample=1
 tempfile R
 save `R', replace
 
-*Votes
-import excel "${data}\gis\electoral_results\resultados\2014\presidente_a.xlsx", sheet("Sheet 1") firstrow clear
-rename _all, low
-ren (nom_depto nom_munic nom_centro) (depto muni mesa)
-
-collapse (sum) arena fmln fps psp unidad votos_validos impugnados nulos abstenciones otros_votos vv_mas_otros faltantes sobrantes inutilizadas totales, by(depto muni mesa mesa cod_centro)
-
-*Fixing the municipio and departamento vars 
-foreach var in muni depto mesa{
-	replace `var'=upper(`var')
-	replace `var'=ustrtrim(`var')
-	replace `var'=subinstr(`var',"Á","A",.)
-	replace `var'=subinstr(`var',"É","E",.)
-	replace `var'=subinstr(`var',"Í","I",.)
-	replace `var'=subinstr(`var',"Ó","O",.)
-	replace `var'=subinstr(`var',"Ú","U",.)
-	replace `var'=subinstr(`var',"Ü","U",.)
-	replace `var'=subinstr(`var',"Ñ","N",.)
-	replace `var'=subinstr(`var',".","",.)
-	replace `var'=subinstr(`var',char(34),"",.)
-}
-
-replace mesa="CASA COMUNAL, CANTON SAN ANDRES" if mesa=="CALLE PRINCIPAL, CANTON SAN ANDRES"
-
-tempfile V
-save `V', replace
-
-*Padron
-import excel "${data}\gis\electoral_results\padron\2014.xlsx", sheet("Sheet1") firstrow clear
-ren _all, low 
-drop if nom_dep=="" | nom_dep=="Nom_Dep" | nom_dep=="35"
-replace electores=f if _n>1564
-replace nom_centro=f if nom_centro==""
-
-ren (nom_dep nom_mun nom_centro) (depto muni mesa)
-keep depto muni mesa electores
-destring electores, replace
-
-*Fixing the municipio and departamento vars 
-foreach var in muni depto mesa{
-	replace `var'=upper(`var')
-	replace `var'=ustrtrim(`var')
-	replace `var'=subinstr(`var',"Á","A",.)
-	replace `var'=subinstr(`var',"É","E",.)
-	replace `var'=subinstr(`var',"Í","I",.)
-	replace `var'=subinstr(`var',"Ó","O",.)
-	replace `var'=subinstr(`var',"Ú","U",.)
-	replace `var'=subinstr(`var',"Ü","U",.)
-	replace `var'=subinstr(`var',"Ñ","N",.)
-	replace `var'=subinstr(`var',".","",.)
-	replace `var'=subinstr(`var',char(34),"",.)
-}
-
-merge 1:1 depto muni mesa using `V', keep(1 3) nogen
-
-sort depto muni mesa
-gen id2 =_n 
-
-tempfile P
-save `P', replace
-
 *Shape
 import excel "${data}\gis\electoral_results\mesas\mesas2014.xls", sheet("mesas2014") firstrow clear
 
@@ -89,6 +28,7 @@ ren (mesas2014FID mesas2014Name DIGESTYC_Segmentos2007DEPTO DIGESTYC_Segmentos20
 
 duplicates tag mesa codepto codmuni, g(dup)
 tab dup
+drop dup
 
 gen mesa_shape=mesa 
 
@@ -107,25 +47,88 @@ foreach var in muni depto mesa{
 	replace `var'=subinstr(`var',"Ü","U",.)
 	replace `var'=subinstr(`var',"Ñ","N",.)
 	replace `var'=subinstr(`var',".","",.)
+	replace `var'=subinstr(`var',")","",.)
+	replace `var'=subinstr(`var',"(","",.)
 	replace `var'=subinstr(`var',char(34),"",.)
 }
 
 sort depto muni mesa 
+gen id2 =_n 
+
+tempfile S
+save `S', replace
+
+*Padron
+import excel "${data}\gis\electoral_results\padron\2009.xlsx", sheet("Sheet1") firstrow clear
+ren _all, low 
+ren (coddep codmun codcen) (codepto_v codmuni_v cod_centro)
+keep codepto_v codmuni_v cod_centro electores
+drop if codepto_v==. | codmuni_v==.
+
+tempfile P
+save `P', replace
+
+*Votes
+import excel "${data}\gis\electoral_results\resultados\2009\presidente.xls", sheet("Sheet 1") firstrow clear
+rename _all, low
+ren (coddep nomdep codmun nommun codcen nomcen votcand1 votcand2 votabs votval vototr) (codepto_v depto codmuni_v muni cod_centro mesa arena fmln abstenciones votos_validos votos_otros)
+drop if codepto_v==. | codmuni_v==.
+
+collapse (sum) arena fmln abstenciones votos_validos votos_otros, by(codepto_v depto codmuni_v muni cod_centro mesa)
+
+merge 1:1 codepto_v codmuni_v cod_centro using `P', nogen
+
+*Fixing the municipio and departamento vars 
+foreach var in muni depto mesa{
+	replace `var'=upper(`var')
+	replace `var'=ustrtrim(`var')
+	replace `var'=subinstr(`var',"Á","A",.)
+	replace `var'=subinstr(`var',"É","E",.)
+	replace `var'=subinstr(`var',"Í","I",.)
+	replace `var'=subinstr(`var',"Ó","O",.)
+	replace `var'=subinstr(`var',"Ú","U",.)
+	replace `var'=subinstr(`var',"Ü","U",.)
+	replace `var'=subinstr(`var',"Ñ","N",.)
+	replace `var'=subinstr(`var',".","",.)
+	replace `var'=subinstr(`var',")","",.)
+	replace `var'=subinstr(`var',"(","",.)
+	replace `var'=subinstr(`var',char(34),"",.)
+}
+
+*Fixing names 
+replace mesa="ALAMEDA ROOSEVELT 1" if mesa=="ALAMEDA ROOSEVELT 2"
+replace mesa="ALAMEDA ROOSEVELT 1" if mesa=="ALAMEDA ROOSEVELT 3"
+replace mesa="ALAMEDA ROOSEVELT 1" if mesa=="ALAMEDA ROOSEVELT 4"
+replace mesa="ALAMEDA ROOSEVELT 1" if mesa=="ALAMEDA ROOSEVELT 5"
+replace mesa="ALAMEDA ROOSEVELT 1" if mesa=="ALAMEDA ROOSEVELT 6"
+replace mesa="GIMNASIO NACIONAL ADOLFO PINEDA" if mesa=="GIMNASIO NACIONAL  ADOLFO PINEDA"
+
+*collapse (sum) arena fmln abstenciones votos_validos, by(codepto depto codmuni muni cod_centro mesa)
+collapse (sum) arena fmln abstenciones votos_validos votos_otros electores, by(depto muni mesa)
+
+
+sort depto muni mesa
 gen id1 =_n 
 
-reclink depto muni mesa using `P', idm(id1) idu(id2) gen(score_link) required(depto muni)
-keep mesa_shape depto muni codepto codmuni seg_id electores arena-totales
+reclink depto muni mesa using `S', idm(id1) idu(id2) gen(score_link) required(depto muni)
+
+*Picking the one with the highest score
+drop if Umesa==""
+sort depto muni Umesa score_link
+bys depto muni Umesa: egen rank=rank(score_link), f 
+keep if rank==1																	// 429 mesas at the end
+
+keep mesa_shape depto muni codepto codmuni seg_id arena fmln abstenciones votos_validos votos_otros electores
 
 tempfile M
 save `M', replace
-
 
 *-------------------------------------------------------------------------------
 * 					Converting shape to dta
 *
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
-*shp2dta using "${data}/gis\nl_segm_lvl_vars\mesas14_info_sp_onu_91", data("${data}/temp\mesas14_info_sp_onu_91.dta") coord("${data}/temp\mesas14_info_sp_coord_onu_91.dta") genid(pixel_id) genc(coord) replace 
+*shp2dta using "${data}/gis\nl_segm_lvl_vars\mesas12_info_sp_onu_91", data("${data}/temp\mesas12_info_sp_onu_91.dta") coord("${data}/temp\mesas12_info_sp_coord_onu_91.dta") genid(pixel_id) genc(coord) replace 
 
 *Loading the data 
 use "${data}/temp\mesas14_info_sp_onu_91.dta", clear
@@ -138,10 +141,9 @@ merge 1:1 codepto codmuni seg_id mesa_shape using `M', nogen
 merge m:1 seg_id using `R', keep(1 3) nogen
 
 *Preparing voting vars 
-gen sh_left=fmln/votos_validos
-*gen sh_right=(arena+fps+unidad)/votos_validos
-gen sh_right=(arena)/votos_validos
-gen turnout=vv_mas_otros/electores
+gen sh_left=fmln/votos_validos									
+gen sh_right=arena/votos_validos			
+gen turnout=(votos_validos+votos_otros)/electores
 gen sh_blanco=abstenciones/votos_validos
 
 *Changing units to Kms
@@ -156,18 +158,18 @@ gen z_run_dsptd= dist_disputed
 replace z_run_dsptd= -1*dist_disputed if within_disputed==0
 
 la var within_control "Guerrilla control"
-la var sh_left "Left voting share"
+la var sh_left "FMLN voting share"
 la var sh_right "Right voting share" 
 la var turnout "Turnout"
 la var sh_blanco "Blank voting share"
 
 *Saving the data 
-save "${data}/mesas14_onu_91.dta", replace 
+save "${data}/mesas09_onu_91.dta", replace 
 
 gen win_left=(sh_left>sh_right) if sh_left!=. & sh_right!=.
 
 *Export to csv 
-export delimited using "${data}\mesas14_sh.csv", replace
+export delimited using "${data}\mesas09_sh.csv", replace
 
 
 *-------------------------------------------------------------------------------
@@ -185,8 +187,8 @@ gl elec="sh_left sh_right sh_blanco turnout"
 * 						Elections (Table)
 *-------------------------------------------------------------------------------
 *Erasing table before exporting
-cap erase "${tables}\rdd_dvsnd_elec_onu_91.tex"
-cap erase "${tables}\rdd_dvsnd_elec_onu_91.txt"
+cap erase "${tables}\rdd_dvsnd_elec09_onu_91.tex"
+cap erase "${tables}\rdd_dvsnd_elec09_onu_91.txt"
 
 *RDD with break fe and triangular weights 
 rdrobust sh_left z_run_cntrl, all kernel(triangular)
@@ -205,7 +207,7 @@ foreach var of global elec{
 	
 	*Table
 	reghdfe `var' ${controls} [aw=tweights] if abs(z_run_cntrl)<=${h} & altitude_river_sample==1, vce(r) a(i.${breakfe})
-	outreg2 using "${tables}\rdd_dvsnd_elec_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_dvsnd_elec09_onu_91.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 	*Resid prediction
 	reghdfe `var' ${controls_resid} [aw=tweights] if abs(z_run_cntrl)<=${h} & altitude_river_sample==1, vce(r) a(i.${breakfe}) resid 
@@ -222,13 +224,13 @@ foreach var of global elec{
 
 	preserve
 
-		gen x=round(z_run_cntrl, 0.09)
+		gen x=round(z_run_cntrl, 0.00001)
 		gen n=1
 
 		collapse (mean) `var'_r (sum) n, by(x)
 		
-		two (scatter `var'_r x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var'_r x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var'_r x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-1(0.2)1) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") 
-		gr export "${plots}\rdplot_`var'_r.pdf", as(pdf) replace 
+		two (scatter `var'_r x if abs(x)<4, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var'_r x [aweight = n] if x<0 & abs(x)<4, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var'_r x [aweight = n] if x>=0 & abs(x)<4, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-4(0.5)4) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var'_r, replace)
+		gr export "${plots}\rdplot_`var'_r_09.pdf", as(pdf) replace 
 		
 	restore
 
@@ -245,7 +247,7 @@ foreach var of global elec{
 	mat coef=J(3,40,.)
 	
 	*Estimations
-	local h=0.3
+	local h=2
 	forval c=1/40{
 
 		*Conditional for all specifications
@@ -262,15 +264,15 @@ foreach var of global elec{
 		mat coef[2,`c']= r(lb)
 		mat coef[3,`c']= r(ub)
 		
-		local h=`h'+0.1	
+		local h=`h'+1
 	}
 		
 	*Labeling coef matrix rows according to each bw
-	mat coln coef=.3 .4 .5 .6 .7 .8 .9 1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9 3 3.1 3.2 3.3 3.4 3.5 3.6 3.7 3.8 3.9 4 4.1 4.2
+	mat coln coef=2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41
 	
 	*Plotting estimates 
-	coefplot (mat(coef[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") note(Mean of Outcome: ${mean_y}) 
-	gr export "${plots}\rdd_dvsnd_`var'_bw_robustness.pdf", as(pdf) replace 
+	coefplot (mat(coef[1]), ci((2 3)) label("Within FMLN-dominated zone")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Bandwidth (Kms)") note(Mean of Outcome: ${mean_y}) name(`var', replace)
+	gr export "${plots}\rdd_dvsnd_`var'_bw_robustness_09.pdf", as(pdf) replace 
 
 }
 
@@ -288,4 +290,7 @@ foreach var of global elec{
 
 
 
-*END
+
+
+
+

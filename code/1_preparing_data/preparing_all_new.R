@@ -157,6 +157,13 @@ muniSimp_sf<-st_as_sf(muniShp_sp_simp)
 deptoLine <- st_cast(deptoSimp_sf,"MULTILINESTRING")
 muniLine <- st_cast(muniSimp_sf,"MULTILINESTRING")
 
+#Importing homicides in 2017
+homicides <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/homicidios/homicides2017.csv")
+homicides$x<-as.numeric(homicides$x)
+homicides$y<-as.numeric(homicides$y)
+homicides <- na.omit(homicides) 
+homicides_sf <- st_as_sf(homicides, coords = c("x", "y"), crs = slv_crs)
+
 
 #---------------------------------------------------------------------------------------
 ## PREPARING RASTERS FILES:
@@ -439,6 +446,17 @@ slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
 names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
 names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_fran'
+
+#Counting number of homicides per segment 
+intersection <- st_intersection(x = slvShp_segm_info3, y = homicides_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  dplyr::summarise(n=n())
+
+slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_homicides'
 
 
 #---------------------------------------------------------------------------------------

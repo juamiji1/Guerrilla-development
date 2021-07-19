@@ -36,7 +36,7 @@ shp2dta using "${data}/gis\nl_segm_lvl_vars\slvShp_segm_info_sp_onu_91", data("$
 use "${data}/temp\slvShp_segm_info_sp_onu_91.dta", clear
 
 *Keeping only important vars 
-rename (SEG_ID wthn_cn wthn_ds dst_cnt dst_dsp nl elev elev2 wmen_nl cocoa coffee cotton drice maize bean sugarcn wrice sm_dhyd sm_kmhy rain maxtemp mintemp rainz maxtmpz mintmpz dst_cn2 dst_ds2 wthn_c2 wthn_d2 lake_nt riv1_nt riv2_nt rail_nt road_nt dst_cst dst_cpt dst_dpt dist_mn n_hosp n_sch matricl n_parr n_pa80 n_fran ds_1000 brk1000 dst_400 brkf400 dst_200 brkf200 dst_100 brkf100 dst_b50 brkfe50 dst_b25 brkfe25 dst_b10 brkfe10 cnt_400 cnt_200 cntr200 cnt_100 cntr100 cntr_50 cntrl50 cn_1000 cnt1000) (segm_id within_control within_disputed dist_control dist_disputed nl13_density elevation elevation2 wmean_nl1 mean_cocoa mean_coffee mean_cotton mean_dryrice mean_maize mean_bean mean_sugarcane mean_wetrice sum_dhydro sum_kmhydro mean_rain max_temp min_temp rain_z max_temp_z min_temp_z dist_control_v2 dist_disputed_v2 within_control_v2 within_disputed_v2 lake river1 river2 rail road dist_coast dist_capital dist_depto dist_muni total_hospitals total_schools total_matricula parroquias parroquias1980 franciscanas dist_disputa_breaks_1000 disputa_break_fe_1000 dist_disputa_breaks_400 disputa_break_fe_400 dist_disputa_breaks_200 disputa_break_fe_200 dist_disputa_breaks_100 disputa_break_fe_100 dist_disputa_breaks_50 disputa_break_fe_50 dist_disputa_breaks_25 disputa_break_fe_25 dist_disputa_breaks_10 disputa_break_fe_10 dist_control_breaks_400  dist_control_breaks_200 control_break_fe_200 dist_control_breaks_100 control_break_fe_100 dist_control_breaks_50 control_break_fe_50 dist_control_breaks_1000 control_break_fe_1000)
+rename (SEG_ID wthn_cn wthn_ds dst_cnt dst_dsp nl elev elev2 wmen_nl cocoa coffee cotton drice maize bean sugarcn wrice sm_dhyd sm_kmhy rain maxtemp mintemp rainz maxtmpz mintmpz dst_cn2 dst_ds2 wthn_c2 wthn_d2 lake_nt riv1_nt riv2_nt rail_nt road_nt dst_cst dst_cpt dst_dpt dist_mn n_hosp n_sch matricl n_parr n_pa80 n_fran n_hmcds ds_1000 brk1000 dst_400 brkf400 dst_200 brkf200 dst_100 brkf100 dst_b50 brkfe50 dst_b25 brkfe25 dst_b10 brkfe10 cnt_400 cnt_200 cntr200 cnt_100 cntr100 cntr_50 cntrl50 cn_1000 cnt1000) (segm_id within_control within_disputed dist_control dist_disputed nl13_density elevation elevation2 wmean_nl1 mean_cocoa mean_coffee mean_cotton mean_dryrice mean_maize mean_bean mean_sugarcane mean_wetrice sum_dhydro sum_kmhydro mean_rain max_temp min_temp rain_z max_temp_z min_temp_z dist_control_v2 dist_disputed_v2 within_control_v2 within_disputed_v2 lake river1 river2 rail road dist_coast dist_capital dist_depto dist_muni total_hospitals total_schools total_matricula parroquias parroquias1980 franciscanas homicidios dist_disputa_breaks_1000 disputa_break_fe_1000 dist_disputa_breaks_400 disputa_break_fe_400 dist_disputa_breaks_200 disputa_break_fe_200 dist_disputa_breaks_100 disputa_break_fe_100 dist_disputa_breaks_50 disputa_break_fe_50 dist_disputa_breaks_25 disputa_break_fe_25 dist_disputa_breaks_10 disputa_break_fe_10 dist_control_breaks_400  dist_control_breaks_200 control_break_fe_200 dist_control_breaks_100 control_break_fe_100 dist_control_breaks_50 control_break_fe_50 dist_control_breaks_1000 control_break_fe_1000)
 
 ren cntr400 control_break_fe_400
 
@@ -102,6 +102,10 @@ replace franciscanas=0 if franciscanas==.
 gen d_parr=(parroquias>0)
 gen d_parr1980=(parroquias1980>0)
 gen d_francis=(franciscanas>0)
+
+*Fixing homicides 
+gen homicidios2=homicidios
+replace homicidios=0 if homicidios==.
 
 
 *-------------------------------------------------------------------------------
@@ -229,6 +233,7 @@ la var dist_muni "Distance to Municipality"
 la var rain_z "Monthly Mean Rainfall (1975-1979)" 
 la var max_temp_z "Monthly Maximum Temperature (1975-1979)" 
 la var min_temp_z "Monthly Minimum Temperature (1975-1979)"
+la var homicidios "Homicides (2007)"
  
 
  
