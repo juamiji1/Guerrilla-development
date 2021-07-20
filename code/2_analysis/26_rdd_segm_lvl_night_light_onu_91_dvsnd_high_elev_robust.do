@@ -18,10 +18,10 @@ use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
 gl breakfe="control_break_fe_400"
 
 *Creating the sample for robustness
-gen sampler=1 if within_control==0 & within_fmln==0
+gen sampler=1 if within_fmln==0
 replace sampler=1 if within_control==1 & sampler==.
 
-gen sampled=1 if (z_run_cntrl<-.03 | z_run_cntrl>.03)
+gen sampled=1 if (z_run_cntrl<-.08 | z_run_cntrl>.08)
 
 *Labels for outcomes
 la var arcsine_nl13 "Arcsine"
@@ -44,52 +44,33 @@ la var mean_educ_years "Years of Education"
 * 						Night Light outcomes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
-gl nl "arcsine_nl13 ln_nl13 nl13_density wmean_nl1"
-gl educ "total_schools total_matricula literacy_rate asiste_rate mean_educ_years"
+gl nl "arcsine_nl13 ln_nl13 nl13_density wmean_nl1 z_wi mean_educ_years literacy_rate"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord dist_capital dist_coast c.dist_capital#c.z_run_cntrl c.dist_coast#c.z_run_cntrl"
 
 *Erasing table before exporting new one
 cap erase "${tables}\rdd_dvsnd_night_light_onu_91_robust1.tex"
 cap erase "${tables}\rdd_dvsnd_night_light_onu_91_robust1.txt"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0, all kernel(triangular)
+rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0 & sampler==1, all kernel(triangular)
 gl h=e(h_l)
 gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0 & sampler==1"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 foreach var of global nl{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=200 & river1==0, d
+	summ `var' if elevation2>=200 & river1==0 & sampler==1, d
 	gl mean_y=round(r(mean), .01)
-
-	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0 & sampler==1"
-
-	*Replicating triangular weights
-	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
-	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_night_light_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-
-}
-
-foreach var of global educ{
-	
-	*Dependent's var mean
-	summ `var' if elevation2>=200 & river1==0, d
-	gl mean_y=round(r(mean), .01)
-
-	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0 & sampler==1"
-
-	*Replicating triangular weights
-	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
-	
-	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
 	outreg2 using "${tables}\rdd_dvsnd_night_light_onu_91_robust1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
@@ -153,40 +134,23 @@ rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0 & sampled==1, a
 gl h=e(h_l)
 gl b=e(b_l)
 
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0 & sampled==1"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+
 foreach var of global nl{
 	
 	*Dependent's var mean
-	summ `var' if elevation2>=200 & river1==0, d
+	summ `var' if elevation2>=200 & river1==0 & sampled==1, d
 	gl mean_y=round(r(mean), .01)
 
-	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0 & sampled==1"
-
-	*Replicating triangular weights
-	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 	
-	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	outreg2 using "${tables}\rdd_dvsnd_night_light_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-
-}
-
-foreach var of global educ{
-	
-	*Dependent's var mean
-	summ `var' if elevation2>=200 & river1==0, d
-	gl mean_y=round(r(mean), .01)
-
-	*Conditional for all specifications
-	gl if "if abs(z_run_cntrl)<=${h} & elevation2>=200 & river1==0 & sampled==1"
-
-	*Replicating triangular weights
-	cap drop tweights
-	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
-	
-	*Total Households
-	reghdfe `var' within_control i.within_control#c.z_run_cntrl z_run_cntrl x_coord y_coord [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
 	outreg2 using "${tables}\rdd_dvsnd_night_light_onu_91_robust2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }

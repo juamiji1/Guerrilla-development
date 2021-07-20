@@ -174,6 +174,8 @@ export delimited using "${data}\mesas14_sh.csv", replace
 * 						Main outcomes 
 *
 *-------------------------------------------------------------------------------
+use "${data}/mesas14_onu_91.dta", clear 
+
 *Global of border FE for all estimate
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
@@ -222,12 +224,12 @@ foreach var of global elec{
 
 	preserve
 
-		gen x=round(z_run_cntrl, 0.09)
+		gen x=round(z_run_cntrl, 0.08)
 		gen n=1
 
 		collapse (mean) `var'_r (sum) n, by(x)
 		
-		two (scatter `var'_r x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var'_r x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var'_r x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-1(0.2)1) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") 
+		two (scatter `var'_r x if abs(x)<2, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var'_r x [aweight = n] if x<0 & abs(x)<2, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var'_r x [aweight = n] if x>=0 & abs(x)<2, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-2(0.5)2) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") 
 		gr export "${plots}\rdplot_`var'_r.pdf", as(pdf) replace 
 		
 	restore

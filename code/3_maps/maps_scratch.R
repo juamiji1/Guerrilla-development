@@ -65,6 +65,9 @@ slv_crs <- st_crs(slvShp)
 controlShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_control_onu_91")
 st_crs(controlShp) <- slv_crs
 
+disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_fmln_onu_91")
+st_crs(disputaShp) <- slv_crs
+
 #Importing breaks of controlled zones
 pnt_controlBrk_400<- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "pnt_controlBrk_400")
 pnt_controlBrk_1000<- st_read(dsn = "gis/nl_segm_lvl_vars", layer = "pnt_controlBrk_1000")
@@ -131,6 +134,17 @@ winr14<-subset(mesas14_join14, win_left==0)
 ## PLOTS:
 #
 #---------------------------------------------------------------------------------------
+tm_shape(slvShp) + 
+  tm_borders(col='black', lwd = .5) +
+  tm_shape(disputaShp) + 
+  tm_polygons(col='pink', lwd=1, alpha=.7)+
+  tm_add_legend(type="line", col="pink", lwd=10, title="Disputed Area")+
+  tm_shape(controlShp) + 
+  tm_polygons(col='red', lwd=1, alpha=.7)+
+  tm_add_legend(type="line", col="red", lwd=10, title="Under Guerrilla Control")+
+  tm_layout(frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/control_disputed_91.pdf")
+
 tm_shape(controlShp) + 
   tm_borders(col='red', lwd = 2, lty = "solid", alpha = NA) +
 tm_shape(deptoShp) + 

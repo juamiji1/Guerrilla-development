@@ -158,7 +158,7 @@ gen z_run_dsptd= dist_disputed
 replace z_run_dsptd= -1*dist_disputed if within_disputed==0
 
 la var within_control "Guerrilla control"
-la var sh_left "FMLN voting share"
+la var sh_left "Left voting share"
 la var sh_right "Right voting share" 
 la var turnout "Turnout"
 la var sh_blanco "Blank voting share"
@@ -176,6 +176,8 @@ export delimited using "${data}\mesas09_sh.csv", replace
 * 						Main outcomes 
 *
 *-------------------------------------------------------------------------------
+use "${data}/mesas09_onu_91.dta", clear
+
 *Global of border FE for all estimate
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
@@ -229,7 +231,7 @@ foreach var of global elec{
 
 		collapse (mean) `var'_r (sum) n, by(x)
 		
-		two (scatter `var'_r x if abs(x)<4, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var'_r x [aweight = n] if x<0 & abs(x)<4, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var'_r x [aweight = n] if x>=0 & abs(x)<4, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-4(0.5)4) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var'_r, replace)
+		two (scatter `var'_r x if abs(x)<3, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var'_r x [aweight = n] if x<0 & abs(x)<3, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var'_r x [aweight = n] if x>=0 & abs(x)<3, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-3(0.5)3) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var'_r, replace)
 		gr export "${plots}\rdplot_`var'_r_09.pdf", as(pdf) replace 
 		
 	restore

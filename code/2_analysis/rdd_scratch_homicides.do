@@ -52,7 +52,7 @@ la var z_wi "Wealth Index"
 cap erase "${tables}\rdd_dvsnd_crime_onu_91.tex"
 cap erase "${tables}\rdd_dvsnd_crime_onu_91.txt"
 
-foreach var in homicidios{
+foreach var in homicidios homicidios_gang{
 	
 	*Dependent's var mean
 	summ `var' if elevation2>=200 & river1==0, d
@@ -70,19 +70,18 @@ foreach var in homicidios{
 
 }
 
-gl resid "homicidios_r" 
+gl resid "homicidios_r homicidios_gang_r" 
 
 preserve
 
-	gen x=round(z_run_cntrl, 0.07)
+	gen x=round(z_run_cntrl, 0.05)
 	gen n=1
 	
 	collapse (mean) ${resid} (sum) n, by(x)
 
-	foreach var in homicidios_r{
+	foreach var in homicidios_r homicidios_gang_r{
 		two (scatter `var' x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-1(0.2)1) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var', replace)
 		gr export "${plots}\rdplot_`var'.pdf", as(pdf) replace 
-
 				
 	}
 	
@@ -90,7 +89,7 @@ restore
 
 
 *Using different bandwidths
-foreach var in homicidios{
+foreach var in homicidios homicidios_gang{
 	
 	*Dependent's var mean
 	summ `var' if elevation2>=200 & river1==0, d

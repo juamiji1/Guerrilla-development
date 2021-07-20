@@ -164,6 +164,12 @@ homicides$y<-as.numeric(homicides$y)
 homicides <- na.omit(homicides) 
 homicides_sf <- st_as_sf(homicides, coords = c("x", "y"), crs = slv_crs)
 
+homicides_gang <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/homicidios/homicides_coord_03_16.csv")
+homicides_gang$Latitud<-as.numeric(homicides_gang$Latitud)
+homicides_gang$Longitud<-as.numeric(homicides_gang$Longitud)
+homicides_gang <- na.omit(homicides_gang) 
+homicides_gang_sf <- st_as_sf(homicides_gang, coords = c("Longitud", "Latitud"), crs = slv_crs)
+
 
 #---------------------------------------------------------------------------------------
 ## PREPARING RASTERS FILES:
@@ -457,6 +463,16 @@ slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
 slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
 names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
 names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_homicides'
+
+intersection <- st_intersection(x = slvShp_segm_info3, y = homicides_gang_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  dplyr::summarise(n=n())
+
+slvShp_segm_info3<-st_join(slvShp_segm_info3,int_result)
+slvShp_segm_info3 <- subset(slvShp_segm_info3, select = -SEG_ID.y)
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info3)[names(slvShp_segm_info3) == 'n'] <- 'n_homicides_gangs'
 
 
 #---------------------------------------------------------------------------------------
