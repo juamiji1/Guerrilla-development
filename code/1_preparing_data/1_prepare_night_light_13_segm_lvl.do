@@ -104,8 +104,8 @@ gen d_parr1980=(parroquias1980>0)
 gen d_francis=(franciscanas>0)
 
 *Fixing homicides 
-gen homicidios2=homicidios
 replace homicidios=0 if homicidios==.
+replace homicidios_gang=0 if homicidios_gang==.
 
 
 *-------------------------------------------------------------------------------
