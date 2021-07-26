@@ -95,8 +95,8 @@ foreach var of global educ1{
 *-------------------------------------------------------------------------------
 *Against the distance
 gl main "arcsine_nl13 ln_nl13 nl13_density wmean_nl1 z_wi mean_educ_years literacy_rate"
-
 gl if "if abs(z_run_cntrl)<=3 & elevation2>=200 & river1==0"
+
 *Replicating triangular weights
 cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/3)) ${if}
