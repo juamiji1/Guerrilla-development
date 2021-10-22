@@ -53,7 +53,7 @@ cap erase "${tables}\rdd_dvsnd_night_light_onu_91_robust1.txt"
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl if elevation2>=200 & river1==0 & sampler==1, all kernel(triangular)
-gl h=e(h_l)
+gl h=2.6
 gl b=e(b_l)
 
 *Conditional for all specifications

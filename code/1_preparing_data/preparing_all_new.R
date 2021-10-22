@@ -31,7 +31,6 @@ library(tidyverse)
 library(lubridate)
 library(gtools)
 library(foreign)
-
 library(ggmap)
 library(maps)
 library(gganimate)
@@ -65,7 +64,8 @@ slvShp <- st_read(dsn = "gis/slv_adm_2020_shp", layer = "slv_borders_census2007"
 slv_crs <- st_crs(slvShp)
 
 #Importing El salvador shapefile of segments 
-slvShp_segm <- st_read(dsn='censo2007/shapefiles', layer = "DIGESTYC_Segmentos2007")
+#slvShp_segm <- st_read(dsn='censo2007/shapefiles', layer = "DIGESTYC_Segmentos2007")
+slvShp_segm <- st_read(dsn='gis/maps_interim', layer = "segm07_nowater")
 st_crs(slvShp)==st_crs(slvShp_segm)
 slvShp_segm <-st_transform(slvShp_segm, crs=slv_crs)
 st_crs(slvShp)==st_crs(slvShp_segm)
@@ -89,8 +89,8 @@ disputaShp <- st_read(dsn = "gis/guerrilla_map", layer = "zona_fmln_onu_91")
 st_crs(disputaShp) <- slv_crs
 
 #Converting polygons to polylines
-control_line <- st_cast(controlShp,"MULTILINESTRING")
-expansion_line <- st_cast(expansionShp,"MULTILINESTRING")
+#control_line <- st_cast(controlShp,"MULTILINESTRING")
+control_line <- st_read(dsn = "gis/maps_interim", layer = "control91_line")
 disputa_line <- st_cast(disputaShp,"MULTILINESTRING")
 
 #---------------------------------------------------------------------------------------
@@ -111,6 +111,10 @@ railShp <- st_transform(railShp, crs = slv_crs)
 
 roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
 roadShp <- st_transform(roadShp, crs = slv_crs)
+
+roadShp14 <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_selection_2014")
+roadShp14 <- st_transform(roadShp14, crs = slv_crs)
+roadShp14 <- st_simplify(roadShp14, preserveTopology = FALSE, dTolerance = 10000)
 
 #Importing and simplifying Coast shapefile 
 coastShp <- st_read(dsn = "gis/Hidrografia", layer = "coast")
@@ -170,6 +174,10 @@ homicides_gang$Longitud<-as.numeric(homicides_gang$Longitud)
 homicides_gang <- na.omit(homicides_gang) 
 homicides_gang_sf <- st_as_sf(homicides_gang, coords = c("Longitud", "Latitud"), crs = slv_crs)
 
+#Importing communication lines in 1945
+comms45 <- st_read(dsn = "gis/communications", layer = "comms_1945_line")
+comms45 <- st_transform(comms45, crs = slv_crs)
+
 
 #---------------------------------------------------------------------------------------
 ## PREPARING RASTERS FILES:
@@ -204,7 +212,7 @@ cacao <- projectRaster(cacao, crs=nl_crs)
 bean <- projectRaster(bean, crs=nl_crs)
 
 #Resampling elevation and creating slope raster
-elevation2<-resample(elevation2, elevation, method="bilinear")
+#elevation2<-resample(elevation2, elevation, method="bilinear")     <------------------------------ELEVATION RESAMPLE OFF
 dhydro<-resample(dhydro, elevation, method="bilinear")
 kmhydro<-resample(kmhydro, elevation, method="bilinear")
 flow<-resample(flow, elevation, method="bilinear")
@@ -374,12 +382,27 @@ slvShp_segm_info2 <- mutate(slvShp_segm_info2, within_control=as.numeric(st_inte
 slvShp_segm_info2 <- mutate(slvShp_segm_info2, within_control2=as.numeric(st_within(slvShp_segm_centroid, controlShp, sparse = FALSE)), 
                           within_disputa2=as.numeric(st_within(slvShp_segm_centroid, disputaShp, sparse = FALSE)))
 
-#Creating indicators for whether the segment has a river, lake or road
+#Creating indicators for whether the segment has a river, lake or road, comms
 slvShp_segm_info2 <- mutate(slvShp_segm_info2, lake_int=as.numeric(st_intersects(slvShp_segm, lakeShp, sparse = FALSE)), 
                           riv1_int=as.numeric(st_intersects(slvShp_segm, river1Shp, sparse = FALSE)),
                           riv2_int=as.numeric(st_intersects(slvShp_segm, river2Shp, sparse = FALSE)), 
                           rail_int=as.numeric(st_intersects(slvShp_segm, railShp, sparse = FALSE)),
-                          road_int=as.numeric(st_intersects(slvShp_segm, roadShp, sparse = FALSE)))
+                          road_int=as.numeric(st_intersects(slvShp_segm, roadShp, sparse = FALSE)),
+                          road14_int=as.numeric(st_intersects(slvShp_segm, roadShp14, sparse = FALSE)),
+                          comms45_int=as.numeric(st_intersects(slvShp_segm, comms45, sparse = FALSE)))
+
+#Calculating road length in each census tract for 2014
+int <- sf::st_intersection(st_make_valid(roadShp14), st_make_valid(slvShp_segm)) %>% 
+  dplyr::mutate(len = sf::st_length(geometry))
+int2 <- int[, c('SEG_ID', 'len')]
+out <- dplyr::group_by(int2, SEG_ID) %>%
+  dplyr::summarize(len_road = sum(len)) %>%
+  as.data.frame()
+out$len_road <- as.numeric(out$len_road)
+out <- out[, c('SEG_ID', 'len_road')]
+
+slvShp_segm_info2 <- left_join(slvShp_segm_info2, out, by="SEG_ID")
+slvShp_segm_info2 <- mutate(slvShp_segm_info2, road_dens=len_road/(1000*AREA_KM2))
 
 #Subseting to check the bordering segment 
 y1<-subset(slvShp_segm_info2, dist_control==0)
@@ -390,6 +413,33 @@ slvShp_segm_info2$dist_coast<-as.numeric(st_distance(slvShp_segm, coastSimp_sf))
 slvShp_segm_info2$dist_capital<-as.numeric(st_distance(slvShp_segm, capital_sf))
 slvShp_segm_info2$dist_depto<-as.numeric(st_distance(slvShp_segm, deptoLine, by_element = TRUE))
 slvShp_segm_info2$dist_muni<-as.numeric(st_distance(slvShp_segm, muniLine, by_element = TRUE))
+
+#Distance to closest parroquia 
+distBrk<-st_distance(slvShp_segm, parr80_sf, by_element = FALSE)
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+distMin<-rowMins(distMatrix)
+slvShp_segm_info2$dist_parr80<-distMin
+
+#Distance to closest communicaion line 
+distBrk<-st_distance(slvShp_segm, comms45, by_element = FALSE)
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+distMin<-rowMins(distMatrix)
+slvShp_segm_info2$dist_comms<-distMin
+
+#Calculating comms lines' length in each census tract for 2014
+int = st_intersection(st_make_valid(comms45), st_make_valid(slvShp_segm)) %>% 
+  dplyr::mutate(len = sf::st_length(geometry))
+int2 <- int[, c('SEG_ID', 'len')]
+out <- dplyr::group_by(int2, SEG_ID) %>%
+  dplyr::summarize(len_comms = sum(len)) %>%
+  as.data.frame()
+out$len_comms <- as.numeric(out$len_comms)
+out <- out[, c('SEG_ID', 'len_comms')]
+
+slvShp_segm_info2 <- left_join(slvShp_segm_info2, out, by="SEG_ID")
+slvShp_segm_info2 <- mutate(slvShp_segm_info2, comms_dens=len_comms/(1000*AREA_KM2))
 
 
 #---------------------------------------------------------------------------------------
@@ -781,7 +831,8 @@ slvShp_segm_info$cntrlbrkfe50<-brkIndexUnique[, 'col']
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
 #Exporting the all data shapefile
-writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+#writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim", layer="slvShp_segm_nowater_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 #---------------------------------------------------------------------------------------
@@ -795,8 +846,8 @@ pnt_controlBrk_400_sp <-as(pnt_controlBrk_400_sp,"SpatialPointsDataFrame")
 pnt_controlBrk_1000_sp <- as(pnt_controlBrk_1000, Class='Spatial')
 pnt_controlBrk_1000_sp <-as(pnt_controlBrk_1000_sp,"SpatialPointsDataFrame")
 
-writeOGR(obj=pnt_controlBrk_400_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="pnt_controlBrk_400", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-writeOGR(obj=pnt_controlBrk_1000_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="pnt_controlBrk_1000", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=pnt_controlBrk_400_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim", layer="pnt_controlBrk_400", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=pnt_controlBrk_1000_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim", layer="pnt_controlBrk_1000", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 

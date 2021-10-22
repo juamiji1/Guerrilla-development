@@ -94,9 +94,21 @@ predicted <- read.csv("C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Developm
 slvShp_segm_info$SEG_ID<-as.integer(slvShp_segm_info$SEG_ID)
 slvShp_segm_info_join <- left_join(slvShp_segm_info, predicted, by = c("SEG_ID" = "segm_id"))
 
+sample<-subset(slvShp_segm_info_join, sample_reg==1)
+
 #Subseting to check the bordering segment 
 y1<-subset(slvShp_segm_info_join, dst_cnt==0)
 y2<-subset(slvShp_segm_info_join, dst_cn2<1250 & wthn_c2==1)
+y_c<-subset(sample, within_control==0)
+y_t<-subset(sample, within_control==1)
+y_c2<-subset(slvShp_segm_info_join, z_run_cntrl<0 & z_run_cntrl>=-2 & within_control==0)
+y_t2<-subset(slvShp_segm_info_join, z_run_cntrl>=0 & z_run_cntrl<=2 & within_control==1)
+y_c4<-subset(slvShp_segm_info_join, z_run_cntrl<0 & z_run_cntrl>=-4 & within_control==0)
+y_t4<-subset(slvShp_segm_info_join, z_run_cntrl>=0 & z_run_cntrl<=4 & within_control==1)
+
+aggregate(slvShp_segm_info_join$z_run_cntrl, by=list(Category=slvShp_segm_info_join$within_control), FUN=min)
+aggregate(slvShp_segm_info_join$z_run_cntrl, by=list(Category=slvShp_segm_info_join$within_control), FUN=max)
+aggregate(slvShp_segm_info_join$z_run_cntrl, by=list(Category=slvShp_segm_info_join$within_control), FUN=mean)
 
 #Mesas de votacion
 mesas12 <- st_read(dsn = "gis/electoral_results", layer = "mesas2012")
@@ -203,7 +215,6 @@ tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/
 
 
 
-sample<-subset(slvShp_segm_info_join, sample_reg==1)
 
 #Using prediction on all census tracts 
 tm_shape(control_line_sample) + 
@@ -249,6 +260,18 @@ tm_shape(control_line_sample) +
   tm_borders(col='red', lwd = 3, lty = "dotted")+
   tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
 tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/mean_educ_years_xb_all.png")
+
+tm_shape(control_line_sample) + 
+  tm_lines()+
+  tm_shape(slvShp_segm_info_join) + 
+  tm_polygons(col='literacy_rate_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='fisher', border.alpha=0)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/literacy_rate_xb_all.png")
+
 
 #Using prediction only on census tracts within Cattaneo BW 
 m<-tm_shape(control_line_sample) + 
@@ -369,6 +392,59 @@ tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/
 
 
 #END.
+
+
+
+#Using prediction only on census tracts within Cattaneo BW 
+  tm_shape(sample) + 
+  tm_polygons(col='within_control', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=2, border.alpha=0)
+
+      tm_shape(control_line_sample) + 
+  tm_lines(col='red', lwd = 3, lty = "solid", alpha = NA)+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+
+tm_shape(y_c)+
+  tm_fill(col='slateblue1', alpha=NA)+
+  tm_shape(y_t)+
+  tm_fill(col='pink', alpha=.5)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red2', lwd = 3, lty = "solid", alpha = NA) 
+  
+tm_shape(y_c2)+
+  tm_fill(col='slateblue1', alpha=NA)+
+  tm_shape(y_t2)+
+  tm_fill(col='pink', alpha=.5)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red2', lwd = 3, lty = "solid", alpha = NA) 
+
+tm_shape(y_c4)+
+  tm_fill(col='slateblue1', alpha=NA)+
+  tm_shape(y_t4)+
+  tm_fill(col='pink', alpha=.5)+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red2', lwd = 3, lty = "solid", alpha = NA) +
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(frame = FALSE)+
+  tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+
+  
+  
+  tm_add_legend(type="line", col="slateblue1", lwd=10, title="Sample of Census Tracts")+
+  tm_shape(slvShp_segm_info) + 
+  tm_borders()+
+  tm_shape(control_line_sample) + 
+  tm_lines(col='red2', lwd = 3, lty = "solid", alpha = NA) +
+  tm_add_legend(type="line", col="red2", lwd=10, title="Guerrilla-Controlled Boundary")+
+  tm_shape(controlShp) + 
+  tm_borders(col='red', lwd = 3, lty = "dotted")+
+  tm_layout(frame = FALSE)
+  tmap_save(filename="C:/Users/jmjimenez/Dropbox/Apps/Overleaf/GD-draft-slv/plots/segm_sample.png")
+
+
 
 
 

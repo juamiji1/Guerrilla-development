@@ -54,8 +54,8 @@ reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
 gen sample_reg=e(sample)
 
 
-
-keep segm_id ${out} *_xb sample_reg within_control
+ 
+keep segm_id ${out} *_xb sample_reg within_control z_run_cntrl
 export delimited using "${data}\predicted_outcomes.csv", replace
 
 

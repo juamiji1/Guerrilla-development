@@ -32,10 +32,25 @@ grstyle color major_grid dimgray
 * 					     	Acommodation and Household conditions 
 *	
 *-------------------------------------------------------------------------------
+use "${data}/censo2007\data\poblacion.dta", clear 
+
+*Keeping head of household only 
+keep if S06P01==1
+
+*Has always lived in the same place 
+tab S06P08A1 
+recode S06P08A1 (2 3=0), gen(always)  
+
+keep DEPID MUNID SEGID VIVID HOGID always
+
+tempfile pop
+save `pop', replace 
+
 use "${data}/censo2007\data\vivienda.dta", clear 
 
 *Merging household conditions 
-merge 1:m DEPID MUNID SEGID VIVID using "${data}/censo2007\data\hogar.dta", keep(2 3)
+merge 1:m DEPID MUNID SEGID VIVID using "${data}/censo2007\data\hogar.dta", keep(2 3) nogen
+merge 1:1 DEPID MUNID SEGID VIVID HOGID using `pop', keep(2 3) nogen
 
 *Creating the segment identifier 
 gen segm_id=DEPID+MUNID+SEGID
@@ -131,8 +146,10 @@ gl wealthindex "wall_* roof_* floor_* pobtot m_p_room S03P04 sanitary_* S03P06 d
 factor ${wealthindex}, pcf factors(1)
 predict z_wi
 
+gen z_wi_always=z_wi if always==1
+
 *Collapsing at the segment level 
-collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 z_wi (sum) total_household, by(segm_id)
+collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 z_wi z_wi_always (sum) total_household, by(segm_id)
 
 tempfile Household
 save `Household', replace 
@@ -198,6 +215,9 @@ tab S05BC04
 tab S05BC05
 recode S05BC05 (-1=.)
 
+*Years since migration 
+gen years_left=2007-S05BC05
+
 *War migrant 
 gen war_migrant=1 if S05BC05>1978 & S05BC05<1993
 
@@ -210,15 +230,97 @@ preserve
 	
 	*Plot showing temporal migration patterns 
 	two (line total_migrant S05BC05, legend(label(1 "Total"))) (line female_migrant S05BC05, legend(label(2 "Female"))) (line male_migrant S05BC05, legend(label(3 "Male"))), ytitle(Total) xtitle(Year) xlabel(1920(5)2007, angle(45) labsize(small)) legend(c(3))
+	gr export "${plots}\migra_descriptive.pdf", as(pdf) replace 
 restore 
 
 *Collapsing at the segment level 
-collapse (mean) sex_migrant_sh=S05BC02 age_migrant=S05BC03 (sum) female_migrant male_migrant war_migrant total_migrant, by(segm_id)
+collapse (mean) years_left sex_migrant_sh=S05BC02 age_migrant=S05BC03 (sum) female_migrant male_migrant war_migrant total_migrant, by(segm_id)
 
 tempfile Migration
 save `Migration', replace 
 
+*Migration per household 
+use "${data}/censo2007\data\poblacion.dta", clear 
 
+*Creating the segment identifier 
+gen segm_id=DEPID+MUNID+SEGID
+
+*Received remittances 
+tab S06P15A
+recode S06P15A (-2=.) (2=0)
+
+*Keeping head of household only 
+keep if S06P01==1
+
+*High educated
+gen high_educ=(S06P11A1 > 2) if S06P11A1!=. 
+
+tempfile Heduc
+save `Heduc', replace 
+
+use "${data}/censo2007\data\migracion.dta", clear 
+
+*Year of migration 
+tab S05BC05
+recode S05BC05 (-1=.)
+
+*Years since migration 
+gen years_left=2007-S05BC05
+
+*War migrant 
+gen war_migrant=1 if S05BC05>1978 & S05BC05<1993
+
+*Total of migrants 
+gen total_migrant=1
+
+merge m:1 DEPID MUNID SEGID VIVID HOGID using `Heduc', keep(2 3)
+
+*War migrant and remittances
+gen war_remittance=1 if war_migrant==1 & S06P15A==1
+
+preserve 
+	*Collapsing at the household level 
+	collapse (sum) war_migrant total_migrant war_remittance, by(segm_id VIVID HOGID)
+	gen sh_war_migrant=(war_migrant>0) if war_migrant!=.
+	gen sh_migrant=(total_migrant>0) if total_migrant!=.
+	gen sh_war_remittance=(war_remittance>0) if war_remittance!=.
+
+	*Collapsing at the segment level 
+	collapse (mean) sh_war_migrant sh_migrant war_remittance, by(segm_id)
+
+	tempfile Migration2
+	save `Migration2', replace 
+restore 
+
+preserve
+	keep if high_educ==1
+
+	*Collapsing at the household level 
+	collapse (mean) years_left (sum) war_migrant_heduc=war_migrant total_migrant_heduc=total_migrant, by(segm_id VIVID HOGID)
+	gen sh_war_migrant_heduc=(war_migrant_heduc>0) if war_migrant_heduc!=.
+	gen sh_migrant_heduc=(total_migrant_heduc>0) if total_migrant_heduc!=.
+
+	*Collapsing at the segment level 
+	collapse (sum) war_migrant_heduc total_migrant_heduc (mean) years_left_heduc=years_left sh_war_migrant_heduc sh_migrant_heduc, by(segm_id)
+
+	tempfile Migration3
+	save `Migration3', replace 
+restore
+
+keep if high_educ==0
+
+*Collapsing at the household level 
+collapse (mean) years_left (sum) war_migrant_leduc=war_migrant total_migrant_leduc=total_migrant, by(segm_id VIVID HOGID)
+gen sh_war_migrant_leduc=(war_migrant_leduc>0) if war_migrant_leduc!=.
+gen sh_migrant_leduc=(total_migrant_leduc>0) if total_migrant_leduc!=.
+
+*Collapsing at the segment level 
+collapse (sum) war_migrant_leduc total_migrant_leduc (mean) years_left_leduc=years_left sh_war_migrant_leduc sh_migrant_leduc, by(segm_id)
+
+tempfile Migration4
+save `Migration4', replace 
+
+	
 *-------------------------------------------------------------------------------
 * 					     		Population 
 *	
@@ -238,6 +340,10 @@ gen male=1 if S06P02==1
 gen female_head=1 if (female==1 & S06P01==1)
 replace female_head=0 if (male==1 & S06P01==1)
 
+*Mother in the same segment 
+tab S06P07A 
+recode S06P07A (2 3=0), gen(mother_same)  
+
 *Has always lived in the same place 
 tab S06P08A1 
 recode S06P08A1 (2 3=0), gen(always)  
@@ -247,7 +353,11 @@ gen moving_incntry_pop=(S06P08A1==2)
 gen moving_outcntry_pop=(S06P08A1==3)
 
 recode S06P08A2 (-1 -2=.)  
-gen arrived_war=1 if S06P08A2>=1979 & S06P08A2<1991 
+gen arrived_war=(S06P08A2>1978 & S06P08A2<1993)
+
+*Arrival year 
+recode S06P08A2 (-2 -1 = .)
+gen year_arrive = 2007 - S06P08A2 
 
 *Age
 tab S06P03A, m
@@ -302,6 +412,9 @@ tab S06P11A1
 recode S06P11A1 (-2=.)
 
 tab S06P11A1 S06P10, m
+
+*High educated
+gen high_educ=(S06P11A1 > 2) if S06P11A1!=. 
 
 *Marital status 
 tab S06P13
@@ -368,6 +481,26 @@ tab S06P03A teen_pregnancy, m
 
 *Total population 
 gen total_pop=1
+gen total_pop_heduc=1 if high_educ==1
+gen total_pop_leduc=1 if high_educ==0
+
+*Outcomes on higher education 
+gen always_heduc=(always==1) if S06P11A1!=. & S06P11A1>2
+gen mother_heduc=(mother_same==1) if S06P11A1!=. & S06P11A1>2
+gen year_arrive_heduc=year_arrive 
+replace year_arrive_heduc=. if S06P11A1<3 & S06P11A1!=.
+gen arrived_war_heduc=(arrived_war==1) if S06P11A1!=. & S06P11A1>2
+
+*Outcomes on lower education 
+gen always_leduc=(always==1) if S06P11A1!=. & S06P11A1<=2
+gen mother_leduc=(mother_same==1) if S06P11A1!=. & S06P11A1<=2
+gen year_arrive_leduc=year_arrive 
+replace year_arrive_leduc=. if S06P11A1>=3 & S06P11A1!=.
+gen arrived_war_leduc=(arrived_war==1) if S06P11A1!=. & S06P11A1<=2
+
+*Educational outcomes for always sample
+gen mean_educ_years_always=S06P11A if always==1
+gen literacy_rate_always=S06P09 if always==1
 
 *Data at the gender level 
 preserve
@@ -528,7 +661,7 @@ preserve
 restore
 
 *Collapsing at the segment level 
-collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop (sum) pet po pd pea nea wage nowage total_pop female male always arrived_war moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent, by(segm_id)
+collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc, by(segm_id)
 
 *Tasa de desempleo 
 gen td=pd/pea 
@@ -548,10 +681,20 @@ merge 1:1 segm_id using `Gender', nogen
 merge 1:1 segm_id using `Age', nogen 
 merge 1:1 segm_id using `Mortality', nogen 
 merge 1:1 segm_id using `Migration', nogen 
+merge 1:1 segm_id using `Migration2', nogen 
+merge 1:1 segm_id using `Migration3', nogen 
+merge 1:1 segm_id using `Migration4', nogen 
 merge 1:1 segm_id using `Always', nogen 
 merge 1:1 segm_id using `Waralways', nogen 
 merge 1:1 segm_id using `Agewaralways', nogen 
 
+*Migrants
+gen war_migrant_pop=war_migrant/total_pop
+gen total_migrant_pop=total_migrant/total_pop
+gen war_migrant_pop_heduc=war_migrant_heduc/total_pop_heduc
+gen total_migrant_pop_heduc=total_migrant_heduc/total_pop_heduc
+gen war_migrant_pop_leduc=war_migrant_leduc/total_pop_leduc
+gen total_migrant_pop_leduc=total_migrant_leduc/total_pop_leduc
 
 *Saving the data 
 save "${data}/temp\census07_segm_lvl.dta", replace 

@@ -34,8 +34,8 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 *-------------------------------------------------------------------------------
 * 				Mechanisms related to household conditions
 *-------------------------------------------------------------------------------
-gl hh "sewerage_sh pipes_sh electricity_sh garbage_sh total_hospitals total_schools"
-*out: total_household owner_sh sanitary_sh daily_water_sh
+gl hh "sewerage_sh pipes_sh electricity_sh garbage_sh total_hospitals total_schools road14_dens public_pet"
+*out: total_household owner_sh sanitary_sh daily_water_sh length_road14
 
 *Labeling for tables 
 la var total_household "Total Households"
@@ -48,6 +48,10 @@ la var electricity_sh "Electricity Rate"
 la var garbage_sh "Garbage Rate"
 la var total_hospitals "Total Hospitals"
 la var total_schools "Total Schools"
+la var road14 "Roads (2014)"
+la var length_road14 "Roads (Kms)"
+la var road14_dens "Road density (2014)"
+la var public_pet "Public Workers"
 
 *Erasing files 
 cap erase "${tables}\rdd_dvsnd_hh_mechanisms_onu_91.tex"
@@ -353,7 +357,7 @@ foreach var of global educ{
 *-------------------------------------------------------------------------------
 * 					Mechanisms related to labor markets
 *-------------------------------------------------------------------------------
-gl lab1 "pea_pet po_pet wage_pet work_hours public_pet private_pet boss_pet independent_pet"
+gl lab1 "pea_pet po_pet wage_pet work_hours private_pet boss_pet independent_pet"
 gl lab2 "pea_pet_always po_pet_always wage_pet_always work_hours_always public_pet_always private_pet_always boss_pet_always independent_pet_always"
 gl lab3 "pea_pet_waralways po_pet_waralways wage_pet_waralways work_hours_waralways public_pet_waralways private_pet_waralways boss_pet_waralways independent_pet_waralways"
 
