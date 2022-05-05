@@ -10,10 +10,10 @@ NOTES:
 clear all 
 
 *Restricting sample
-use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
-keep if elevation2>=200 & river1==0
-keep segm_id
+*keep if elevation2>=200 & river1==0
+keep segm_id elevation2
 ren segm_id seg_id
 gen altitude_river_sample=1
 
@@ -169,7 +169,7 @@ la var sh_blanco "Blank voting share"
 save "${data}/mesas15_onu_91.dta", replace 
 
 
-*-------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------
 * 						Main outcomes 
 *
 *-------------------------------------------------------------------------------

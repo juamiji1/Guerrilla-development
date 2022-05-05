@@ -10,10 +10,10 @@ NOTES:
 clear all 
 
 *Restricting sample
-use "${data}/night_light_13_segm_lvl_onu_91.dta", clear
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
-keep if elevation2>=200 & river1==0
-keep segm_id
+*keep if elevation2>=200 & river1==0
+keep segm_id elevation2
 ren segm_id seg_id
 gen altitude_river_sample=1
 
@@ -170,7 +170,7 @@ gen win_left=(sh_left>sh_right) if sh_left!=. & sh_right!=.
 export delimited using "${data}\mesas14_sh.csv", replace
 
 
-*-------------------------------------------------------------------------------
+/*-------------------------------------------------------------------------------
 * 						Main outcomes 
 *
 *-------------------------------------------------------------------------------

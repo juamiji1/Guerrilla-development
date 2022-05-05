@@ -63,9 +63,8 @@ gen sample=e(sample)
 
 
 keep segm_id elevation2* slope* rugged* control_break_fe_400 sample within_control
-export excel using "${data}/gis\maps_interim\predicted_outcomes_nowater.xls", firstrow(variables) replace
 
-log using "${do}\within_break_differences.txt", text replace 
+*log using "${do}\within_break_differences.txt", text replace 
 
 local felist=""
 levelsof control_break_fe_400 if sample==1, local(fe)
@@ -89,9 +88,25 @@ foreach n of local fe{
 gl felist="`felist'"
 dis "${felist}"
 
+gen sample_alt=.
+
+foreach fe of global felist{
+	replace sample_alt=1 if control_break_fe_400==`fe'
+}
+
+export excel using "${data}/gis\maps_interim\predicted_outcomes_nowater.xls", firstrow(variables) replace
+
+
+
+
+
+
+
+
+
 
  
-log c
+*log c
 
 
 

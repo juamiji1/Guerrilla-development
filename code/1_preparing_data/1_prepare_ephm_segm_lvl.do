@@ -48,7 +48,7 @@ gen poverty4=(ipcf_ppp11_day < 4)
 
 *Collapsing at the segment lvl 
 gen total_hh=1
-collapse (sum) total_hh (mean) ipcf_ppp11_iqr* ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance ln_ipcf_ppp11_iqr ln_ipcf_ppp11_p50 ipcf_ppp11_pr9010 ipcf_ppp11_pr9505 ipcf_ppp11_pr7525 hh_p2575 hh_p1090 hh_p0595, by(segment_id)
+collapse (sum) total_hh (mean) ln_ipcf_ppp11 ipcf_ppp11 ipcf_ppp11_iqr* ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance ln_ipcf_ppp11_iqr ln_ipcf_ppp11_p50 ipcf_ppp11_pr9010 ipcf_ppp11_pr9505 ipcf_ppp11_pr7525 hh_p2575 hh_p1090 hh_p0595, by(segment_id)
 
 *Fixing segment var
 ren segment_id segm_id
