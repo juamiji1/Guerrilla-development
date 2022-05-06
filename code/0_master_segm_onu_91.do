@@ -10,10 +10,10 @@ NOTES:
 clear all 
 
 *Setting directories 
-if c(username) == "jmjimenez" {
+if c(username) == "juami" {
 	gl localpath "C:\Users/`c(username)'\Dropbox\My-Research\Guerillas_Development"
-	gl overleafpath "C:\Users/`c(username)'\Dropbox\Apps\Overleaf\GD-draft-slv"
-	gl do "C:\Users/`c(username)'\Documents\GitHub\Guerrilla-development\code"
+	gl overleafpath "C:\Users/`c(username)'\Dropbox\Overleaf\GD-draft-slv"
+	gl do "C:\Github\Guerrilla-development\code"
 	
 }
 else {

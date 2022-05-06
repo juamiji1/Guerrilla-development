@@ -16,8 +16,8 @@ NOTES:
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear 
 
 *Creating vars per habitant
-gen hosp_pop=total_hospitals/total_pop
-gen schl_pop=total_schools/total_pop
+gen hosp_pop=total_hospitals*100000/total_pop
+gen schl_pop=total_schools*100000/total_pop
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
@@ -39,9 +39,11 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 *-------------------------------------------------------------------------------
 * 				Mechanisms related to household conditions
 *-------------------------------------------------------------------------------
-gl hh "sewerage_sh pipes_sh electricity_sh garbage_sh total_hospitals total_schools dist_hosp dist_schl hosp_pop schl_pop road14_dens public_pet"
+gl hh1 "sewerage_sh pipes_sh electricity_sh garbage_sh hosp_pop schl_pop"
+gl hh2 "dist_hosp dist_schl road14_dens public_pet"
+*total_hospitals total_schools
 
-*Labeling for tables 
+*Labelling for tables 
 la var total_household "Total Households"
 la var owner_sh "Ownership Rate"
 la var sanitary_sh "Sanitary Service Rate"
@@ -56,20 +58,37 @@ la var road14 "Roads (2014)"
 la var length_road14 "Roads (Kms)"
 la var road14_dens "Road density (2014)"
 la var public_pet "Public Workers"
+la var dist_hosp "Distance to Hospital"
+la var dist_schl "Distance to School"
+la var hosp_pop "Hospitals per 100k Population"
+la var schl_pop "Schools per 100k Population"
 
 *Erasing files 
-cap erase "${tables}\rdd_public_all.tex"
-cap erase "${tables}\rdd_public_all.txt"
+cap erase "${tables}\rdd_public_all_p1.tex"
+cap erase "${tables}\rdd_public_all_p1.txt"
+cap erase "${tables}\rdd_public_all_p2.tex"
+cap erase "${tables}\rdd_public_all_p2.txt"
 	
 *Tables
-foreach var of global hh{
+foreach var of global hh1{
 	
 	*Table
 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) keepsingleton
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_public_all.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_public_all_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+
+}
+
+foreach var of global hh2{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) keepsingleton
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_public_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
 

@@ -129,7 +129,7 @@ foreach var of global outcomes{
 	outreg2 using "${tables}\rdd_fisdl.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
 
-gl outcomes "fisdl_all"
+gl outcomes "fisdl_all fisdl_electricity"
 
 foreach var of global outcomes{
 	
