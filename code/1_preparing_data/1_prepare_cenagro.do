@@ -1,7 +1,7 @@
 clear all 
 
 *-------------------------------------------------------------------------------
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2.csv", clear
 
 *keeping only vars of interest 
 keep portid fb1p06a fb1p06b s01p04
@@ -11,7 +11,7 @@ tempfile ProdS
 save `ProdS', replace
 
 *Comercial Producers
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", clear
 
 *keeping only vars of interest 
 keep portid fb1p06a fb1p06b s01p04
@@ -22,7 +22,7 @@ save `ProdC', replace
 
 
 *Preparing census tracts IDs
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
 
 gen segm_id=depid+munid+segid
 
@@ -31,7 +31,7 @@ keep portid depid munid canid segid segm_id
 tempfile SegmID
 save `SegmID', replace 
 
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2S02.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2S02.csv", clear
 
 keep portid fb1p06a fb1p06b s02p01 s02p04 s02p05 s02p51
 ren (s02p05 s02p51) (s02p06 s02p61)
@@ -44,7 +44,7 @@ merge m:1 portid fb1p06a fb1p06b using `ProdS', keep(1 3) nogen
 tempfile Plot2
 save `Plot2', replace
 
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", clear
 
 keep portid fb1p06a fb1p06b s02p01 s02p05 s02p06 s02p61
 gen subsistence=0 
@@ -179,7 +179,7 @@ save `Plot', replace
 *At the owner level
 *-------------------------------------------------------------------------------
 *Preparing census tracts IDs
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
 
 gen segm_id=depid+munid+segid
 
@@ -188,7 +188,7 @@ keep portid depid munid canid segid segm_id
 tempfile SegmID
 save `SegmID', replace 
 
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2S02.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2S02.csv", clear
 
 keep portid fb1p06a fb1p06b s02p01 s02p04 s02p05 s02p51
 ren (s02p05 s02p51) (s02p06 s02p61)
@@ -201,7 +201,7 @@ merge m:1 portid fb1p06a fb1p06b using `ProdS', keep(1 3) nogen
 tempfile Plot2
 save `Plot2', replace
 
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", clear
 
 keep portid fb1p06a fb1p06b s02p01 s02p05 s02p06 s02p61
 gen subsistence=0 
@@ -372,6 +372,8 @@ merge 1:1 segm_id using `GiniAll', keep(1 3) nogen
 gen sh_prod_subs=n_prod_subs/n_prod_all
 gen sh_prod_comer=n_prod_comer/n_prod_all
 
+save "${data}/sample_try.dta", replace
+
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
@@ -532,7 +534,7 @@ foreach var of global si_index{
 
 
 *
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", clear
 
 duplicates tag portid fb1p06a fb1p06b, g(dup)
 tab dup 
@@ -543,7 +545,7 @@ tempfile Size
 save `Size', replace 	
 
 *	
-import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", clear
+import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", clear
 
 merge m:1 portid using `SegmID', keep(1 3) nogen 
 
@@ -563,17 +565,17 @@ save `Main', replace
 
 
 
-import excel "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\CENAGRO.xlsx", sheet("FA1") firstrow clear 
+import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\CENAGRO.xlsx", sheet("FA1") firstrow clear 
 
-export delimited using "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", replace
+export delimited using "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", replace
 
-import excel "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\CENAGRO.xlsx", sheet("FA1S02") firstrow clear 
+import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\CENAGRO.xlsx", sheet("FA1S02") firstrow clear 
 
-export delimited using "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", replace
+export delimited using "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1S02.csv", replace
 
-import excel "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\CENAGRO.xlsx", sheet("FA2S02") firstrow clear 
+import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\CENAGRO.xlsx", sheet("FA2S02") firstrow clear 
 
-export delimited using "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2S02.csv", replace
+export delimited using "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2S02.csv", replace
 
 
 

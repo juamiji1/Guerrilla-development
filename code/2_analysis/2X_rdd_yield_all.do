@@ -184,6 +184,30 @@ foreach var of global pd{
 
 
 
+foreach var of global yld{
+	
+	*RDD with break fe and triangular weights 
+	rdrobust `var' z_run_cntrl, all kernel(triangular)
+	gl h=e(h_l)
+	gl b=e(b_l)
+
+	*Conditional for all specifications
+	gl if "if abs(z_run_cntrl)<=${h}"
+	
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+	*Table
+	cap nois reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_yld_all_p7_diffbw.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+
+}
+
+
 
 
 
