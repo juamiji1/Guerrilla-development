@@ -220,7 +220,9 @@ tmap_save(var_map, filename=map_name)
 map_name<-paste0("C:/Users/juami/Dropbox/Overleaf/GD-draft-slv/plots/",'borders',".png")
 var_map<-tm_shape(consult_join_oriente) + 
   tm_borders()+
-  tmap_options(check.and.fix = TRUE)
+  tmap_options(check.and.fix = TRUE)+
+  tm_shape(control_line) + 
+  tm_lines(col='red', lwd = 1, lty = "solid", alpha = NA)
 tmap_save(var_map, filename=map_name)
 
 #---------------------------------------------------------------------------------------
