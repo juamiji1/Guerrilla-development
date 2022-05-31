@@ -45,7 +45,7 @@ mata:
 end
 
 
-import excel "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo2007\gis_segmentos\ID_census_v2.xls", sheet("ID_census_v2") firstrow clear 
+import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo2007\gis_segmentos\ID_census_v2.xls", sheet("ID_census_v2") firstrow clear 
 ren _all, low
 
 *Creating the segment id  
@@ -61,7 +61,7 @@ tempfile ID
 save `ID', replace
 
 
-import excel "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo2007\gis_segmentos\ID_census_v1.xls", sheet("ID_census_v1") firstrow clear 
+import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo2007\gis_segmentos\ID_census_v1.xls", sheet("ID_census_v1") firstrow clear 
 ren _all, low
 
 ren seg_id segm_id
@@ -163,7 +163,11 @@ recode pandillaje (4 3 2 = 0)
 gen delinc_all=1 if delinc==1 | delinc_hog==1
 replace delinc_all=0 if delinc==0 & delinc_hog==0
 
-collapse aprobacion2 aprobacion3 aprobacion4 aprobacion7 aprobacion8 bienservicio1 bienservicio4 confianza2 confianza3 confianza4 confianza6 confianza12 confianza13 confianza14 confianza18 confianza21 confianza21a confianza43 confianza47 culturapolitica2 culturapolitica3 culturapolitica4 satisfaccion2 satisfaccion3 satisfaccion6 sum_* index_* z_index* pandillaje delinc* extorsion*, by(segm_id)
+*Count of N 
+gen n_trst=1 if z_index_trst!=.
+
+*Collapsing 
+collapse (mean) aprobacion2 aprobacion3 aprobacion4 aprobacion7 aprobacion8 bienservicio1 bienservicio4 confianza2 confianza3 confianza4 confianza6 confianza12 confianza13 confianza14 confianza18 confianza21 confianza21a confianza43 confianza47 culturapolitica2 culturapolitica3 culturapolitica4 satisfaccion2 satisfaccion3 satisfaccion6 sum_* index_* z_index* pandillaje delinc* extorsion* (sum) n_trst, by(segm_id)
 
 *Merging the new vars
 merge 1:1 segm_id using `LAPOP0', nogen

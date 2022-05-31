@@ -41,7 +41,7 @@ keep if S06P01==1
 tab S06P08A1 
 recode S06P08A1 (2 3=0), gen(always)  
 
-keep DEPID MUNID SEGID VIVID HOGID always
+keep DEPID MUNID SEGID VIVID HOGID always S06P03A
 
 tempfile pop
 save `pop', replace 
@@ -143,6 +143,7 @@ recode urban (2 = 0)
 
 *Total households
 gen total_household=1
+gen total_household_survey=1 if S06P03A>29 & S06P03A<71
 
 *Sanitary service 
 recode S03P05 (2 3 4 5 = 0)
@@ -202,7 +203,7 @@ preserve
 restore
 
 *Collapsing at the segment level 
-collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 z_wi z_wi_always z_wi_iqr* z_wi_p50 car_bike S03P13A S03P13D S03P13E S03P13J S03P13K good_floor2 good_wall2 good_roof2 exclusive_sanitary=S03P06 electric_cook (sum) good_floor good_wall good_roof bad_* total_household, by(segm_id)
+collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 z_wi z_wi_always z_wi_iqr* z_wi_p50 car_bike S03P13A S03P13D S03P13E S03P13J S03P13K good_floor2 good_wall2 good_roof2 exclusive_sanitary=S03P06 electric_cook (sum) good_floor good_wall good_roof bad_* total_household*, by(segm_id)
 *(iqr) iqr_good_roof=good_roof iqr_good_wall=good_wall iqr_good_floor=good_floor iqr_good_roof1=good_roof1 iqr_S03P13A=S03P13A iqr_S03P13D=S03P13D iqr_S03P13E=S03P13E iqr_S03P13J=S03P13J iqr_S03P13K=S03P13K
 
 merge 1:1 segm_id using `Gini', keep(1 3)

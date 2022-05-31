@@ -87,4 +87,19 @@ export delimited using "${data}\predicted_outcomes_all.csv", replace
 
 
 
+* observaciones en los 41 segmentos 
+* Cuantos 41 y N en controladas vs no controladas 
+*
+
+*NIght light a nivel de segmento 
+*Size de comerciantes 
+
+*Lista de hogar con jefe y 30 a 70 annos 
+
+
+
+
+
+
+
 
