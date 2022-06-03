@@ -31,6 +31,11 @@ gl if "if abs(z_run_cntrl)<=${h}"
 cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
+*Standardizing Suitability Index
+foreach var in sibean sicoffee simaize sisugar {
+	egen z_`var'=std(`var')
+}
+
 *-------------------------------------------------------------------------------
 * Local continuity using Percentile 25 and up of elevation (Table)
 *-------------------------------------------------------------------------------
@@ -39,6 +44,7 @@ gl lc1 "elevation2 slope rugged hydrography rail_road d_city45 dist_city45"
 gl lc2 "dist_comms45 comms45_dens reform grown80_swithin d_parr80 dist_parr80 dist_schl80"
 gl lc3 "z_crops bean79 coffee79 cotton79 maize79 rice79 sugarcane79"
 gl lc4 "pop_bornbef80_always dens_pop_bornbef80 mean_educ_years_wnsage sh_before_war_child sh_before_war_inmigrant sh_before_war_outmigrant high_pop80_swithin"
+gl lc5 "sibean sicoffee simaize sisugar z_sibean z_sicoffee z_simaize z_sisugar"
 
 *Labeling for tables 
 la var elevation2 "Altitude"
@@ -73,6 +79,10 @@ la var mean_educ_years_wnsage "Years of education"
 la var sh_before_war_child "Natality Rate"
 la var sh_before_war_inmigrant "In-migration (share)"
 la var sh_before_war_outmigrant "Out-migration (share)"
+la var sibean "Suitability Index Bean"
+la var sicoffee "Suitability Index Coffee"
+la var simaize "Suitability Index Maize"
+la var sisugar "Suitability Index Sugarcane"
 
 *Erasing files 
 cap erase "${tables}\rdd_lc_all_p1.tex"
@@ -83,6 +93,8 @@ cap erase "${tables}\rdd_lc_all_p3.tex"
 cap erase "${tables}\rdd_lc_all_p3.txt"
 cap erase "${tables}\rdd_lc_all_p4.tex"
 cap erase "${tables}\rdd_lc_all_p4.txt"
+cap erase "${tables}\rdd_lc_all_p5.tex"
+cap erase "${tables}\rdd_lc_all_p5.txt"
 
 foreach var of global lc1{
 	
@@ -124,6 +136,17 @@ foreach var of global lc4{
 	gl mean_y=round(r(mean), .01)
 	
 	outreg2 using "${tables}\rdd_lc_all_p4.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+
+}
+
+foreach var of global lc5{
+	
+	*Table 
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_lc_all_p5.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
 
