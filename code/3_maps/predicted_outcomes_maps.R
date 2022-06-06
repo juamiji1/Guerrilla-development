@@ -277,3 +277,4 @@ export_shape_survey <- as(shape_survey, Class='Spatial')
 
 #Exporting the all data shapefile
 writeOGR(obj=export_shape_survey, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_consult", layer="segm_survey", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+
