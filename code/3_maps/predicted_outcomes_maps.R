@@ -85,6 +85,7 @@ control_line <- st_read(dsn = "gis/maps_interim", layer = "control91_line")
 #Importing predicted outcomes
 predicted <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/predicted_outcomes_all.csv")
 consult <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/info_consulting.csv")
+random <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/info_consulting_sample_hh_randomized.csv")
 
 #Joining predictions to shape with info 
 slvShp_segm$SEG_ID<-as.integer(slvShp_segm$SEG_ID)
@@ -237,11 +238,42 @@ writeOGR(obj=export, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Developme
 #slvShp_segm_info1 <- st_read(dsn = "C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim", layer = "slvShp_segm_yield05")
 
 
+#---------------------------------------------------------------------------------------
+## SAMPLE AFTER RANDOMIZATION:
+#
+#---------------------------------------------------------------------------------------
+centroid<-st_centroid(consult_join_oriente)
+centroid <- centroid %>%
+  dplyr::mutate(lon = sf::st_coordinates(.)[,1],
+                lat = sf::st_coordinates(.)[,2])
+centroid<-centroid[,c('SEG_ID','lon','lat')]
+st_geometry(centroid)<-NULL
 
 
+random<-random[, c('segm_id','total_household_survey', 'in_survey', 'n_households_survey')]
+colnames(random)[1] <- "SEG_ID"
 
+random_centroid <- left_join(random, centroid, by="SEG_ID")
 
+consult_join_oriente2<-consult_join_oriente[ ,c('DEPTO','COD_DEP','MPIO','COD_MUN','CANTON','COD_CAN','SEG_ID','within_control')]
+shape_survey<-left_join(consult_join_oriente2, random_centroid, by="SEG_ID")
+shape_survey<-subset(shape_survey, in_survey==1)
 
+#Checking 
+tm_shape(shape_survey) + 
+  tm_borders()+
+  tm_shape(control_line) + 
+  tm_lines(col='red', lwd = 1, lty = "solid", alpha = NA)
 
+tm_shape(consult_join_oriente) + 
+  tm_borders()+
+  tm_shape(control_line) + 
+  tm_lines(col='red', lwd = 1, lty = "solid", alpha = NA)
 
+#Export 
+# Converting from sf to sp object
+shape_survey <-st_transform(shape_survey, crs=slv_crs)
+export_shape_survey <- as(shape_survey, Class='Spatial')
 
+#Exporting the all data shapefile
+writeOGR(obj=export_shape_survey, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_consult", layer="segm_survey", driver="ESRI Shapefile",  overwrite_layer=TRUE)
