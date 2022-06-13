@@ -50,6 +50,7 @@ library("viridis")
 library("qpdf")  
 library("tools")
 library(stringr)
+library("readxl")
 
 
 #Directory: 
@@ -86,6 +87,7 @@ control_line <- st_read(dsn = "gis/maps_interim", layer = "control91_line")
 predicted <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/predicted_outcomes_all.csv")
 consult <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/info_consulting.csv")
 random <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/info_consulting_sample_hh_randomized.csv")
+replacement <- read_excel("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/replacement_sample.xls")
 
 #Joining predictions to shape with info 
 slvShp_segm$SEG_ID<-as.integer(slvShp_segm$SEG_ID)
@@ -253,11 +255,18 @@ st_geometry(centroid)<-NULL
 random<-random[, c('segm_id','total_household_survey', 'in_survey', 'n_households_survey')]
 colnames(random)[1] <- "SEG_ID"
 
+replacement<-replacement[, c('segm_id','total_household_survey', 'replacement', 'n_households_survey')]
+colnames(replacement)[1] <- "SEG_ID"
+
 random_centroid <- left_join(random, centroid, by="SEG_ID")
+replacement_centroid <- left_join(replacement, centroid, by="SEG_ID")
 
 consult_join_oriente2<-consult_join_oriente[ ,c('DEPTO','COD_DEP','MPIO','COD_MUN','CANTON','COD_CAN','SEG_ID','within_control')]
 shape_survey<-left_join(consult_join_oriente2, random_centroid, by="SEG_ID")
 shape_survey<-subset(shape_survey, in_survey==1)
+
+shape_replace<-left_join(consult_join_oriente2, replacement_centroid, by="SEG_ID")
+shape_replace<-subset(shape_replace, replacement==1)
 
 #Checking 
 tm_shape(shape_survey) + 
@@ -274,7 +283,14 @@ tm_shape(consult_join_oriente) +
 # Converting from sf to sp object
 shape_survey <-st_transform(shape_survey, crs=slv_crs)
 export_shape_survey <- as(shape_survey, Class='Spatial')
+shape_replace <-st_transform(shape_replace, crs=slv_crs)
+export_shape_replace <- as(shape_replace, Class='Spatial')
 
 #Exporting the all data shapefile
 writeOGR(obj=export_shape_survey, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_consult", layer="segm_survey", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=export_shape_replace, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_consult", layer="segm_replace", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+
+
+write.csv(random_centroid,"C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_consult/random_centroid.csv", row.names = FALSE)
+write.csv(replacement_centroid,"C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_consult/replacement_centroid.csv", row.names = FALSE)
 
