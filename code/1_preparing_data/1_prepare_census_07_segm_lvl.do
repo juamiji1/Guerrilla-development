@@ -29,9 +29,41 @@ grstyle color major_grid dimgray
 
 
 *-------------------------------------------------------------------------------
-* 					     	Acommodation and Household conditions 
+* 					   Acommodation and Household conditions 
 *	
 *-------------------------------------------------------------------------------
+import excel "${data}\censo2007\Clasificacion_actividad_economica.xlsx", sheet("Sheet1") firstrow clear
+destring code, replace
+tostring code, replace
+replace code= "0"+code if length(code)==3
+ren code econactivity_code
+
+encode isic_1, gen(isic1_num)
+encode isic_2, gen(isic2_num)
+
+gen isic1_agr=(isic1_num==1)
+gen isic1_ind=(isic1_num==2)
+gen isic1_serv=(isic1_num==3)
+
+gen isic2_agr=(isic2_num==1)
+gen isic2_cons=(isic2_num==2)
+gen isic2_man=(isic2_num==3)
+gen isic2_mserv=(isic2_num==4)
+gen isic2_min=(isic2_num==5)
+gen isic2_nmserv=(isic2_num==6)
+
+gen agr_azcf=(econactivity_code=="0111" | econactivity_code=="0113")
+gen agr_azcf_v2=(econactivity_code=="0111" | econactivity_code=="0113") if isic1_agr==1
+
+gen man_azcf=(econactivity_code=="1542" | econactivity_code=="1543")
+gen man_azcf_v2=(econactivity_code=="1542" | econactivity_code=="1543") if isic1_ind==1
+
+gen serv_azcf=(econactivity_code=="5121")
+gen serv_azcf_v2=(econactivity_code=="5121") if isic1_serv==1
+
+tempfile ISIC 
+save `ISIC', replace 
+
 use "${data}/censo2007\data\poblacion.dta", clear 
 
 *Keeping head of household only 
@@ -582,6 +614,11 @@ gen before_war_child=1 if S06P29A<1981
 recode S06P08A2 S06P07C2 (-2 -1 = .)
 gen before_war_inmigrant=1 if S06P08A2<1981 | S06P07C2<1981
 
+*Economic activity 
+replace S06P20="" if S06P20=="-2"
+ren S06P20 econactivity_code
+merge m:1 econactivity_code using `ISIC', keep(1 3) nogen 
+
 *Data at the gender level 
 preserve
 
@@ -824,7 +861,7 @@ preserve
 restore 
 
 *Collapsing at the segment level 
-collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always remittance_rate_heduc remittance_rate_leduc (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc before_war_child before_war_inmigrant, by(segm_id)
+collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always remittance_rate_heduc remittance_rate_leduc isic1_* isic2_* agr_azcf agr_azcf_v2 man_azcf man_azcf_v2 serv_azcf serv_azcf_v2 (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc before_war_child before_war_inmigrant, by(segm_id)
 
 *Tasa de desempleo 
 gen td=pd/pea 

@@ -22,7 +22,7 @@ ren (s07p23 s07p21) (prod_sugar_comer areac_sugar_comer)
 merge m:1 portid using `SegmID', keep(1 3) nogen 
 
 *Collapsing at the segment level 
-collapse yield_sugar_comer prod_sugar_comer areac_sugar_comer, by(segm_id)
+collapse yield_sugar_comer prod_sugar_comer areac_sugar_comer (sum) tprod_sugar_comer=prod_sugar_comer tareac_sugar_comer=areac_sugar_comer, by(segm_id)
 
 tempfile Ysugar
 save `Ysugar', replace 
@@ -70,15 +70,38 @@ merge m:1 portid using `SegmID', keep(1 3) nogen
 
 *Creating vars specific to subsistence type 
 foreach var in prod_maize areac_maize prod_bean areac_bean yield_maize yield_bean {
+	summ `var', d
+	replace `var'=. if `var'<`r(p1)' | `var'>`r(p99)' 
+	
 	gen `var'_comer=`var' if subsistence==0
 	gen `var'_subs=`var' if subsistence==1
 }
 
 *Collapsing at the segment level 
-collapse prod_maize areac_maize prod_bean areac_bean yield_maize yield_bean prod_maize_comer areac_maize_comer prod_bean_comer areac_bean_comer yield_maize_comer yield_bean_comer prod_maize_subs areac_maize_subs prod_bean_subs areac_bean_subs yield_maize_subs yield_bean_subs, by(segm_id)
+collapse prod_maize areac_maize prod_bean areac_bean yield_maize yield_bean prod_maize_comer areac_maize_comer prod_bean_comer areac_bean_comer yield_maize_comer yield_bean_comer prod_maize_subs areac_maize_subs prod_bean_subs areac_bean_subs yield_maize_subs yield_bean_subs (sum) tprod_maize=prod_maize tareac_maize=areac_maize tprod_bean=prod_bean tareac_bean=areac_bean tprod_maize_comer=prod_maize_comer tareac_maize_comer=areac_maize_comer tprod_bean_comer=prod_bean_comer tareac_bean_comer=areac_bean_comer tprod_maize_subs=prod_maize_subs tareac_maize_subs=areac_maize_subs tprod_bean_subs=prod_bean_subs tareac_bean_subs=areac_bean_subs, by(segm_id)
 
 *Merging sugar yields 
 merge 1:1 segm_id using `Ysugar', nogen 
+
+*Creating total yields
+gl prod "tprod_maize tprod_bean tprod_maize_comer tprod_bean_comer tprod_maize_subs tprod_bean_subs tprod_sugar_comer"
+gl area "tareac_maize tareac_bean tareac_maize_comer tareac_bean_comer tareac_maize_subs tareac_bean_subs tareac_sugar_comer"
+
+foreach var of global prod{
+	replace `var'=`var'*0.1
+}
+
+foreach var of global area{
+	replace `var'=`var'*0.7
+}
+
+gen tyield_maize=tprod_maize/tareac_maize
+gen tyield_bean=tprod_bean/tareac_bean
+gen tyield_maize_comer=tprod_maize_comer/tareac_maize_comer
+gen tyield_bean_comer=tprod_bean_comer/tareac_bean_comer
+gen tyield_maize_subs=tprod_maize_subs/tareac_maize_subs
+gen tyield_bean_subs=tprod_bean_subs/tareac_bean_subs
+gen tyield_sugar_comer=tprod_sugar_comer/tareac_sugar_comer
 
 tempfile Yield
 save `Yield', replace 
@@ -106,11 +129,14 @@ gl if "if abs(z_run_cntrl)<=${h}"
 cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
-gl yield "yield_maize yield_bean yield_maize_comer yield_bean_comer yield_sugar yield_maize_subs yield_bean_subs"
+gl yield "yield_maize yield_bean yield_maize_comer yield_bean_comer yield_sugar_comer yield_maize_subs yield_bean_subs"
+gl tyield "tyield_maize tyield_bean tyield_maize_comer tyield_bean_comer tyield_sugar_comer tyield_maize_subs tyield_bean_subs"
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_cenagroyield.tex"
 cap erase "${tables}\rdd_cenagroyield.txt"
+cap erase "${tables}\rdd_cenagrotyield.tex"
+cap erase "${tables}\rdd_cenagrotyield.txt"
 
 *Tables
 foreach var of global yield{
@@ -122,11 +148,21 @@ foreach var of global yield{
 	outreg2 using "${tables}\rdd_cenagroyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
 
-
+*Tables
+foreach var of global tyield{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagrotyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_cenagroyield.tex"
 cap erase "${tables}\rdd_cenagroyield.txt"
+cap erase "${tables}\rdd_cenagrotyield.tex"
+cap erase "${tables}\rdd_cenagrotyield.txt"
 
 *Tables
 foreach var of global yield{
@@ -149,6 +185,28 @@ foreach var of global yield{
 	
 	outreg2 using "${tables}\rdd_cenagroyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
+
+foreach var of global tyield{
+
+	*RDD with break fe and triangular weights 
+	rdrobust `var' z_run_cntrl, all kernel(triangular)
+	gl h=e(h_l)
+	
+	*Conditional for all specifications
+	gl if "if abs(z_run_cntrl)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagrotyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
 
 
 
