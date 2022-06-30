@@ -619,6 +619,16 @@ replace S06P20="" if S06P20=="-2"
 ren S06P20 econactivity_code
 merge m:1 econactivity_code using `ISIC', keep(1 3) nogen 
 
+replace asiste=. if S06P03A<18
+
+foreach var in isic1_agr isic1_ind isic1_serv isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv {
+	gen `var'_v2=`var'
+	replace `var'_v2=. if S06P04A<=1963
+
+	gen `var'_v3=`var'
+	replace `var'_v3=. if S06P04A<=1940
+}
+
 *Data at the gender level 
 preserve
 

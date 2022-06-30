@@ -55,6 +55,10 @@ la var serv_azcf_v2 "Selling agro (v2)"
 gl isic1 "isic1_agr isic1_ind isic1_serv"
 gl isic2 "isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv"
 gl isic3 "agr_azcf agr_azcf_v2 man_azcf man_azcf_v2 serv_azcf serv_azcf_v2"
+gl isic4 "isic1_agr_v2 isic1_ind_v2 isic1_serv_v2"
+gl isic5 "isic2_agr_v2 isic2_cons_v2 isic2_man_v2 isic2_mserv_v2 isic2_min_v2 isic2_nmserv_v2"
+gl isic6 "isic1_agr_v3 isic1_ind_v3 isic1_serv_v3"
+gl isic7 "isic2_agr_v3 isic2_cons_v3 isic2_man_v3 isic2_mserv_v3 isic2_min_v3 isic2_nmserv_v3"
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_isic_all_p1.tex"
@@ -63,6 +67,14 @@ cap erase "${tables}\rdd_isic_all_p2.tex"
 cap erase "${tables}\rdd_isic_all_p2.txt"
 cap erase "${tables}\rdd_isic_all_p3.tex"
 cap erase "${tables}\rdd_isic_all_p3.txt"
+cap erase "${tables}\rdd_isic_all_p4.tex"
+cap erase "${tables}\rdd_isic_all_p4.txt"
+cap erase "${tables}\rdd_isic_all_p5.tex"
+cap erase "${tables}\rdd_isic_all_p5.txt"
+cap erase "${tables}\rdd_isic_all_p6.tex"
+cap erase "${tables}\rdd_isic_all_p6.txt"
+cap erase "${tables}\rdd_isic_all_p7.tex"
+cap erase "${tables}\rdd_isic_all_p7.txt"
 
 foreach var of global isic1{
 	
@@ -97,6 +109,49 @@ foreach var of global isic3{
 	
 }
 
+foreach var of global isic4{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_isic_all_p4.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+}
+
+foreach var of global isic5{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_isic_all_p5.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+}
+
+foreach var of global isic6{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_isic_all_p6.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+}
+
+foreach var of global isic7{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_isic_all_p7.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+}
 
 
 
