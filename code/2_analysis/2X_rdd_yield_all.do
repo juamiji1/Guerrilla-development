@@ -76,9 +76,6 @@ foreach var of global is{
 	gen s`var'=`var'/segm_area
 }
 
-
-
-
 *-------------------------------------------------------------------------------
 * Local continuity using Percentile 25 and up of elevation (Table)
 *-------------------------------------------------------------------------------
@@ -184,7 +181,7 @@ foreach var of global pd{
 
 
 
-foreach var of global yld{
+foreach var of global yld {
 	
 	*RDD with break fe and triangular weights 
 	rdrobust `var' z_run_cntrl, all kernel(triangular)
@@ -206,6 +203,32 @@ foreach var of global yld{
 	outreg2 using "${tables}\rdd_yld_all_p7_diffbw.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
+
+gl resid "bean05_r maize05_r coffe05_r sugar05_r"
+
+*Against the distance
+foreach var of global yld {
+	*Predicting outcomes
+	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	cap drop `var'_r
+	predict `var'_r, resid
+}
+
+preserve
+
+	gen x=round(z_run_cntrl, 0.05)
+	gen n=1
+	
+	collapse (mean) ${resid} (sum) n, by(x)
+
+	foreach var of global resid{
+		two (scatter `var' x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var', replace)
+		gr export "${plots}\rdplot_all_`var'.pdf", as(pdf) replace 
+
+				
+	}
+	
+restore
 
 
 

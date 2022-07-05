@@ -113,3 +113,117 @@ tab owner_all subsistence, col row
 tab rent_all subsistence, col row
 
 
+*Collapsing at the segment level 
+collapse (mean) sizep_all sizenp_all sizep_comer sizep_subs sizenp_comer sizenp_subs sizet_all sizet_comer sizet_subs owner_* rent_* (sum) tot_sizep_all=sizep_all tot_sizenp_all=sizenp_all tot_sizep_comer=sizep_comer tot_sizep_subs=sizep_subs tot_sizenp_comer=sizenp_comer tot_sizenp_subs=sizenp_subs tot_sizet_all=sizet_all tot_sizet_comer=sizet_comer tot_sizet_subs=sizet_subs tot_owner_all=owner_all tot_owner_comer=owner_comer tot_owner_subs=owner_subs  tot_rent_all=rent_all tot_rent_comer=rent_comer tot_rent_subs=rent_subs, by(segm_id)
+
+*Creating shares 
+gen sh_landp_all=tot_sizep_all/tot_sizet_all
+gen sh_landp_comer=tot_sizep_comer/tot_sizet_comer
+gen sh_landp_subs=tot_sizep_subs/tot_sizet_subs
+gen sh_land_comer=tot_sizep_comer/tot_sizet_all
+gen sh_land_subs=tot_sizep_subs/tot_sizet_all
+
+*More descriptives
+summ sizep_comer sizep_subs, d
+summ tot_sizep_comer tot_sizep_subs, d 
+
+twoway (kdensity sizep_comer) (kdensity sizep_subs)
+
+tempfile Plot 
+save `Plot', replace 
+
+
+*RESULTS
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
+
+drop _merge
+merge 1:1 segm_id using `Plot', keep(1 3) nogen
+
+*Global of border FE for all estimates
+gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gl h=e(h_l)
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+gl means "sizet_all sizep_all sizenp_all sizet_comer sizep_comer sizenp_comer sizet_subs sizep_subs sizenp_subs"
+gl totals "tot_sizet_all tot_sizep_all tot_sizenp_all tot_sizet_comer tot_sizep_comer tot_sizenp_comer tot_sizet_subs tot_sizep_subs tot_sizenp_subs"
+gl shares "sh_landp_all sh_landp_comer sh_landp_subs sh_land_comer sh_land_subs"
+gl ownersh "owner_all owner_comer owner_subs rent_all rent_comer rent_subs"
+gl ownertot "tot_owner_all tot_owner_comer tot_owner_subs tot_rent_all tot_rent_comer tot_rent_subs"
+
+*Erasing table before exporting
+cap erase "${tables}\rdd_cenagro_owner_p1.tex"
+cap erase "${tables}\rdd_cenagro_owner_p1.txt"
+cap erase "${tables}\rdd_cenagro_owner_p2.tex"
+cap erase "${tables}\rdd_cenagro_owner_p2.txt"
+cap erase "${tables}\rdd_cenagro_owner_p3.tex"
+cap erase "${tables}\rdd_cenagro_owner_p3.txt"
+cap erase "${tables}\rdd_cenagro_owner_p4.tex"
+cap erase "${tables}\rdd_cenagro_owner_p4.txt"
+cap erase "${tables}\rdd_cenagro_owner_p5.tex"
+cap erase "${tables}\rdd_cenagro_owner_p5.txt"
+
+*Tables
+foreach var of global means{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagro_owner_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
+foreach var of global totals{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagro_owner_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
+foreach var of global shares{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagro_owner_p3.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
+foreach var of global ownersh{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagro_owner_p4.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
+foreach var of global ownertot{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_cenagro_owner_p5.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
+
+
+
+
+*HACER EL IHISTORAMA CONTROL VS NO CONTROL 
+
+*END

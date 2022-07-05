@@ -154,5 +154,111 @@ foreach var of global isic7{
 }
 
 
+*PLot of structural transformation 
+summ z_run_cntrl, d
+gen z_integer=round(z_run_cntrl)
+replace z_integer=z_integer+67
+
+gl isic1 "isic1_agr isic1_ind isic1_serv"
+gl isic2 "isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv"
+
+eststo est1: mean isic1_agr if z_integer>63 & z_integer<72, over(z_integer)
+
+mat b=e(b)
+
+mat l b 
+
+
+*Plots of structural transformation at the 1st level
+foreach var in isic1_agr isic1_ind isic1_serv {
+	
+	*Capturing the means
+	eststo est1: mean `var' if z_integer>49, over(z_integer)
+	
+	*Capturing and fixing the labels of the coefficients for the coefplots
+	mat b=e(b)
+	local cnames: colnames b
+	tokenize "`cnames'"
+	local i = 1
+	local coeflabels =""
+	while "``i''" != "" {
+		cap dis ustrregexm("``i''","[0-9]{2}")
+		local number=  ustrregexs(0)
+				local number=`number'-67
+		local arg="``i''"+"="+"`number'"
+		local coeflabels= "`coeflabels'"+" " +"`arg'"
+		
+		local ++i
+	}
+	gl coeflabels1=subinstr("`coeflabels'","bn","",1)
+	
+	coefplot est1, xline(18) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
+	gr export "${plots}/mean_`var'.pdf", as(pdf) replace
+	
+}
+
+*Plots of structural transformation at the 1st level
+foreach var in isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv {
+	
+	*Capturing the means
+	eststo est1: mean `var' if z_integer>49, over(z_integer)
+	
+	*Capturing and fixing the labels of the coefficients for the coefplots
+	mat b=e(b)
+	local cnames: colnames b
+	tokenize "`cnames'"
+	local i = 1
+	local coeflabels =""
+	while "``i''" != "" {
+		cap dis ustrregexm("``i''","[0-9]{2}")
+		local number=  ustrregexs(0)
+				local number=`number'-67
+		local arg="``i''"+"="+"`number'"
+		local coeflabels= "`coeflabels'"+" " +"`arg'"
+		
+		local ++i
+	}
+	gl coeflabels1=subinstr("`coeflabels'","bn","",1)
+	
+	coefplot est1, xline(18) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
+	gr export "${plots}/mean_`var'.pdf", as(pdf) replace
+	
+}
+
+*-------------------------------------------------------------------------------
+* Plots
+*-------------------------------------------------------------------------------
+gl isic "isic1_agr isic1_ind isic1_serv isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv"
+gl resid "isic1_agr_r isic1_ind_r isic1_serv_r isic2_agr_r isic2_cons_r isic2_man_r isic2_mserv_r isic2_min_r isic2_nmserv_r"
+
+*Against the distance
+foreach var of global isic {
+	*Predicting outcomes
+	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	cap drop `var'_r
+	predict `var'_r, resid
+}
+
+preserve
+
+	gen x=round(z_run_cntrl, 0.07)
+	gen n=1
+	
+	collapse (mean) ${resid} (sum) n, by(x)
+
+	foreach var of global resid{
+		two (scatter `var' x if abs(x)<${h}, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<${h}, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var', replace)
+		gr export "${plots}\rdplot_all_`var'.pdf", as(pdf) replace 
+
+				
+	}
+	
+restore
+
+
+
+
+	
+
 
 *END
