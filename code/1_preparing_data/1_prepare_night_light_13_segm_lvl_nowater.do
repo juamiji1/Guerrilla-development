@@ -24,7 +24,20 @@ cd ${data}
 *
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
+*shp2dta using "${data}/gis\maps_interim\slvShp_segm_pnc", data("${data}/temp\slvShp_segm_pnc.dta") coord("${data}/temp\slvShp_segm_pnc_coord.dta") genid(pixel_id) genc(coord) replace 
 *shp2dta using "${data}/gis\maps_interim\slvShp_segm_yield05", data("${data}/temp\slvShp_segm_yield05.dta") coord("${data}/temp\slvShp_segm_yield05_coord.dta") genid(pixel_id) genc(coord) replace 
+
+use "${data}/temp\slvShp_segm_pnc.dta", clear
+ren (SEG_ID dst_cms) (segm_id dist_comisaria)
+
+keep segm_id dist_comisaria
+
+*Preparing vars
+replace dist_comisaria=dist_comisaria/1000
+
+*Saving
+tempfile PNC
+save `PNC', replace 
 
 use "${data}/temp\slvShp_segm_yield05.dta", clear
 
@@ -209,6 +222,7 @@ replace reform=0 if reform==.
 
 *Merging yield data in 2005 
 merge 1:1 segm_id using `Y05', nogen 
+merge 1:1 segm_id using `PNC', nogen 
 
 
 *-------------------------------------------------------------------------------

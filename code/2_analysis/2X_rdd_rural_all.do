@@ -70,6 +70,38 @@ foreach var of global outcomes{
 
 }
 
+*-------------------------------------------------------------------------------
+* Plots
+*-------------------------------------------------------------------------------
+gl resid "rural_r total_pop_r dens_pop_r pop_bornbef85_always_r dens_pop_bornbef85_r pop_bornbef80_always_r dens_pop_bornbef80_r"
+
+*Against the distance
+foreach var of global outcomes{
+	*Predicting outcomes
+	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	cap drop `var'_r
+	predict `var'_r, resid
+}
+
+preserve
+
+	gen x=round(z_run_cntrl, 0.08)
+	gen n=1
+	
+	collapse (mean) ${resid} (sum) n, by(x)
+
+	foreach var of global resid{
+		two (scatter `var' x if abs(x)<1, mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<1, clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-1(0.2)1) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3)) l2title("Estimate magnitud", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var', replace)
+		gr export "${plots}\rdplot_all_`var'.pdf", as(pdf) replace 
+
+				
+	}
+	
+restore
+
+
+
+
 
 
 
