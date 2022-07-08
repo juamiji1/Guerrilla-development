@@ -28,12 +28,13 @@ cd ${data}
 *shp2dta using "${data}/gis\maps_interim\slvShp_segm_yield05", data("${data}/temp\slvShp_segm_yield05.dta") coord("${data}/temp\slvShp_segm_yield05_coord.dta") genid(pixel_id) genc(coord) replace 
 
 use "${data}/temp\slvShp_segm_pnc.dta", clear
-ren (SEG_ID dst_cms) (segm_id dist_comisaria)
+ren (SEG_ID dst_cms dst_r80) (segm_id dist_comisaria dist_road80)
 
-keep segm_id dist_comisaria
+keep segm_id dist_comisaria dist_road80
 
 *Preparing vars
 replace dist_comisaria=dist_comisaria/1000
+replace dist_road80=dist_road80/1000
 
 *Saving
 tempfile PNC

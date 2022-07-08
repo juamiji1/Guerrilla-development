@@ -81,6 +81,8 @@ slvShp_sp <- as(slvShp, Class='Spatial')
 comisarias <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/pnc/comisarias.csv")
 comisarias_sf <- st_as_sf(comisarias, coords = c("lon", "lat"), crs = slv_crs)
 
+roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
+roadShp <- st_transform(roadShp, crs = slv_crs)
 
 #---------------------------------------------------------------------------------------
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
@@ -88,13 +90,19 @@ comisarias_sf <- st_as_sf(comisarias, coords = c("lon", "lat"), crs = slv_crs)
 #---------------------------------------------------------------------------------------
 slvShp_segm_info1<-slvShp_segm
 
-#Distance to closest cooperative 
+#Distance to closest PNC  
 distBrk<-st_distance(st_make_valid(slvShp_segm), st_make_valid(comisarias_sf), by_element = FALSE)
 distMatrix<-distBrk %>% as.data.frame() %>%
   data.matrix()
 distMin<-rowMins(distMatrix)
 slvShp_segm_info1$dist_comisaria<-distMin
 
+#Distance to closest road 
+distBrk<-st_distance(st_make_valid(slvShp_segm), st_make_valid(roadShp), by_element = FALSE)
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+distMin<-rowMins(distMatrix)
+slvShp_segm_info1$dist_road80<-distMin
 
 #---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
@@ -111,3 +119,5 @@ writeOGR(obj=slvShp_segm_info_sp, dsn="C:/Users/juami/Dropbox/My-Research/Gueril
 
 
 
+
+#END

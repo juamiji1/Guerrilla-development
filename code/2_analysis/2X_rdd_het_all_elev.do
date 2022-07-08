@@ -13,9 +13,18 @@ summ dist_city45, d
 gen p50_dist_city45=(dist_city45>=`r(p50)')
 gen wxdcty=within_control*p50_dist_city45
 
+summ dist_road80, d
+gen p50_dist_road80=(dist_road80>=`r(p50)')
+gen wxrd80=within_control*p50_dist_road80
+
 summ dist_capital, d
 gen p50_dist_capital=(dist_capital>=`r(p50)')
 gen wxdcptl=within_control*p50_dist_capital
+
+gen dens_pop_bornbef80=pop_bornbef80_always/AREA_K
+summ dens_pop_bornbef80, d
+gen p50_pop_dens_80=(dens_pop_bornbef80>=`r(p50)')
+gen wxpopd=within_control*p50_pop_dens_80
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
@@ -53,6 +62,8 @@ la var z_wi_p50 "Median Wealth Index"
 la var wxdcst "Controlled $\times$ I(coast)"
 la var wxdcty "Controlled $\times$ I(city45)"
 la var wxdcptl "Controlled $\times$ I(capital)"
+la var wxrd80 "Controlled $\times$ I(roads80)"
+la var wxpopd "Controlled $\times$ I(popdens80)"
 
 *-------------------------------------------------------------------------------
 * 						Night Light outcomes (Table)
@@ -74,7 +85,16 @@ cap erase "${tables}\rdd_het_all_elev_p5.tex"
 cap erase "${tables}\rdd_het_all_elev_p5.txt"
 cap erase "${tables}\rdd_het_all_elev_p6.tex"
 cap erase "${tables}\rdd_het_all_elev_p6.txt"
+cap erase "${tables}\rdd_het_all_elev_p7.tex"
+cap erase "${tables}\rdd_het_all_elev_p7.txt"
+cap erase "${tables}\rdd_het_all_elev_p8.tex"
+cap erase "${tables}\rdd_het_all_elev_p8.txt"
+cap erase "${tables}\rdd_het_all_elev_p9.tex"
+cap erase "${tables}\rdd_het_all_elev_p9.txt"
+cap erase "${tables}\rdd_het_all_elev_p10.tex"
+cap erase "${tables}\rdd_het_all_elev_p10.txt"
 
+*Heterogeneous analysis results  
 foreach var of global nl{
 	
 	*Table
@@ -108,6 +128,26 @@ foreach var of global nl{
 	gl mean_y=round(r(mean), .01)
 	outreg2 using "${tables}\rdd_het_all_elev_p6.tex", tex(frag) keep(within_control wxdcptl) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
+	reghdfe `var' ${controls} i.within_control#c.dist_road80 dist_road80 [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	outreg2 using "${tables}\rdd_het_all_elev_p7.tex", tex(frag) keep(within_control 1.within_control#c.dist_road80) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	reghdfe `var' ${controls} wxrd80 p50_dist_road80 [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	outreg2 using "${tables}\rdd_het_all_elev_p8.tex", tex(frag) keep(within_control wxrd80) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+		
+	reghdfe `var' ${controls} i.within_control#c.dens_pop_bornbef80 dens_pop_bornbef80 [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	outreg2 using "${tables}\rdd_het_all_elev_p9.tex", tex(frag) keep(within_control 1.within_control#c.dens_pop_bornbef80) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	reghdfe `var' ${controls} wxpopd p50_pop_dens_80 [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	outreg2 using "${tables}\rdd_het_all_elev_p10.tex", tex(frag) keep(within_control wxpopd) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+
 }
 
 
