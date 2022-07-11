@@ -43,6 +43,8 @@ cap erase "${tables}\rdd_labor_all_p1.tex"
 cap erase "${tables}\rdd_labor_all_p1.txt"
 cap erase "${tables}\rdd_labor_all_p2.tex"
 cap erase "${tables}\rdd_labor_all_p2.txt"
+cap erase "${tables}\rdd_labor_all_p3.tex"
+cap erase "${tables}\rdd_labor_all_p3.txt"
 
 *Tables
 foreach var of global lab1{
@@ -64,6 +66,17 @@ foreach var of global lab2{
 	gl mean_y=round(r(mean), .01)
 	
 	outreg2 using "${tables}\rdd_labor_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+
+}
+
+foreach var in work_insegm_sh{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_labor_all_p3.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
 

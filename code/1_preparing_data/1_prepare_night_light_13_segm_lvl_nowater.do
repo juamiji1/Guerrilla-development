@@ -24,7 +24,7 @@ cd ${data}
 *
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
-shp2dta using "${data}/gis\maps_interim\slvShp_segm_pnc", data("${data}/temp\slvShp_segm_pnc.dta") coord("${data}/temp\slvShp_segm_pnc_coord.dta") genid(pixel_id) genc(coord) replace 
+*shp2dta using "${data}/gis\maps_interim\slvShp_segm_pnc", data("${data}/temp\slvShp_segm_pnc.dta") coord("${data}/temp\slvShp_segm_pnc_coord.dta") genid(pixel_id) genc(coord) replace 
 *shp2dta using "${data}/gis\maps_interim\slvShp_segm_yield05", data("${data}/temp\slvShp_segm_yield05.dta") coord("${data}/temp\slvShp_segm_yield05_coord.dta") genid(pixel_id) genc(coord) replace 
 
 use "${data}/temp\slvShp_segm_pnc.dta", clear

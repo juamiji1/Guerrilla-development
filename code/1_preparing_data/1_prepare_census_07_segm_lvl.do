@@ -484,7 +484,7 @@ replace age_war_range=2 if S06P03A>=43 & S06P03A<59
 *School age at war time
 gen schl_age_war=1 if S06P03A>=21 & S06P03A<42    // 21 to 41 years old ie born between 1966-1986
 gen notschl_age_war=1 if S06P03A>=42			  // +42 born before 1966
-gen schl_age_today=1 if S06P03A==16				  // Born after 1992 but finished educ 
+gen schl_age_today=1 if S06P03A>=15 & S06P03A<21			  // Born after 1992 but finished educ 
 
 *Literacy 
 tab S06P09
@@ -619,8 +619,6 @@ replace S06P20="" if S06P20=="-2"
 ren S06P20 econactivity_code
 merge m:1 econactivity_code using `ISIC', keep(1 3) nogen 
 
-replace asiste=. if S06P03A<18
-
 foreach var in isic1_agr isic1_ind isic1_serv isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv {
 	gen `var'_v2=`var'
 	replace `var'_v2=. if S06P04A<=1963
@@ -628,6 +626,13 @@ foreach var in isic1_agr isic1_ind isic1_serv isic2_agr isic2_cons isic2_man isi
 	gen `var'_v3=`var'
 	replace `var'_v3=. if S06P04A<=1940
 }
+
+*Enrolled in school
+replace asiste=. if S06P03A<18
+
+*Working in the same place 
+destring S06P24B1 S06P24C, replace 
+gen work_insegm=1 if S06P24A!=-2 | S06P24B1!=-2 | S06P24C!=-2
 
 *Data at the gender level 
 preserve
@@ -871,7 +876,7 @@ preserve
 restore 
 
 *Collapsing at the segment level 
-collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always remittance_rate_heduc remittance_rate_leduc isic1_* isic2_* agr_azcf agr_azcf_v2 man_azcf man_azcf_v2 serv_azcf serv_azcf_v2 (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc before_war_child before_war_inmigrant, by(segm_id)
+collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always remittance_rate_heduc remittance_rate_leduc isic1_* isic2_* agr_azcf agr_azcf_v2 man_azcf man_azcf_v2 serv_azcf serv_azcf_v2 (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc before_war_child before_war_inmigrant work_insegm, by(segm_id)
 
 *Tasa de desempleo 
 gen td=pd/pea 
@@ -884,6 +889,7 @@ gen public_pet=public/pet
 gen private_pet=private/pet
 gen boss_pet=boss/pet
 gen independent_pet=independent/pet
+gen work_insegm_sh=work_insegm/po
 
 *Merging the other modules 
 merge 1:1 segm_id using `Household', nogen 
