@@ -153,21 +153,12 @@ foreach var of global isic7{
 	
 }
 
-
+*-------------------------------------------------------------------------------
 *PLot of structural transformation 
+*-------------------------------------------------------------------------------
 summ z_run_cntrl, d
 gen z_integer=round(z_run_cntrl)
 replace z_integer=z_integer+67
-
-gl isic1 "isic1_agr isic1_ind isic1_serv"
-gl isic2 "isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv"
-
-eststo est1: mean isic1_agr if z_integer>63 & z_integer<72, over(z_integer)
-
-mat b=e(b)
-
-mat l b 
-
 
 *Plots of structural transformation at the 1st level
 foreach var in isic1_agr isic1_ind isic1_serv {

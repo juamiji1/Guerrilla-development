@@ -41,6 +41,129 @@ save `WMUNIC', replace
 * Calculating rates if in and out migration at different momments of time
 *
 *-------------------------------------------------------------------------------
+use "${data}/censo2007\data\vivienda.dta", clear 
+
+*Merging household conditions 
+merge 1:m DEPID MUNID SEGID VIVID using "${data}/censo2007\data\hogar.dta", keep(2 3) nogen
+
+*Creating the segment identifier 
+gen segm_id=DEPID+MUNID+SEGID
+
+*Wall materials
+gen good_wall=(S02P02==1)
+gen bad_wall=(S02P02==6 | S02P02==7)
+
+recode S02P02 (4 6 = 2)
+tab S02P02, g(wall_)
+recode S02P02 (8=.) (2 3 5 6 7 = 0), gen(good_wall2)
+
+*Roof materials
+*gen good_roof=(S02P03==1 | S02P03==2)
+gen good_roof=(S02P03==1)
+gen bad_roof=(S02P02==6 | S02P02==7 )
+
+recode S02P03 (8=.) (2 3 4= 1) (5 6 7 = 0), gen(good_roof2)
+tab S02P03, g(roof_)
+*recode S02P03 (2 3 4 5 = 1) (6 7 8 = 0), gen(good_roof)
+
+*Floor materials 
+recode S02P05 (-2 = .)
+*gen good_floor=(S02P03==1 | S02P03==2)
+gen good_floor=(S02P03==1)
+gen bad_floor=(S02P02==5 | S02P02==6)
+
+recode S02P05 (6 = 5)
+tab S02P05, g(floor_)
+recode S02P05 (7=.) (2 3 4 = 1) (4 5 = 0), gen(good_floor2)
+
+*Nuumber of households
+recode S02P08 (-2 = .)
+tab S02P08
+
+*Total of people within the household 
+ren POBTOT pobtot
+
+*Sleeping rooms
+tab S03P02
+recode S03P02 (0=1)
+
+*Members per sleeping room
+gen m_p_room =pobtot/S03P02
+
+*Home ownership 
+recode S03P04 (2 3 4 = 1) (5 6 7 = 0)
+
+*Sanitary type 
+recode S03P05 (2 = 1) (4 = 3)
+tab S03P05, g(sanitary_)
+
+*Exclusive sanitary service 
+recode S03P06 (-2 = .) (2 = 0) 
+
+*Dirty water disposal 
+tab S03P07, g(dirty_water_)
+
+*Type of water access 
+recode S03P08 (2 3 = 1) (6 = 5) (9 = 8)
+tab S03P08, g(water_type_)
+
+*Daily water 
+recode S03P09 (-2 = .) (2 = 1) (3 4 5 6 = 0)
+
+*Cook fuel 
+gen electric_cook=(S03P10==1)
+recode S03P10 (4 5 6 7 = 8)
+tab S03P10, g(fuel_cook_)
+
+*Electricity service 
+recode S03P11 (2 3 4 5 6 = 0)
+
+*Garbage disposal 
+recode S03P12 (2 = 1) (3 4 5 6 7 8 = 0)
+
+*Assets characteristics 
+recode S03P13A - S03P13M  (-1 -2 = .) (2=0)
+gen car_bike= (S03P13J==1 | S03P13K==1)
+
+*Farming or livestock  activity 
+recode S03P15A S03P15B (-1 -2 = .) (2=0)
+
+*Land of activity 
+recode S03P16 (2 3 = 0)
+
+*Urban area 
+ren AREAID urban 
+recode urban (2 = 0)
+
+*Total households
+gen total_household=1
+*gen total_household_survey=1 if S06P03A>29 & S06P03A<71
+
+*Sanitary service 
+recode S03P05 (2 3 4 5 = 0)
+
+*Sewerage service 
+recode S03P07 (2 3 4 5 6 =0)
+
+*Water pipes 
+recode S03P08 (2 3 = 1) (4 5 6 7 8 9 10 = 0)
+
+*Daily water 
+recode S03P09 (-2 = .) (2 = 1) (3 4 5 6 = 0)
+
+*Electricity service 
+recode S03P11 (2 3 4 5 6 = 0)
+
+*Creating the wealth index 
+gl wealthindex "wall_* roof_* floor_* pobtot m_p_room S03P04 sanitary_* S03P06 dirty_water_* water_type_* fuel_cook_* S03P11 S03P12 S03P13A - S03P13M S03P15A S03P15B S03P16 urban"
+factor ${wealthindex}, pcf factors(1)
+predict z_wi
+ 
+keep segm_id VIVID HOGID z_wi
+
+tempfile WEALTH
+save `WEALTH', replace
+
 *Using the population census 
 use "${data}/censo2007\data\poblacion.dta", clear 
 
@@ -55,6 +178,7 @@ gen munic=S06P08B3+S06P08B2
 *Merging the rd sample
 merge m:1 segm_id using `RDSAMPLE', keep(1 3) nogen 
 merge m:1 munic using `WMUNIC', keep(1 3) nogen
+merge m:1 segm_id VIVID HOGID using `WEALTH', keep(1 3) nogen
 
 *-------------------------------------------------------------------------------
 *Calculating how many people arrived from guerrilla controlled areas 
@@ -140,7 +264,7 @@ summ y2_n y2_80_n y2_85_n
 
 
 *-------------------------------------------------------------------------------
-* Calculating the trimmed years of education 
+* Calculating the trimmed years of education and wealth 
 *
 *-------------------------------------------------------------------------------
 replace S06P11A=. if S06P03A<18
@@ -157,7 +281,18 @@ winsor edyt if sample_rd==1 & within_control==1, p(`r(mean)') gen(edyt_trmm) low
 gen educ_years_trimmed=edyc_trmm if sample_rd==1 & within_control==0
 replace educ_years_trimmed=edyt_trmm if sample_rd==1 & within_control==1
 
-drop edy*
+gen z_wic=z_wi if sample_rd==1 & within_control==0
+gen z_wit=z_wi if sample_rd==1 & within_control==1
+
+summ x2_n
+winsor z_wic if sample_rd==1 & within_control==0, p(`r(mean)') gen(z_wic_trmm) high
+summ y2_n
+winsor z_wit if sample_rd==1 & within_control==1, p(`r(mean)') gen(z_wit_trmm) low
+
+gen zwi_trimmed=z_wic_trmm if sample_rd==1 & within_control==0
+replace zwi_trimmed=z_wit_trmm if sample_rd==1 & within_control==1
+
+drop edy* z_wic* z_wit*
 
 *Trimming for all 1980 migration 
 gen edyc=S06P11A if sample_rd==1 & within_control==0
@@ -171,7 +306,18 @@ winsor edyt if sample_rd==1 & within_control==1, p(`r(mean)') gen(edyt_trmm) low
 gen educ_years_trimmed80=edyc_trmm if sample_rd==1 & within_control==0
 replace educ_years_trimmed80=edyt_trmm if sample_rd==1 & within_control==1
 
-drop edy*
+gen z_wic=z_wi if sample_rd==1 & within_control==0
+gen z_wit=z_wi if sample_rd==1 & within_control==1
+
+summ x2_80_n
+winsor z_wic if sample_rd==1 & within_control==0, p(`r(mean)') gen(z_wic_trmm) high
+summ y2_80_n
+winsor z_wit if sample_rd==1 & within_control==1, p(`r(mean)') gen(z_wit_trmm) low
+
+gen zwi_trimmed80=z_wic_trmm if sample_rd==1 & within_control==0
+replace zwi_trimmed80=z_wit_trmm if sample_rd==1 & within_control==1
+
+drop edy* z_wic* z_wit*
 
 *Trimming for all 1985 migration 
 gen edyc=S06P11A if sample_rd==1 & within_control==0
@@ -185,10 +331,21 @@ winsor edyt if sample_rd==1 & within_control==1, p(`r(mean)') gen(edyt_trmm) low
 gen educ_years_trimmed85=edyc_trmm if sample_rd==1 & within_control==0
 replace educ_years_trimmed85=edyt_trmm if sample_rd==1 & within_control==1
 
-drop edy*
+gen z_wic=z_wi if sample_rd==1 & within_control==0
+gen z_wit=z_wi if sample_rd==1 & within_control==1
+
+summ x2_85_n
+winsor z_wic if sample_rd==1 & within_control==0, p(`r(mean)') gen(z_wic_trmm) high
+summ y2_85_n
+winsor z_wit if sample_rd==1 & within_control==1, p(`r(mean)') gen(z_wit_trmm) low
+
+gen zwi_trimmed85=z_wic_trmm if sample_rd==1 & within_control==0
+replace zwi_trimmed85=z_wit_trmm if sample_rd==1 & within_control==1
+
+drop edy* z_wic* z_wit*
 
 *Collapsing at the segment level 
-collapse (mean) educ_years_trimmed* sample_rd, by(segm_id)
+collapse (mean) educ_years_trimmed* zwi_trimmed* sample_rd, by(segm_id)
 
 tempfile TRIMM 
 save `TRIMM', replace 
@@ -221,7 +378,7 @@ cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *Global of outcomes
-gl educ "educ_years_trimmed educ_years_trimmed80 educ_years_trimmed85"
+gl educ "educ_years_trimmed educ_years_trimmed80 educ_years_trimmed85 zwi_trimmed zwi_trimmed80 zwi_trimmed85"
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_educ_trimm_all.tex"

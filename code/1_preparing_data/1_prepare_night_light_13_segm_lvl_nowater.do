@@ -24,17 +24,20 @@ cd ${data}
 *
 *-------------------------------------------------------------------------------
 *Coverting shape to dta 
-*shp2dta using "${data}/gis\maps_interim\slvShp_segm_pnc", data("${data}/temp\slvShp_segm_pnc.dta") coord("${data}/temp\slvShp_segm_pnc_coord.dta") genid(pixel_id) genc(coord) replace 
+shp2dta using "${data}/gis\maps_interim\slvShp_segm_pnc", data("${data}/temp\slvShp_segm_pnc.dta") coord("${data}/temp\slvShp_segm_pnc_coord.dta") genid(pixel_id) genc(coord) replace 
 *shp2dta using "${data}/gis\maps_interim\slvShp_segm_yield05", data("${data}/temp\slvShp_segm_yield05.dta") coord("${data}/temp\slvShp_segm_yield05_coord.dta") genid(pixel_id) genc(coord) replace 
 
 use "${data}/temp\slvShp_segm_pnc.dta", clear
-ren (SEG_ID dst_cms dst_r80) (segm_id dist_comisaria dist_road80)
+ren (SEG_ID dst_cms dst_r80 dstc_80 dst_r14 dstc_14) (segm_id dist_comisaria dist_road80 distc_road80 dist_road14 distc_road14)
 
-keep segm_id dist_comisaria dist_road80
+keep segm_id dist_comisaria dist_road80 distc_road80 dist_road14 distc_road14
 
 *Preparing vars
 replace dist_comisaria=dist_comisaria/1000
 replace dist_road80=dist_road80/1000
+replace distc_road80=distc_road80/1000
+replace distc_road14=distc_road14/1000
+replace dist_road14=dist_road14/1000
 
 *Saving
 tempfile PNC

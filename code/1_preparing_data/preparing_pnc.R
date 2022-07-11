@@ -74,6 +74,9 @@ st_crs(slvShp)==st_crs(slvShp_segm)
 #Transforming sf object to sp object 
 slvShp_sp <- as(slvShp, Class='Spatial')
 
+#Centroids of segments 
+segm_centroid<-st_centroid(st_make_valid(slvShp_segm)) 
+
 #---------------------------------------------------------------------------------------
 # Importing other features:
 #---------------------------------------------------------------------------------------
@@ -83,6 +86,10 @@ comisarias_sf <- st_as_sf(comisarias, coords = c("lon", "lat"), crs = slv_crs)
 
 roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
 roadShp <- st_transform(roadShp, crs = slv_crs)
+
+roadShp14 <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_selection_2014")
+roadShp14 <- st_transform(roadShp14, crs = slv_crs)
+roadShp14 <- st_simplify(roadShp14, preserveTopology = FALSE, dTolerance = 10000)
 
 #---------------------------------------------------------------------------------------
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
@@ -103,6 +110,25 @@ distMatrix<-distBrk %>% as.data.frame() %>%
   data.matrix()
 distMin<-rowMins(distMatrix)
 slvShp_segm_info1$dist_road80<-distMin
+
+distBrk<-st_distance(st_make_valid(slvShp_segm), st_make_valid(roadShp14), by_element = FALSE)
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+distMin<-rowMins(distMatrix)
+slvShp_segm_info1$dist_road14<-distMin
+
+#USing the centroid of the segment 
+distBrk<-st_distance(segm_centroid, st_make_valid(roadShp), by_element = FALSE)
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+distMin<-rowMins(distMatrix)
+slvShp_segm_info1$distc_road80<-distMin
+
+distBrk<-st_distance(segm_centroid, st_make_valid(roadShp14), by_element = FALSE)
+distMatrix<-distBrk %>% as.data.frame() %>%
+  data.matrix()
+distMin<-rowMins(distMatrix)
+slvShp_segm_info1$distc_road14<-distMin
 
 #---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
