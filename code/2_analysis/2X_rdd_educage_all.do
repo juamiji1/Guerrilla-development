@@ -46,6 +46,10 @@ la var z_wi_iqr "Wealth Index Range (p75-p25)"
 la var z_wi_iqr2 "Wealth Index Range (p95-p5)"
 la var z_wi_iqr3 "Wealth Index Range (p90-p10)"
 la var z_wi_p50 "Median Wealth Index"
+la var mean_educ_years_wsage "School age at war"
+la var mean_educ_years_wnsage "Non-school age at war"
+la var mean_educ_years_sage "School age after war"
+
 
 *-------------------------------------------------------------------------------
 * 						Night Light outcomes (Table)
