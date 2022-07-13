@@ -378,7 +378,7 @@ cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *Global of outcomes
-gl educ "educ_years_trimmed educ_years_trimmed80 educ_years_trimmed85 zwi_trimmed zwi_trimmed80 zwi_trimmed85"
+gl educ "zwi_trimmed educ_years_trimmed zwi_trimmed80 educ_years_trimmed80 zwi_trimmed85 educ_years_trimmed85 "
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_educ_trimm_all.tex"

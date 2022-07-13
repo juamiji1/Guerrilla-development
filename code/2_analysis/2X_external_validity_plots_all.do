@@ -9,7 +9,9 @@ gen z_integer=round(z_run_cntrl)
 replace z_integer=z_integer+67
 
 *Plots of structural transformation at the 1st level
-foreach var in arcsine_nl13 z_wi mean_educ_years{
+rename arcsine_nl13 arcsine
+
+foreach var in arcsine z_wi mean_educ_years{
 	
 	*Capturing the means
 	eststo est1: mean `var' if z_integer>49, over(z_integer)
@@ -31,10 +33,11 @@ foreach var in arcsine_nl13 z_wi mean_educ_years{
 	}
 	gl coeflabels1=subinstr("`coeflabels'","bn","",1)
 	
-	coefplot est1, xline(18) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45)) name(`var', replace)
+	coefplot est1, xline(18) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45)) l2title("Outcome Mean") b2title("Distance to the Boundary") name(`var', replace)
 	gr export "${plots}/mean_`var'.pdf", as(pdf) replace
 	
 }
+
 
 
 

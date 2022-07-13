@@ -127,9 +127,8 @@ tm_shape(control_line) +
 tm_lines(col='red', lwd = 1, lty = "solid", alpha = NA)+
 tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
 
-
 tm_shape(slvShp_segm_sample_6kms) + 
-  tm_polygons(col='bean05_r', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.col=NA, border.alpha=0)+
+  tm_polygons(col='z_wi_xb', title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.col=NA, border.alpha=0)+
   tmap_options(check.and.fix = TRUE)+
   tm_shape(control_line) + 
   tm_lines(col='red', lwd = 1, lty = "solid", alpha = NA)+
@@ -213,6 +212,21 @@ for(var in out_vars_xb_m){
   tmap_save(var_map, filename=map_name)
 }
 
+out_vars_xb_v2=c('arcsine_nl13_xb', 'z_wi_xb', 'mean_educ_years_xb')
+
+for(var in out_vars_xb_v2){
+  
+  map_name<-paste0("C:/Users/juami/Dropbox/Overleaf/GD-draft-slv/plots/",var,"_6km_heatmap.png")
+  
+  var_map<-tm_shape(slvShp_segm_sample_6kms) + 
+    tm_polygons(col=var, title='Quantile cuts', palette="inferno", colorNA = "white", textNA = "Missing data", n=10, style='quantile', border.col=NA, border.alpha=0)+
+    tmap_options(check.and.fix = TRUE)+
+    tm_shape(control_line) + 
+    tm_lines(col='red', lwd = 1, lty = "solid", alpha = NA)+
+    tm_layout(legend.outside = TRUE, legend.outside.position = "left", legend.outside.size=0.12, legend.title.size =1, frame = FALSE)
+  
+  tmap_save(var_map, filename=map_name)
+}
 
 map_name<-paste0("C:/Users/juami/Dropbox/Overleaf/GD-draft-slv/plots/",'pop',"_heatmap_sample.png")
 var_map<-tm_shape(consult_join_oriente) + 

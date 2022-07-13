@@ -66,7 +66,7 @@ foreach var of global nly{
 mat coln coef= 92 93 94 95 96 97 98 99 00 01 02 03 04 05 06 07 08 09 10 11 12 13
 	
 *Plotting estimates 
-coefplot (mat(coef[1]), ci((2 3)) label("X")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Year")
+coefplot (mat(coef[1]), ci((2 3)) label("X")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(small) angle(45)) l2title("Effect on Night Light Arcsine ") b2title("Year")
 gr export "${plots}\rdd_nl_all_time_separate.pdf", as(pdf) replace 
 
 *Creating matrix to export estimates
@@ -114,7 +114,7 @@ foreach var of global arcsnl{
 mat coln coef= 92 93 94 95 96 97 98 99 00 01 02 03 04 05 06 07 08 09 10 11 12 13
 	
 *Plotting estimates 
-coefplot (mat(coef[1]), ci((2 3)) label("X")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Year") ylabel(-.25(.05)0)
+coefplot (mat(coef[1]), ci((2 3)) label("X")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(small) angle(45)) l2title("Effect on Night Light (Arcsine) ") b2title("Year") ylabel(-.25(.05)0)
 gr export "${plots}\rdd_arcsnl_all_time_separate.pdf", as(pdf) replace 
 
 

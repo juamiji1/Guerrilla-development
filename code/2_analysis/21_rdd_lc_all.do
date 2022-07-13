@@ -240,9 +240,8 @@ foreach var of global lc{
 
 }
 
-
 *-------------------------------------------------------------------------------
-* Summary stats 
+* Stats sample vs rest of the country
 *-------------------------------------------------------------------------------
 *Labeling for this table
 la var elevation2 "Altitude"
@@ -281,6 +280,10 @@ la var sibean "Bean Suitability Index"
 la var sicoffee "Coffee Suitability Index" 
 la var simaize "Maize Suitability Index" 
 la var sisugar "Sugarcane Suitability Index"
+la var h_sibean "Bean High Suitability"
+la var h_sicoffee "Coffee High Suitability" 
+la var h_simaize "Maize High Suitability" 
+la var h_sisugar "Sugarcane High Suitability"
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
@@ -288,14 +291,14 @@ gl h=e(h_l)
 gl b=e(b_l)
 
 *Conditional for all specifications
-gen sample =( abs(z_run_cntrl)<=${h})
+gen samplec =( abs(z_run_cntrl)<=${h})
 
 *Descriptives for the sample chosen 
-tabstat $lc1 $lc2 $lc3 $lc4 sibean sicoffee simaize sisugar if sample==1, s(mean N) save
+tabstat $lc1 $lc2 $lc3 $lc4 h_sibean h_sicoffee h_simaize h_sisugar if samplec==1, s(mean N) save
 tabstatmat A
 mat A=A'
 
-tabstat $lc1 $lc2 $lc3 $lc4 sibean sicoffee simaize sisugar if sample==0, s(mean N) save
+tabstat $lc1 $lc2 $lc3 $lc4 h_sibean h_sicoffee h_simaize h_sisugar if samplec==0, s(mean N) save
 tabstatmat B
 mat B=B'
 

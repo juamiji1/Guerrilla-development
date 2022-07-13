@@ -47,7 +47,8 @@ la var assistance "Social Assistance Share"
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl inc1 "ipcf_ppp11_iqr ipcf_ppp11_iqr2 ipcf_ppp11_iqr3 ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance"  
-gl inc2  "ln_ipcf_ppp11 ipcf_ppp11 gini_zwi iqr_zwi ipr_zwi ilr_zwi"
+gl inc2  "gini_zwi iqr_zwi ipr_zwi ilr_zwi"
+*ln_ipcf_ppp11 ipcf_ppp11
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_ineq_all_p1.tex"

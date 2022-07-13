@@ -889,7 +889,7 @@ gen public_pet=public/pet
 gen private_pet=private/pet
 gen boss_pet=boss/pet
 gen independent_pet=independent/pet
-gen work_insegm_sh=work_insegm/po
+gen work_insegm_sh=work_insegm/pea
 
 *Merging the other modules 
 merge 1:1 segm_id using `Household', nogen 
