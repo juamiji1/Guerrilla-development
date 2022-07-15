@@ -283,7 +283,7 @@ gen arcsine_nl13=ln(nl13_density+sqrt(nl13_density^2+1))
 merge 1:1 canton_id using `Gini', keep(1 3) nogen
 merge 1:1 canton_id using `Gini0', keep(1 3) nogen
 
-*REGRESSSION
+*REGRESSION
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
