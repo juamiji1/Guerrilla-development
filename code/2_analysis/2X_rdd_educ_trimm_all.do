@@ -218,6 +218,16 @@ bys segm_id: egen sum_x2_85=total(x2_85), missing
 gen x1_85_n=sum_x1_85/sum_n
 gen x2_85_n=sum_x2_85/sum_n
 
+*For migration before and after 1980
+gen x2_b80= seg_muni_within_cntrl_v2 if S06P08A2<1976 & sample_rd==1 & within_control==0
+gen x2_a80= seg_muni_within_cntrl_v2 if S06P08A2>=1981 & S06P08A2!=. & sample_rd==1 & within_control==0
+
+bys segm_id: egen sum_x2_b80=total(x2_b80), missing
+bys segm_id: egen sum_x2_a80=total(x2_a80), missing
+
+gen x2_b80_n=sum_x2_b80/sum_n
+gen x2_a80_n=sum_x2_a80/sum_n
+
 *-------------------------------------------------------------------------------
 *Calculating how many people left from control to guerrilla areas 
 *-------------------------------------------------------------------------------
@@ -256,11 +266,23 @@ bys segm_id: egen sum_y2_85=total(y2_85), missing
 gen y1_85_n=sum_y1_85/sum_n
 gen y2_85_n=sum_y2_85/sum_n
 
+*For migration before and after 1980
+gen y2_b80= (seg_muni_within_cntrl_v2==0) if seg_muni_within_cntrl_v2!=. & S06P08A2<1976 & sample_rd==1 & within_control==1
+gen y2_a80= (seg_muni_within_cntrl_v2==0) if seg_muni_within_cntrl_v2!=. & S06P08A2>=1981 & S06P08A2!=. & sample_rd==1 & within_control==1
+
+bys segm_id: egen sum_y2_b80=total(y2_b80), missing
+bys segm_id: egen sum_y2_a80=total(y2_a80), missing
+
+gen y2_b80_n=sum_y2_b80/sum_n
+gen y2_a80_n=sum_y2_a80/sum_n
+
 *In-migration percentages
 summ x2_n x2_80_n x2_85_n 
+summ x2_80_n x2_a80_n x2_b80_n
 
 *Out-migration percentages
 summ y2_n y2_80_n y2_85_n 
+summ y2_80_n y2_a80_n y2_b80_n
 
 
 *-------------------------------------------------------------------------------
