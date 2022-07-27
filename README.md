@@ -7,7 +7,7 @@
 ## What is the project?
 How does territorial control by armed non-state actors affect long-term development? We investigate the economic, social, and political consequences of territorial control by guerrillas during the Salvadoran Civil War.  During their territorial control, guerrillas displaced state authorities and large landowners, and promoted the creation of self-governing institutions. Using a regression discontinuity design, we show that areas exposed to guerrilla control have experienced worse economic outcomes over the last 20 years relative to areas outside these locations that were under the control of the formal state.  Our results reveal that  informal participatory institutions in guerrilla controlled areas led to a fragmentation of the economy and high distrust towards the state and agriculture elites that persists today.
 
-## Set up
+## Set-up
 To replicate this project, you will need to have Stata-16, R-studio, GitHub, and access to Dropbox. 
 
 ### Dropbox
