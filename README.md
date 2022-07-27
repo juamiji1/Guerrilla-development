@@ -49,7 +49,7 @@ Other files and folders in this location are
 ### Code source for tables - Guide
 Below we can find what do-file has the raw table for each result included in the latest draft.
 
-| File | Tables that it makes |
+| File | Table(s) that it makes |
 | ---- | ----------- |
 |    |  |
 
