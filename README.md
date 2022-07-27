@@ -56,7 +56,7 @@ Below we can find what do-file has the raw table for each result included in the
 
 ## What had been done by others and by whom? 
 - The EHPM panel was prepared by one of Lelys RAs at the WB. 
-- The lapop identifiers were prepared by Sarita Ore, a previous RA of Mica. 
+- The lapop census tract identifiers were prepared by Sarita Ore, a previous RA of Mica. 
 
 ## What is the current status of the project?  What remains to be done?  
 
