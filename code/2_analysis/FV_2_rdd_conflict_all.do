@@ -413,9 +413,3 @@ foreach var of global nl1{
 
 
 
-
-
-
-*END
-
-

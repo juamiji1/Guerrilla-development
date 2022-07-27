@@ -2,7 +2,6 @@
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
 TOPIC: Fixing the School data fo 2007  
-DATE:
 
 NOTES: 
 ------------------------------------------------------------------------------*/

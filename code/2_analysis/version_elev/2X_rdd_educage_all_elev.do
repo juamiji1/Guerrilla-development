@@ -16,11 +16,12 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
-gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
-gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl elevation2 c.elevation2#c.z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl elevation2 c.elevation2#c.z_run_cntrl"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gen exz=elevation2*z_run_cntrl
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular) covs(elevation2 exz)
 gl h=e(h_l)
 gl b=e(b_l)
 
@@ -46,10 +47,6 @@ la var z_wi_iqr "Wealth Index Range (p75-p25)"
 la var z_wi_iqr2 "Wealth Index Range (p95-p5)"
 la var z_wi_iqr3 "Wealth Index Range (p90-p10)"
 la var z_wi_p50 "Median Wealth Index"
-la var mean_educ_years_wsage "School age at war"
-la var mean_educ_years_wnsage "Non-school age at war"
-la var mean_educ_years_sage "School age after war"
-
 
 *-------------------------------------------------------------------------------
 * 						Night Light outcomes (Table)
@@ -59,19 +56,16 @@ gl ed1 "mean_educ_years_wsage literacy_rate_wsage"
 gl ed2 "mean_educ_years_wnsage literacy_rate_wnsage"
 gl ed3 "mean_educ_years_sage literacy_rate_sage"
 gl ed  "mean_educ_years_wsage mean_educ_years_wnsage mean_educ_years_sage"
-gl qual "total_matricula teachers high_skl1 high_skl2 high_skl3"
 
 *Erasing table before exporting
-cap erase "${tables}\rdd_main_educage_p1.tex"
-cap erase "${tables}\rdd_main_educage_p1.txt"
-cap erase "${tables}\rdd_main_educage_p2.tex"
-cap erase "${tables}\rdd_main_educage_p2.txt"
-cap erase "${tables}\rdd_main_educage_p3.tex"
-cap erase "${tables}\rdd_main_educage_p3.txt"
-cap erase "${tables}\rdd_main_educage.tex"
-cap erase "${tables}\rdd_main_educage.txt"
-cap erase "${tables}\rdd_main_educqual.tex"
-cap erase "${tables}\rdd_main_educqual.txt"
+cap erase "${tables}\rdd_main_educage_elev_p1.tex"
+cap erase "${tables}\rdd_main_educage_elev_p1.txt"
+cap erase "${tables}\rdd_main_educage_elev_p2.tex"
+cap erase "${tables}\rdd_main_educage_elev_p2.txt"
+cap erase "${tables}\rdd_main_educage_elev_p3.tex"
+cap erase "${tables}\rdd_main_educage_elev_p3.txt"
+cap erase "${tables}\rdd_main_educage_elev.tex"
+cap erase "${tables}\rdd_main_educage_elev.txt"
 
 foreach var of global ed1{
 	
@@ -80,7 +74,7 @@ foreach var of global ed1{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_main_educage_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_main_educage_elev_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 }
 
@@ -91,7 +85,7 @@ foreach var of global ed2{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_main_educage_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_main_educage_elev_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 }
 
@@ -102,7 +96,7 @@ foreach var of global ed3{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_main_educage_p3.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_main_educage_elev_p3.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 }
 
@@ -113,18 +107,7 @@ foreach var of global ed{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_main_educage.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-}
-
-foreach var of global qual{
-	
-	*Table
-	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
-	summ `var' if e(sample)==1 & within_control==0, d
-	gl mean_y=round(r(mean), .01)
-	
-	outreg2 using "${tables}\rdd_main_educqual.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_main_educage_elev.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 }
 

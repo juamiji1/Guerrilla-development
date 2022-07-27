@@ -1,8 +1,8 @@
 #--------------------------------------------------------------------------------------------------
 # PROJECT: Guerrillas and Development 
-# TOPIC: 
 # AUTHOR: JMJR
-# DATE: 
+#
+# TOPIC: Preparin GIS data
 #--------------------------------------------------------------------------------------------------
 
 
@@ -892,127 +892,127 @@ writeOGR(obj=pnt_controlBrk_1000_sp, dsn="C:/Users/jmjimenez/Dropbox/My-Research
 
 
 
-#ZONA CONTROL FAKE:
-controlShp_fake <- st_read(dsn = "gis/maps_interim", layer = "zona_control_onu_91_fake")
-st_crs(controlShp_fake) <- slv_crs
-
-#Converting polygons to polylines
-control_line_fake <- st_read(dsn = "gis/maps_interim", layer = "control91_line_fake")
-st_crs(control_line_fake) <- crs(control_line)
-
-slvShp_segm_info$dist_control_fake<-as.numeric(st_distance(slvShp_segm, control_line_fake))
-slvShp_segm_info <- mutate(slvShp_segm_info, within_control_fake=as.numeric(st_intersects(slvShp_segm, controlShp_fake, sparse = FALSE)))
-
-control_line_fake_sample <- st_sample(control_line_fake, 1000, type="regular")
-pnt_controlBrk_fake_1000 <- st_cast(control_line_fake_sample, "POINT")
-
-control_line_fake_sample <- st_sample(control_line_fake, 400, type="regular")
-pnt_controlBrk_fake_400 <- st_cast(control_line_fake_sample, "POINT")
-
-#Calculating the distance of each census segment to disputed border breaks
-distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_fake_1000, by_element = FALSE)
-
-#Converting from units object to numeric array
-distMatrix<-distBrk %>% as.data.frame() %>%
-  data.matrix()
-
-#Calculating the min for each row
-distMin<-rowMins(distMatrix)
-
-#Extracting the column indexes as the breaks FE 
-brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
-
-#Dropping duplicates and sorting by row 
-brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
-brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
-
-#Adding information to shapefile
-slvShp_segm_info$cntrldist_brk1000_fake<-distMin
-slvShp_segm_info$cntrlbrkfe1000_fake<-brkIndexUnique[, 'col']
-
-#Calculating the distance of each census segment to disputed border breaks
-distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_fake_400, by_element = FALSE)
-
-#Converting from units object to numeric array
-distMatrix<-distBrk %>% as.data.frame() %>%
-  data.matrix()
-
-#Calculating the min for each row
-distMin<-rowMins(distMatrix)
-
-#Extracting the column indexes as the breaks FE 
-brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
-
-#Dropping duplicates and sorting by row 
-brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
-brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
-
-#Adding information to shapefile
-slvShp_segm_info$cntrldist_brk400_fake<-distMin
-slvShp_segm_info$cntrlbrkfe400_fake<-brkIndexUnique[, 'col']
-
-
-
-#ZONA CONTROL WITHOUT COAST:
-controlShp_high <- st_read(dsn = "gis/maps_interim", layer = "zona_control_onu_91_high")
-st_crs(controlShp_high) <- slv_crs
-
-#Converting polygons to polylines
-control_line_high <- st_read(dsn = "gis/maps_interim", layer = "control91_line_high")
-st_crs(control_line_high) <- crs(control_line)
-
-slvShp_segm_info$dist_control_high<-as.numeric(st_distance(slvShp_segm, control_line_high))
-slvShp_segm_info <- mutate(slvShp_segm_info, within_control_high=as.numeric(st_intersects(slvShp_segm, controlShp_high, sparse = FALSE)))
-
-control_line_high_sample <- st_sample(control_line_high, 1000, type="regular")
-pnt_controlBrk_high_1000 <- st_cast(control_line_high_sample, "POINT")
-
-control_line_high_sample <- st_sample(control_line_high, 400, type="regular")
-pnt_controlBrk_high_400 <- st_cast(control_line_high_sample, "POINT")
-
-#Calculating the distance of each census segment to disputed border breaks
-distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_high_1000, by_element = FALSE)
-
-#Converting from units object to numeric array
-distMatrix<-distBrk %>% as.data.frame() %>%
-  data.matrix()
-
-#Calculating the min for each row
-distMin<-rowMins(distMatrix)
-
-#Extracting the column indexes as the breaks FE 
-brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
-
-#Dropping duplicates and sorting by row 
-brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
-brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
-
-#Adding information to shapefile
-slvShp_segm_info$cntrldist_brk1000_high<-distMin
-slvShp_segm_info$cntrlbrkfe1000_high<-brkIndexUnique[, 'col']
-
-#Calculating the distance of each census segment to disputed border breaks
-distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_high_400, by_element = FALSE)
-
-#Converting from units object to numeric array
-distMatrix<-distBrk %>% as.data.frame() %>%
-  data.matrix()
-
-#Calculating the min for each row
-distMin<-rowMins(distMatrix)
-
-#Extracting the column indexes as the breaks FE 
-brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
-
-#Dropping duplicates and sorting by row 
-brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
-brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
-
-#Adding information to shapefile
-slvShp_segm_info$cntrldist_brk400_high<-distMin
-slvShp_segm_info$cntrlbrkfe400_high<-brkIndexUnique[, 'col']
-
-
+# #ZONA CONTROL FAKE:
+# controlShp_fake <- st_read(dsn = "gis/maps_interim", layer = "zona_control_onu_91_fake")
+# st_crs(controlShp_fake) <- slv_crs
+# 
+# #Converting polygons to polylines
+# control_line_fake <- st_read(dsn = "gis/maps_interim", layer = "control91_line_fake")
+# st_crs(control_line_fake) <- crs(control_line)
+# 
+# slvShp_segm_info$dist_control_fake<-as.numeric(st_distance(slvShp_segm, control_line_fake))
+# slvShp_segm_info <- mutate(slvShp_segm_info, within_control_fake=as.numeric(st_intersects(slvShp_segm, controlShp_fake, sparse = FALSE)))
+# 
+# control_line_fake_sample <- st_sample(control_line_fake, 1000, type="regular")
+# pnt_controlBrk_fake_1000 <- st_cast(control_line_fake_sample, "POINT")
+# 
+# control_line_fake_sample <- st_sample(control_line_fake, 400, type="regular")
+# pnt_controlBrk_fake_400 <- st_cast(control_line_fake_sample, "POINT")
+# 
+# #Calculating the distance of each census segment to disputed border breaks
+# distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_fake_1000, by_element = FALSE)
+# 
+# #Converting from units object to numeric array
+# distMatrix<-distBrk %>% as.data.frame() %>%
+#   data.matrix()
+# 
+# #Calculating the min for each row
+# distMin<-rowMins(distMatrix)
+# 
+# #Extracting the column indexes as the breaks FE 
+# brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+# 
+# #Dropping duplicates and sorting by row 
+# brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+# brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+# 
+# #Adding information to shapefile
+# slvShp_segm_info$cntrldist_brk1000_fake<-distMin
+# slvShp_segm_info$cntrlbrkfe1000_fake<-brkIndexUnique[, 'col']
+# 
+# #Calculating the distance of each census segment to disputed border breaks
+# distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_fake_400, by_element = FALSE)
+# 
+# #Converting from units object to numeric array
+# distMatrix<-distBrk %>% as.data.frame() %>%
+#   data.matrix()
+# 
+# #Calculating the min for each row
+# distMin<-rowMins(distMatrix)
+# 
+# #Extracting the column indexes as the breaks FE 
+# brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+# 
+# #Dropping duplicates and sorting by row 
+# brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+# brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+# 
+# #Adding information to shapefile
+# slvShp_segm_info$cntrldist_brk400_fake<-distMin
+# slvShp_segm_info$cntrlbrkfe400_fake<-brkIndexUnique[, 'col']
+# 
+# 
+# 
+# #ZONA CONTROL WITHOUT COAST:
+# controlShp_high <- st_read(dsn = "gis/maps_interim", layer = "zona_control_onu_91_high")
+# st_crs(controlShp_high) <- slv_crs
+# 
+# #Converting polygons to polylines
+# control_line_high <- st_read(dsn = "gis/maps_interim", layer = "control91_line_high")
+# st_crs(control_line_high) <- crs(control_line)
+# 
+# slvShp_segm_info$dist_control_high<-as.numeric(st_distance(slvShp_segm, control_line_high))
+# slvShp_segm_info <- mutate(slvShp_segm_info, within_control_high=as.numeric(st_intersects(slvShp_segm, controlShp_high, sparse = FALSE)))
+# 
+# control_line_high_sample <- st_sample(control_line_high, 1000, type="regular")
+# pnt_controlBrk_high_1000 <- st_cast(control_line_high_sample, "POINT")
+# 
+# control_line_high_sample <- st_sample(control_line_high, 400, type="regular")
+# pnt_controlBrk_high_400 <- st_cast(control_line_high_sample, "POINT")
+# 
+# #Calculating the distance of each census segment to disputed border breaks
+# distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_high_1000, by_element = FALSE)
+# 
+# #Converting from units object to numeric array
+# distMatrix<-distBrk %>% as.data.frame() %>%
+#   data.matrix()
+# 
+# #Calculating the min for each row
+# distMin<-rowMins(distMatrix)
+# 
+# #Extracting the column indexes as the breaks FE 
+# brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+# 
+# #Dropping duplicates and sorting by row 
+# brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+# brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+# 
+# #Adding information to shapefile
+# slvShp_segm_info$cntrldist_brk1000_high<-distMin
+# slvShp_segm_info$cntrlbrkfe1000_high<-brkIndexUnique[, 'col']
+# 
+# #Calculating the distance of each census segment to disputed border breaks
+# distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_high_400, by_element = FALSE)
+# 
+# #Converting from units object to numeric array
+# distMatrix<-distBrk %>% as.data.frame() %>%
+#   data.matrix()
+# 
+# #Calculating the min for each row
+# distMin<-rowMins(distMatrix)
+# 
+# #Extracting the column indexes as the breaks FE 
+# brkIndex<-which((distMatrix==distMin)==1,arr.ind=TRUE)
+# 
+# #Dropping duplicates and sorting by row 
+# brkIndexUnique<-brkIndex[!duplicated(brkIndex[, "row"]), ]  
+# brkIndexUnique<-brkIndexUnique[order(brkIndexUnique[, "row"]),]
+# 
+# #Adding information to shapefile
+# slvShp_segm_info$cntrldist_brk400_high<-distMin
+# slvShp_segm_info$cntrlbrkfe400_high<-brkIndexUnique[, 'col']
+# 
+# 
 
 
 

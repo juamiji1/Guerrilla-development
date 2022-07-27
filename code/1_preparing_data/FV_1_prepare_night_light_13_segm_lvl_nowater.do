@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Preparing night light dat at the segment level 
+TOPIC: Merging all data at the segment level 
 DATE:
 
 NOTES: 
@@ -9,15 +9,6 @@ NOTES:
 
 clear all 
 
-/*gl do "C:\Users\jmjimenez\Documents\GitHub\Guerrilla-development\code"
-gl path "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development"
-gl data "${path}\2-Data\Salvador"
-gl plots "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\GD-draft-slv\plots"
-gl tables "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\GD-draft-slv\tables"
-gl maps "${path}\5-Maps\Salvador"
-
-cd ${data}
-*/
 
 *-------------------------------------------------------------------------------
 * 			      Converting shape of yields in 2005 to dta

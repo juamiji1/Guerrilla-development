@@ -1,3 +1,13 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas & Development
+AUTHOR: JMJR
+TOPIC: Trimming main outcomes using migration rates
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
 
 *-------------------------------------------------------------------------------
 * Creating sample data and munic within control data 

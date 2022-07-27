@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Exploring possible mechanisms
+TOPIC: Exploring public goods mechanisms
 DATE:
 
 NOTES: 

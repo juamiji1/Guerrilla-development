@@ -1,3 +1,17 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas & Development
+AUTHOR: JMJR
+
+TOPIC: Preparing data from LAPOP
+NOTES: Raw Data was worked by Sarita (Mica's previous RA)
+------------------------------------------------------------------------------*/
+
+clear all 
+
+*-------------------------------------------------------------------------------
+* ICW Program
+*
+*-------------------------------------------------------------------------------
 capture program drop make_index_gr
 capture mata: mata drop icwxmata()
 program make_index_gr
@@ -45,7 +59,15 @@ mata:
 end
 
 
-import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo2007\gis_segmentos\ID_census_v2.xls", sheet("ID_census_v2") firstrow clear 
+*-------------------------------------------------------------------------------
+* Preparing LAPOP data from Sarita's files
+*
+*-------------------------------------------------------------------------------
+
+*-------------------------------------------------------------------------------
+* Preparing the segments IDs
+*-------------------------------------------------------------------------------
+import excel "${data}\censo2007\gis_segmentos\ID_census_v2.xls", sheet("ID_census_v2") firstrow clear 
 ren _all, low
 
 *Creating the segment id  
@@ -61,7 +83,7 @@ tempfile ID
 save `ID', replace
 
 
-import excel "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo2007\gis_segmentos\ID_census_v1.xls", sheet("ID_census_v1") firstrow clear 
+import excel "${data}\censo2007\gis_segmentos\ID_census_v1.xls", sheet("ID_census_v1") firstrow clear 
 ren _all, low
 
 ren seg_id segm_id
@@ -75,8 +97,9 @@ isid ID
 tempfile ID2
 save `ID2', replace
 
-
-*New vars 
+*-------------------------------------------------------------------------------
+* Preparing vars related to community trust and participation
+*-------------------------------------------------------------------------------
 use "${data}/lapop\base_nueva\20220401_LAPOP 2004-2016 a nivel de individuo con ID.dta", clear
 
 drop _merge
@@ -103,7 +126,9 @@ collapse sitecon reu_relig reu_esc reu_com reu_prof conf_com paz_cal paz_sitecon
 tempfile LAPOP0
 save `LAPOP0', replace 
 
-*Inxes vars
+*-------------------------------------------------------------------------------
+* Preparing ICW Indexes and totals
+*-------------------------------------------------------------------------------
 use "${data}/lapop\lapop_panel_segmento\LAPOP 2004-2016 a nivel de individuo con ID.dta", clear
 
 drop _merge

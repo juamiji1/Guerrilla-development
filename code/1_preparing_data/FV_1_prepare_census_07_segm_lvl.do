@@ -9,24 +9,6 @@ NOTES:
 
 clear all 
 
-/*gl do "C:\Users\jmjimenez\Documents\GitHub\Guerrilla-development"
-gl path "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development"
-gl data "${path}\2-Data\Salvador"
-gl plots "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\GD-draft-slv\plots"
-gl tables "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\GD-draft-slv\tables"
-gl maps "${path}\5-Maps\Salvador"
-
-*Setting the working directory 
-cd ${data}
-
-*Setting a pre-scheme for plots
-set scheme s2color, perm 
-grstyle init
-grstyle title color black
-grstyle color background white
-grstyle color major_grid dimgray
-*/
-
 
 *-------------------------------------------------------------------------------
 * 					   Acommodation and Household conditions 

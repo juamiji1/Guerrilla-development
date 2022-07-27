@@ -5,8 +5,10 @@ DATE:
 AUTHORS: 
 RA: JMJR
 
-NOTES: The recommended altitud is 300 masml
+NOTES: 
 ------------------------------------------------------------------------------*/
+
+clear all 
 
 *Census segment level data 
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear 

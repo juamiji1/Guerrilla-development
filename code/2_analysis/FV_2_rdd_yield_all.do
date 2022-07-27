@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas & Development
-TOPIC: Local continuity testing 
+TOPIC: Results for agricultural productivity (FAO data)
 DATE: 
 AUTHORS: 
 RA: JMJR
 
-NOTES: The recommended altitud is 300 masml
+NOTES: 
 ------------------------------------------------------------------------------*/
 
 *Census segment level data 

@@ -38,18 +38,38 @@ grstyle color major_grid dimgray
 *	 						1. Preparing the Data
 *
 *-------------------------------------------------------------------------------
-*NOTE: before running the do-files, should run the following R script that prepare
-*      the GIS data. 
-*			- 1_geo_fmln_zones_night_light_segm_lvl_onu_91.R
+*Fix data and set coords in csv format to work in R 
+do "${do}\1_preparing_data\FV_1_prepare_matricula_coords_07.do"
+do "${do}\1_preparing_data\FV_1_prepare_victims_geocoded.do"
 
-do "${do}\1_preparing_data\1_prepare_matricula_coords_07.do"
-do "${do}\1_preparing_data\1_prepare_census_07_segm_lvl.do"
-do "${do}\1_preparing_data\1_prepare_night_light_13_segm_lvl.do"
+*NOTE: before running the NEXT do-files, should run the following R script that prepare
+*      the GIS data. 
+*			- FV_1_preparing_GIS_p1.R
+*			- FV_1_preparing_GIS_p2.R
+*			- FV_1_preparing_GIS_p3.R
+
+*Preparing Population Census data
+do "${do}\1_preparing_data\FV_1_prepare_census_07_segm_lvl.do"
+
+*Preparing Lapop data
+do "${do}\1_preparing_data\FV_1_prepare_lapop_segm_lvl.do"
+
+*Merging all data together 
+do "${do}\1_preparing_data\FV_1_prepare_night_light_13_segm_lvl.do"
+
 
 *-------------------------------------------------------------------------------
-*	 						   2. RDD Analysis
+*	 						   2. Analysis
 *
 *-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 do "${do}\2_analysis\20_segm_lvl_descriptives_onu_91_high_elev.do"
 do "${do}\2_analysis\21_rdd_segm_lvl_local_continuity_onu_91_dvsnd_high_elev.do"
 do "${do}\2_analysis\22_rdd_segm_lvl_night_light_onu_91_dvsnd_high_elev.do"

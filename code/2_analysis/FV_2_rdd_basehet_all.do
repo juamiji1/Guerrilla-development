@@ -6,8 +6,8 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
-gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl elevation2 c.elevation2#c.z_run_cntrl"
-gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl elevation2 c.elevation2#c.z_run_cntrl"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
 
 *RDD with break fe and triangular weights 
 gen exz=elevation2*z_run_cntrl

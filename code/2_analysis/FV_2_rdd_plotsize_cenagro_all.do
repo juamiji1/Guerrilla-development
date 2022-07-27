@@ -1,5 +1,17 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas & Development
+AUTHOR: JMJR
+TOPIC: Results of size of plot for commercial and subsistence producers (CENAGRO)
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
 clear all 
 
+*-------------------------------------------------------------------------------
+* Preparing the Cenagro data
+*
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2.csv", clear
 
@@ -359,7 +371,9 @@ restore
 
 
 *-------------------------------------------------------------------------------
-*RESULTS
+* RDD Results
+*
+*-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 drop _merge
