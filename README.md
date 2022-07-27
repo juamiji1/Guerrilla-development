@@ -1,6 +1,6 @@
 # Project: Rebel Governance and Development - The Long-Term Effects of Guerrillas in El Salvador
 
-**Name**:  Juan Miguel Jimenez
+**Name**:  Juan Miguel Jimenez R. 
 
 **Contact information**: juamiji@gmail.com
 
