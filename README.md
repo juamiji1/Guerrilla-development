@@ -10,7 +10,7 @@ How does territorial control by armed non-state actors affect long-term developm
 ## Set up
 To replicate this project, you will need to have Stata-16, R-studio, GitHub, and access to Dropbox. 
 
-### Dropbox folder
+### Dropbox
 The main folders that I used are
 
 | Path | Description |
@@ -19,7 +19,7 @@ The main folders that I used are
 | `/Guerillas_Development/5-Maps/Salvador` | Has all the original scans of the historical maps used | 
 | `/Github/Guerrilla-development/code` | Has all code used in this project |
 
-### Overleaf folders
+### Overleaf
 The project is in https://www.overleaf.com/project/5f8763745e763500015502bf . The `3.Revised Draft_SR_2.tex` file has the latest version of the paper. The `all_elev.tex` has all unproccessed figures and tables. 
 
 | Path | Description |
