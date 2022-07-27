@@ -46,9 +46,17 @@ Other files and folders in this location are
 - `/Github/Guerrilla-development/2_analysis/version_elev` : Has a version of the final code in which we control by elevation or restrict the sample to census tracts above 200 masl.
 - `/Github/Guerrilla-development/code/0_archive` : This folder contains old codes from previous versions of the article (we didn't know what to do at that point).  
 
+### Code source for tables - Guide
+Below we can find what do-file has the raw table for each result included in the latest draft.
+
+| File | Tables that it makes |
+| ---- | ----------- |
+|    |  |
+
+
 ## What had been done by others and by whom? 
-- The EHPM panel was worked by one of Lelys Ras at the WB. 
-- The lapop identifiers were worked by Sarita Ore, a previous RA of Mica. 
+- The EHPM panel was prepared by one of Lelys Ras at the WB. 
+- The lapop identifiers were prepared by Sarita Ore, a previous RA of Mica. 
 
 ## What is the current status of the project?  What remains to be done?  
 
