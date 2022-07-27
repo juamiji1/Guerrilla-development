@@ -37,10 +37,10 @@ All final codes that were used to the latest version of the draft has the `FV_` 
 
 | Prefix | Description |
 | ---- | ----------- |
-| `0.` |  `FV_0_master.do` allows you to replicate the project | 
-| `1.` | Files with this prefix clean and prepare the raw data |
-| `2.` | Files with this prefix make the estimations | 
-| `3.` | Files with this prefix make maps or other tasks related with the survey | 
+| `FV_0_` |  `FV_0_master.do` allows you to replicate the project | 
+| `FV_1_` | Files with this prefix clean and prepare the raw data |
+| `FV_2_` | Files with this prefix make the estimations | 
+| `FV_3_` | Files with this prefix make maps or other tasks related with the survey | 
 
 Other files and folders in this location are
 - `/Github/Guerrilla-development/2_analysis/version_elev` : Has a version of the final code in which we control by elevation or restrict the sample to census tracts above 200 masl.
