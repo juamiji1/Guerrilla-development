@@ -53,7 +53,7 @@ Below we can find what do-file has the raw table for each result included in the
 | ---- | ----------- |
 | `FV_2_rdd_lc_all.do` | Smooth condition test - Comparison of Baseline Characteristics Between Census Tracts In and Out the RD-Sample |
 | `FV_2_rdd_main_all.do` | Effects of Guerrilla Territorial Control on
-Night Light Luminosity, Wealth, and Human Capital - Effects of Guerrilla Territorial Control on Other Transformations of Night Light Luminosity|
+Night Light Luminosity, Wealth, and Human Capital, Effects of Guerrilla Territorial Control on Other Transformations of Night Light Luminosity|
 | `FV_2_rdd_nltime_all.do` | Effects of Guerrilla Control on the Arcsine of Night Light Luminosity Over Time |
 | `FV_2_rdd_educ_trimm_all.do` | Accounting for selective in-migration |
 | `FV_2_rdd_trust_all.do` |  Effects of Guerrilla Territorial Control on Attitudes towards the Government |
@@ -61,7 +61,7 @@ Night Light Luminosity, Wealth, and Human Capital - Effects of Guerrilla Territo
 | `FV_2_rdd_public_all.do` | Effects of Guerrilla Control on Public Goods Provision |
 | `FV_2_rdd_plotsize_cenagro_all.do` | Effects of Guerrilla Control on the Size of Plots - Simpson’s Index |
 | `FV_2_rdd_yield_all.do` | Effects of Guerrilla Control on Agricultural Productivity |
-| `FV_2_rdd_migr_all.do` | Effects of Guerrilla Control on Migration Outcomes -  Effects of Guerrilla Control on Migration Outcomes for the Highly Educated Population|
+| `FV_2_rdd_migr_all.do` | Effects of Guerrilla Control on Migration Outcomes,  Effects of Guerrilla Control on Migration Outcomes for the Highly Educated Population|
 | `FV_2_rdd_conflict_all.do` | Effects of Guerrilla Territorial Control on Main Outcomes, Controlling for Conflict |
 | `FV_2_rdd_victimsgeo_all.do` | Effects of Guerrilla Territorial Control on Crimes during the War Period |
 | `FV_2_external_validity_plots_all.do` | External Validity for Main Outcomes |
