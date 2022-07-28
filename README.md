@@ -51,8 +51,45 @@ Below we can find what do-file has the raw table for each result included in the
 
 | File | Table(s) that it makes |
 | ---- | ----------- |
-|    |  |
-
+| `FV_2_rdd_lc_all.do` | Smooth condition test - Comparison of Baseline Characteristics Between Census Tracts In and Out the RD-Sample |
+| `FV_2_rdd_main_all.do` | Effects of Guerrilla Territorial Control on
+Night Light Luminosity, Wealth, and Human Capital - Effects of Guerrilla Territorial Control on Other Transformations of Night Light Luminosity|
+| `FV_2_rdd_nltime_all.do` | Effects of Guerrilla Control on the Arcsine of Night Light Luminosity Over Time |
+| `FV_2_rdd_educ_trimm_all.do` | Accounting for selective in-migration |
+| `FV_2_rdd_trust_all.do` |  Effects of Guerrilla Territorial Control on Attitudes towards the Government |
+| `FV_2_rdd_trust_rdsample_all.do` |  Effects of Guerrilla Territorial Control on Attitudes towards the Government (Version 2) |
+| `FV_2_rdd_public_all.do` | Effects of Guerrilla Control on Public Goods Provision |
+| `FV_2_rdd_plotsize_cenagro_all.do` | Effects of Guerrilla Control on the Size of Plots - Simpson’s Index |
+| `FV_2_rdd_yield_all.do` | Effects of Guerrilla Control on Agricultural Productivity |
+| `FV_2_rdd_migr_all.do` | Effects of Guerrilla Control on Migration Outcomes -  Effects of Guerrilla Control on Migration Outcomes for the Highly Educated Population|
+| `FV_2_rdd_conflict_all.do` | Effects of Guerrilla Territorial Control on Main Outcomes, Controlling for Conflict |
+| `FV_2_rdd_victimsgeo_all.do` | Effects of Guerrilla Territorial Control on Crimes during the War Period |
+| `FV_2_external_validity_plots_all.do` | External Validity for Main Outcomes |
+| `FV_2_rdd_educage_all.do` | Effects of Guerrilla Control on Years of Education by Age Cohort - Quality of School Teachers |
+| `FV_2_rdd_main_all_conley.do` | Effects of Guerrilla Territorial Control on Main Outcomes Using Conley Standard Errors |
+| `FV_2_elev_robustness_test.do` | Placebo Test for All Pairs of Neighbors Whose Difference in Altitude is between the Following
+Thresholds - Main Results Restricting the Sample to Tracts without Sudden Altitude Changes with Respect to
+Their Neighbors|
+| `FV_2_rdd_main_all_always.do` | Effects of Guerrilla Territorial Control on Main Outcomes for Individuals Who Have Always
+Lived in the Same Place |
+| `FV_2_rdd_isic_all.do` | Workers by Economic Activity - Plot of Share of Workers by Economic Activity and Distance to the Boundary  |
+| `FV_2_rdd_ineq_canton_all.do` |  Inequality of Income at the Canton Level |
+| `FV_2_rdd_ineq_all.do` |  Inequality of the Wealth Index at the Census Tract Level |
+| `FV_2_rdd_coop_cenagro_all.do` | Belonging of Agricultural Producers to Cooperatives |
+| `FV_2_rdd_mccrary_all.do` | Density Test of the Distance to the Border as Running Variable |
+| `FV_2_rdd_elec_all.do` | Effects of Guerrilla Territorial Control in the Elections of 2014 and 2015 |
+| `FV_2_rdd_labor_all.do` | Share of Individuals who Work in the Same Place as their Residence |
+| `FV_2_rdd_basehet_all.do` | Heterogeneity by Baseline Distances to Road Network (1980) and Nearest City (1945) |
+| `FV_2_rdd_crime_all.do` |  Effects of Guerrilla Control on Homicide and Victimization Rates |
+| `FV_2_rdd_main_robust_all.do` | Robustness Analysis for the Main Outcomes |
+| `FV_2_rdd_fisdl_all.do` | Effects on Investment Porjects FISDL |
+| `FV_2_rdd_pnc_all.do` | Effects on Police Stations |
+| `FV_2_rdd_cestablishments_all.do` | Effects on Presence of Commercial Establisments |
+| `FV_2_rdd_ehpm_educyrs_all.do` | Effects of Guerrilla Control on Years of Education by Age Cohort (EHPM) |
+| `FV_2_siindex_canton_cenagro_all.do` | Simpson's Index at the Canton Level |
+| `FV_2_rdd_owner_cenagro_all.do` | Ownership of Agricultural Producers (CENAGRO)|
+| `FV_2_rdd_yield_cenagro_all.do` | Crop Yield of Agricultural Producers (CENAGRO) |
+| `FV_3_predicted_outcomes_all.do` | Spatial Representation of the Main Outcomes’ Predictions |
 
 ## What had been done by others and by whom? 
 - The EHPM panel was prepared by one of Lelys RAs at the WB. 
