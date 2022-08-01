@@ -1,5 +1,18 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Ownership of land using the CENAGRO data 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
 clear all 
 
+
+*-------------------------------------------------------------------------------
+* 					  Preparing the CENAGRO data
+*
 *-------------------------------------------------------------------------------
 import delimited "${data}\CensoAgropecuario\01 - Base de Datos MSSQL\FA2.csv", clear
 
@@ -19,7 +32,6 @@ ren s01p04 same_place
 
 tempfile ProdC
 save `ProdC', replace
-
 
 *Preparing census tracts IDs
 import delimited "${data}\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
@@ -87,11 +99,6 @@ gen rent_subs=rent_all if subsistence==1
 
 *replacing zeros 
 recode sizep_all sizenp_all sizep_comer sizep_subs sizenp_comer sizenp_subs (0=.)
-
-
-
-end
-
  
 summ sizep_all, d
 summ sizep_all if subsistence==0, d
@@ -111,7 +118,6 @@ twoway (kdensity sizep_all if subsistence==0) (kdensity sizep_all if subsistence
 
 tab owner_all subsistence, col row
 tab rent_all subsistence, col row
-
 
 *Collapsing at the segment level 
 collapse (mean) sizep_all sizenp_all sizep_comer sizep_subs sizenp_comer sizenp_subs sizet_all sizet_comer sizet_subs owner_* rent_* (sum) tot_sizep_all=sizep_all tot_sizenp_all=sizenp_all tot_sizep_comer=sizep_comer tot_sizep_subs=sizep_subs tot_sizenp_comer=sizenp_comer tot_sizenp_subs=sizenp_subs tot_sizet_all=sizet_all tot_sizet_comer=sizet_comer tot_sizet_subs=sizet_subs tot_owner_all=owner_all tot_owner_comer=owner_comer tot_owner_subs=owner_subs  tot_rent_all=rent_all tot_rent_comer=rent_comer tot_rent_subs=rent_subs, by(segm_id)
@@ -133,7 +139,10 @@ tempfile Plot
 save `Plot', replace 
 
 
-*RESULTS
+*-------------------------------------------------------------------------------
+* RDD results
+*
+*-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 drop _merge
@@ -224,6 +233,6 @@ foreach var of global ownertot{
 
 
 
-*HACER EL IHISTORAMA CONTROL VS NO CONTROL 
+*HACER EL HISTORAMA CONTROL VS NO CONTROL 
 
 *END

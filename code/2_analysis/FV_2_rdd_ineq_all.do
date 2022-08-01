@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating inequality outcomes
 DATE:
 
 NOTES: 
@@ -9,7 +9,7 @@ NOTES:
 
 
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 						Preparing the data 
 *
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
@@ -43,7 +43,7 @@ la var assistance "Social Assistance Share"
 *ipcf_ppp11_pr9010 ipcf_ppp11_pr9505 ipcf_ppp11_pr7525 hh_p2575 hh_p1090 hh_p0595
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Inequality outcomes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl inc1 "ipcf_ppp11_iqr ipcf_ppp11_iqr2 ipcf_ppp11_iqr3 ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance"  

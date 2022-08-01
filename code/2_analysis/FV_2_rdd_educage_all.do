@@ -1,11 +1,13 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: 
+TOPIC: Calculating education years by cohort (Census data)
 DATE:
 
 NOTES: 
 ------------------------------------------------------------------------------*/
+
+clear all 
 
 
 *-------------------------------------------------------------------------------
@@ -50,9 +52,8 @@ la var mean_educ_years_wsage "School age at war"
 la var mean_educ_years_wnsage "Non-school age at war"
 la var mean_educ_years_sage "School age after war"
 
-
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+*            Educ years and teachers quality (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl ed1 "mean_educ_years_wsage literacy_rate_wsage"

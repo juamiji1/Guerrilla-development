@@ -1,13 +1,31 @@
-*MCcrary Test:
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Density tests 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+*Density tests
+* 
+*-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
+*calculating the bandwidth 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
 gl h=e(h_l)
 
+*Histograms 
 *hist z_run_cntrl, freq
 kdensity z_run_cntrl if abs(z_run_cntrl)<10, xline(0) lcolor(gs3) title("") xtitle("") ytitle("") l2title("Kernel density estimate", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall))  
 gr export "${plots}\kdensity_z_run_cntrl.pdf", as(pdf) replace 
 
+*Density test usng rddensity command 
 rddensity z_run_cntrl_v2 
 local p=round(`e(pv_q)', 0.001)
 dis "`p'"
@@ -20,6 +38,7 @@ dis "`p'"
 rddensity z_run_cntrl, plot graph_opt(legend(off) note("Bias corrected P-value: `p'") xline(0, lcolor(black)) ytitle("Density") b2title("Distance to Boundary"))
 gr export "${plots}\rddensityplot_p2.pdf", as(pdf) replace 
 
+*Formatting the table 
 mat O1=(e(N_l),e(N_r) \ e(N_h_l),e(N_h_r) \ e(h_l), e(h_l))
 mat O2=(e(T_q), e(pv_q))
 

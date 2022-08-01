@@ -164,9 +164,9 @@ foreach var of global lc{
 
 
 
-
-
-
+*-------------------------------------------------------------------------------
+*Additional outcomes
+*-------------------------------------------------------------------------------
 gl hh "sanitary_sh exclusive_sanitary electric_cook owner_sh "
 
 *Labeling for tables 
@@ -187,6 +187,7 @@ foreach var of global hh{
 	outreg2 using "${tables}\rdd_public_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
+
 
 
 

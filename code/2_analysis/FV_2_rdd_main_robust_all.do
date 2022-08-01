@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating main outcomes with different variations in the espcification
 DATE:
 
 NOTES: 
@@ -9,7 +9,7 @@ NOTES:
 
 
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 		Main outcomes results with different kernels and weights 
 *
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Exploring possible mechanisms
+TOPIC: Exploring labor and employment mechanisms
 DATE:
 
 NOTES: 
@@ -151,31 +151,6 @@ foreach var of global lc{
 }
 
 
-
-
-
-
-*END
-
-
-
-
-
-
-
-
-*END
-
-
-
-
-
-
-*END 
-
-
-
-*END
 
 
 

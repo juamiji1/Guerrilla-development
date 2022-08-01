@@ -1,3 +1,19 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Ownership of land using the CENAGRO data 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+*						Preparing the crop yields data 
+* 
+*-------------------------------------------------------------------------------
 *Preparing census tracts IDs
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
 
@@ -106,6 +122,10 @@ gen tyield_sugar_comer=tprod_sugar_comer/tareac_sugar_comer
 tempfile Yield
 save `Yield', replace 
 
+
+*-------------------------------------------------------------------------------
+*							 RDD results
+* 
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
@@ -158,11 +178,14 @@ foreach var of global tyield{
 	outreg2 using "${tables}\rdd_cenagrotyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
 
+*-------------------------------------------------------------------------------
+* Tables with each outcome's BW 
+*-------------------------------------------------------------------------------
 *Erasing table before exporting
-cap erase "${tables}\rdd_cenagroyield.tex"
-cap erase "${tables}\rdd_cenagroyield.txt"
-cap erase "${tables}\rdd_cenagrotyield.tex"
-cap erase "${tables}\rdd_cenagrotyield.txt"
+cap erase "${tables}\rdd_cenagroyield_p2.tex"
+cap erase "${tables}\rdd_cenagroyield_p2.txt"
+cap erase "${tables}\rdd_cenagrotyield_p2.tex"
+cap erase "${tables}\rdd_cenagrotyield_p2.txt"
 
 *Tables
 foreach var of global yield{
@@ -183,7 +206,7 @@ foreach var of global yield{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_cenagroyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_cenagroyieldrdd_cenagroyield_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
 
 foreach var of global tyield{
@@ -204,31 +227,11 @@ foreach var of global tyield{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_cenagrotyield.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_cenagrotyieldrdd_cenagroyield_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 *END
-
-
-
-
-
-

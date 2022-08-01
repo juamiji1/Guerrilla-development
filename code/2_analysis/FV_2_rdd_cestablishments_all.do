@@ -1,3 +1,19 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Presence of commercial establishments 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+* Preparing the google data 
+*
+*-------------------------------------------------------------------------------
 use "${data}\comercios_google\slv_places_clean.dta", clear
 
 ren SEG_ID segm_id
@@ -47,6 +63,7 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *-------------------------------------------------------------------------------
 * Results for comercial establishments
+*
 *-------------------------------------------------------------------------------
 *Global of local continuity vars to check 
 gl comerce "n_establishment"

@@ -1,11 +1,13 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating main outcomes outcomes accounting by conflict 
 DATE:
 
 NOTES: 
 ------------------------------------------------------------------------------*/
+
+clear all 
 
 
 *-------------------------------------------------------------------------------
@@ -114,7 +116,7 @@ foreach var of global nl{
 
 
 *-------------------------------------------------------------------------------
-* Homicides rates
+* Homicides rates results 
 *
 *-------------------------------------------------------------------------------
 
@@ -337,7 +339,6 @@ foreach var of global nl{
 	outreg2 using "${tables}\rdd_main_all_82.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 }
-
 
 
 *-------------------------------------------------------------------------------

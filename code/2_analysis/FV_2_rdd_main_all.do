@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating main outcomes
 DATE:
 
 NOTES: 

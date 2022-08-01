@@ -1,11 +1,13 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: 
+TOPIC: Results for occupations by ISIC category 
 DATE:
 
 NOTES: 
 ------------------------------------------------------------------------------*/
+
+clear all 
 
 
 *-------------------------------------------------------------------------------
@@ -49,7 +51,7 @@ la var serv_azcf "Selling agro product"
 la var serv_azcf_v2 "Selling agro (v2)"
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Results (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl isic1 "isic1_agr isic1_ind isic1_serv"

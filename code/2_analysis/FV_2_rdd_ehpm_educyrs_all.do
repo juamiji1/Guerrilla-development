@@ -1,4 +1,22 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Education years by cohorts (EHPM data)
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+* 						Preparing the data 
+*
+*-------------------------------------------------------------------------------
+*-------------------------------------------------------------------------------
 *EHPM 2011
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm11.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r201b r202a r203 r204 r205 r215 r217a r217b munic depto segmento
@@ -34,8 +52,9 @@ gen year=2011
 tempfile EHPM11
 save `EHPM11', replace 
 
-
+*-------------------------------------------------------------------------------
 *EHPM 2012
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm12.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r201b r202a r203 r204 r205 r215 r217a r217b codigomunic segmento
@@ -70,8 +89,9 @@ gen year=2012
 tempfile EHPM12
 save `EHPM12', replace 
 
-
+*-------------------------------------------------------------------------------
 *EHPM 2013
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm13.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r201b r202a r203 r204 r205 r215 r217a r217b codigomunic segmento
@@ -106,8 +126,9 @@ gen year=2013
 tempfile EHPM13
 save `EHPM13', replace 
 
-
+*-------------------------------------------------------------------------------
 *EHPM 2014
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm14.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r201b r202a r203 r204 r205 r215 r217a r217b munic segmento
@@ -143,7 +164,10 @@ tempfile EHPM14
 save `EHPM14', replace
 
 
-/*EHPM 2015
+/*
+*-------------------------------------------------------------------------------
+*EHPM 2015
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm15.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r202a r203 r204 r205 r215 r217a r217b codigomunic segmento
@@ -179,7 +203,9 @@ tempfile EHPM15
 save `EHPM15', replace 
 */
 
+*-------------------------------------------------------------------------------
 *EHPM 2016
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm16.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento
@@ -214,8 +240,9 @@ gen year=2016
 tempfile EHPM16
 save `EHPM16', replace 
 
-
+*-------------------------------------------------------------------------------
 *EHPM 2017
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm17.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento
@@ -250,8 +277,9 @@ gen year=2017
 tempfile EHPM17
 save `EHPM17', replace 
 
-
+*-------------------------------------------------------------------------------
 *EHPM 2018
+*-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm18.csv", clear stringcols(_all)
 
 keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento
@@ -286,7 +314,9 @@ gen year=2018
 tempfile EHPM18
 save `EHPM18', replace 
 
+*-------------------------------------------------------------------------------
 *Appending all data sets
+*-------------------------------------------------------------------------------
 use `EHPM11', clear 
 append using `EHPM12' `EHPM13' `EHPM14' `EHPM16' `EHPM17'  
 *`EHPM15'
@@ -331,7 +361,8 @@ tempfile EDUC_EHPM
 save `EDUC_EHPM'
 
 *-------------------------------------------------------------------------------
-* RESULTS
+* RDD results
+*
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
@@ -376,9 +407,6 @@ foreach var of global educ{
 	
 	outreg2 using "${tables}\rdd_educ_ephm.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
-
-
-
 
 
 

@@ -1,5 +1,18 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Cooperativism using the CENAGRO
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
 clear all 
 
+
+*-------------------------------------------------------------------------------
+*Preparing the data at the producer level 
+* 
 *-------------------------------------------------------------------------------
 *Preparing census tracts IDs
 import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FB1P.csv", stringcols(2 3 4 5 6) clear
@@ -11,7 +24,7 @@ keep portid depid munid canid segid segm_id
 tempfile SegmID
 save `SegmID', replace 
 
-
+*Importing info on subsistence producers
 import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2.csv", clear
 
 *Fixing the cooperatives values 
@@ -281,7 +294,7 @@ keep portid fb1p06a fb1p06b ind_coop ind_asoc subsistence s01p04 s01p04dep s01p0
 tempfile ProdS
 save `ProdS', replace
 
-*Comercial Producers
+*Importing info on comercial producers
 import delimited "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA1.csv", clear
 
 *Fixing vars 
@@ -363,7 +376,9 @@ save `ProdAll', replace
 
 
 *-------------------------------------------------------------------------------
-*RESULTS
+*Preparing the data 
+*
+*-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 drop _merge
@@ -391,6 +406,9 @@ gl coops "cooperative ind_coop ind_coop_c ind_coop_s ind_asoc"
 gl ncoops "n_cooperative n_ind_coop n_ind_coop_c n_ind_coop_s n_ind_asoc"
 gl sameplace "same_seg same_can same_mun same_dep"
 
+*-------------------------------------------------------------------------------
+*RDD results (Tables)
+*-------------------------------------------------------------------------------
 *Erasing table before exporting
 cap erase "${tables}\rdd_cenagrocoops_all_p1.tex"
 cap erase "${tables}\rdd_cenagrocoops_all_p1.txt"

@@ -1,5 +1,17 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Estimating main outcomes but interacting by baseline characteristics 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 						Preparing the data 
 *
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
@@ -72,7 +84,7 @@ la var wxpopd "Controlled $\times$ I(popdens80)"
 la var wxrd14 "Controlled $\times$ I(roads14)"
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Main outcomes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl nl "arcsine_nl13 z_wi mean_educ_years"
@@ -174,4 +186,3 @@ foreach var of global nl{
 
 
 *END
-

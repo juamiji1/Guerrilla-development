@@ -43,7 +43,7 @@ la var z_index_ap "Non-Democratic Engagement (ICW)"
 la var z_index_trst "Trust in Institutions (ICW)"
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						   Attitudes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl lap1 "z_index_pp z_index_ep z_index_ap z_index_trst"
@@ -105,7 +105,7 @@ foreach var of global lap4{
 
 }
 
-
+*Checking how results change with a BW for each outcome
 foreach var of global lap1{
 	
 	*RDD with break fe and triangular weights 
@@ -116,7 +116,7 @@ foreach var of global lap1{
 	*Conditional for all specifications
 	gl if "if abs(z_run_cntrl)<=${h}"
 	
-		*Replicating triangular weights
+	*Replicating triangular weights
 	cap drop tweights
 	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 

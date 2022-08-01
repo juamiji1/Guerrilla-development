@@ -1,11 +1,13 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Exploring possible mechanisms
+TOPIC: Exploring migration mechanism
 DATE:
 
 NOTES: 
 ------------------------------------------------------------------------------*/
+
+clear all 
 
 
 *-------------------------------------------------------------------------------
@@ -52,7 +54,6 @@ la var total_migrant "Total migrants"
 la var years_left "Years since departure"
 la var war_migrant_pop "Migrants during control over population"
 la var total_migrant_pop "Share of Migrants over population"
-
 la var sh_war_migrant_heduc "Share of Migrants during control"
 la var war_migrant_heduc "Migrants during control"
 la var sh_migrant_heduc "Share of Migrants"
@@ -60,17 +61,14 @@ la var total_migrant_heduc "Total migrants"
 la var years_left_heduc "Years since departure"
 la var war_migrant_pop_heduc "Migrants during control over population"
 la var total_migrant_pop_heduc "Share of Migrants over population"
-
 la var always_sh "Share of Always lived"
 la var mother_sh "Share of Same tract as mother"
 la var year_arrive "Years since arrival"
 la var arrived_war "Share of Arrived during control"
-
 la var always_heduc "Share of Always lived"
 la var mother_heduc "Share of Same tract as mother"
 la var year_arrive_heduc "Years since arrival"
 la var arrived_war_heduc "Share of Arrived during control"
-
 la var remittance_rate "Received Remittance"
 la var war_remittance "War Remittance"
 
@@ -79,7 +77,6 @@ cap erase "${tables}\rdd_migr_all.tex"
 cap erase "${tables}\rdd_migr_all.txt"
 cap erase "${tables}\rdd_migr_all_heduc.tex"
 cap erase "${tables}\rdd_migr_all_heduc.txt"
-
 
 *Tables
 foreach var of global migr{

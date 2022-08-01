@@ -43,7 +43,7 @@ foreach var in sibean sicoffee simaize sisugar {
 }
 
 *-------------------------------------------------------------------------------
-* Local continuity using Percentile 25 and up of elevation (Table)
+* Local continuity (Table)
 *-------------------------------------------------------------------------------
 *Global of local continuity vars to check 
 gl lc1 "elevation2 slope rugged hydrography rail_road d_city45 dist_city45" 
@@ -169,7 +169,6 @@ foreach var of global lc6{
 	outreg2 using "${tables}\rdd_lc_all_p6.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
-
 
 *-------------------------------------------------------------------------------
 * Plots

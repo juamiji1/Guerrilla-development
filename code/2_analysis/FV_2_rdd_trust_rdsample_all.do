@@ -1,3 +1,14 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Estimating attitudes outcomes but using within sample calculations
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
 *-------------------------------------------------------------------------------
 *Sample of Segments
 *-------------------------------------------------------------------------------
@@ -192,9 +203,6 @@ collapse (mean) z_index* rdsample, by(segm_id)
 
 summ z_index_pp_v2 z_index_ep_v2 z_index_ap_v2 z_index_trst_v2
 
-
-end
-
 *egen z_index_pp_v2=std(index_pp) if rdsample==1
 *egen z_index_ep_v2=std(index_ep) if rdsample==1
 *egen z_index_ap_v2=std(index_ap) if rdsample==1
@@ -212,7 +220,7 @@ save `LAPOP', replace
 
 
 *-------------------------------------------------------------------------------
-* 						Spatial RDD Mechanisms
+* 						Spatial RDD Results
 *
 *-------------------------------------------------------------------------------
 *Census segment level data 
@@ -248,14 +256,14 @@ la var z_index_ap_v2 "Non-Democratic Engagement (ICW)"
 la var z_index_trst_v2 "Trust in Institutions (ICW)"
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Attitudes outcomes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl trst "z_index_pp_v2 z_index_ep_v2 z_index_ap_v2 z_index_trst_v2 conf_com_low"
 
 *Erasing table before exporting
-*cap erase "${tables}\rdd_trust_all_p1.tex"
-*cap erase "${tables}\rdd_trust_all_p1.txt"
+cap erase "${tables}\rdd_trust_rdsample_all.tex"
+cap erase "${tables}\rdd_trust_rdsample_all.txt"
 
 summ ${trst} if rdsample==1
 summ ${trst}
@@ -267,7 +275,7 @@ foreach var of global trst{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	*outreg2 using "${tables}\rdd_trust_all_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_trust_rdsample_all.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
 
@@ -279,22 +287,4 @@ foreach var of global trst{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*END

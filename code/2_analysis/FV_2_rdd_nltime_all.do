@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating NL outcomes over time
 DATE:
 
 NOTES: 
@@ -39,7 +39,7 @@ cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Night Light outcomes (Coefplot)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl nly "nl92_y nl93_y nl94_y nl95_y nl96_y nl97_y nl98_y nl99_y nl00_y nl01_y nl02_y nl03_y nl04_y nl05_y nl06_y nl07_y nl08_y nl09_y nl10_y nl11_y nl12_y nl13_y"
@@ -92,8 +92,6 @@ mat coln coef= 92 93 94 95 96 97 98 99 00 01 02 03 04 05 06 07 08 09 10 11 12 13
 coefplot (mat(coef[1]), ci((2 3)) label("X")), vert recast(line) lwidth(*2) color(gs2%70) ciopts(recast(rarea) lpattern(dash) color(gs6%40)) yline(0) ylabel(,labsize(small)) xlabel(,labsize(tiny)) l2title("Coeficient magnitud") b2title("Year")
 gr export "${plots}\rdd_lnnl_all_time_separate.pdf", as(pdf) replace 
 
-
-	
 *Creating matrix to export estimates
 mat coef=J(3,22,.)
 local c=1

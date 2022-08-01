@@ -1,4 +1,20 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Investement projects in el salvador at the canton lvl 
+DATE:
 
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+* Preparing the data 
+* 
+*-------------------------------------------------------------------------------
+*Preparing the canton ID
 import excel "${data}\fisdl\match_cantones.xlsx", sheet("Sheet1") firstrow clear
 
 tostring dep mun can, replace
@@ -15,7 +31,7 @@ keep code name departamento municipio canton_id
 tempfile CantonId
 save `CantonId', replace
 
-
+*Importing the FISDL info
 import excel "${data}\fisdl\proyectos_fisdl.xlsx", sheet("Hoja1") firstrow clear
 
 ren _all, low
@@ -24,7 +40,7 @@ destring code, replace
 
 merge m:1 departamento code using `CantonId', nogen
 
-*Fixing vrs
+*Fixing vars
 gen n=1 
 gen educ=1 if strpos(tipologia, "EDUCACION")>0
 gen water=1 if strpos(tipologia, "AGUA")>0 | strpos(tipologia, "SANITARIO")>0 | strpos(tipologia, "LETRINIZACION")>0  
@@ -38,12 +54,7 @@ destring canton_id, replace
 tempfile FISDL
 save `FISDL', replace
 
-
-*-------------------------------------------------------------------------------
-* 					Preparing the data for the RDD
-*
-*-------------------------------------------------------------------------------
-*Loading the data 
+*Loading the shapefile's info  
 use "${data}/temp\slvShp_cantons_info.dta", clear
 
 ren (nl elev2 wmen_nl dst_cnt dst_dsp wthn_cn wthn_ds cn_1000 cnt1000 cnt_400 cntr400) (nl13_density elevation wmean_nl1 dist_control dist_disputed within_control within_disputed dist_control_breaks_1000 control_break_fe_1000 dist_control_breaks_400 control_break_fe_400)
@@ -65,10 +76,8 @@ gen ln_nl13=ln(nl13_density)
 gen ln_nl13_plus=ln(nl13_density+0.01)
 gen arcsine_nl13=ln(nl13_density+sqrt(nl13_density^2+1))
 
-
 *-------------------------------------------------------------------------------
 * 					Merging the FISDL data 
-*
 *-------------------------------------------------------------------------------
 *Merging the census 2007
 merge 1:1 canton_id using `FISDL', keep(1 3)
@@ -88,7 +97,7 @@ gen fisdl_roads=(roads>0)
 
 
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 				   Preparing the set-up
 *
 *-------------------------------------------------------------------------------
 *Global of border FE for all estimates
@@ -109,7 +118,7 @@ cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *-------------------------------------------------------------------------------
-* 						(Table)
+* 				       FISDL results (Table)
 *-------------------------------------------------------------------------------
 *Erasing table before exporting
 cap erase "${tables}\rdd_fisdl.tex"

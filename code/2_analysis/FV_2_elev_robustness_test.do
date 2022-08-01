@@ -1,4 +1,19 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Robusteness test using elevation differences 
+DATE:
 
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+* Preparing the data to have a structure where the unit of observation is the 
+* pair of census tracts that are neighbors 
+*-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear 
 
 *RDD with break fe and triangular weights 
@@ -12,8 +27,7 @@ keep segm_id arcsine_nl13 nl13_density wmean_nl1 elevation2 within_control z_run
 tempfile INFO
 save `INFO', replace 
 
-
-*ROBUSTNESS TEST
+*Importing neighbo matrices 
 import excel "${data}\nbr_matrix_p3.xls", sheet("nbr_matrix_p3") firstrow clear
 
 tempfile P3
@@ -47,16 +61,21 @@ gen diff_wmean_nl1= wmean_nl1-nbr_wmean_nl1
 gen diff_z_wi= z_wi - nbr_z_wi
 gen diff_mean_educ_years= mean_educ_years - nbr_mean_educ_years
 
+*Keeping only the pair of neighbors that have the positive difference in alttitud 
 keep if diff_elevation2>0
 
 summ diff_elevation2, d
 
+*-------------------------------------------------------------------------------
+* Sample of neighbor pairs with a difference between 15 and 20 masl
+*-------------------------------------------------------------------------------
 gen sample=1 if diff_elevation2>=15 & diff_elevation2<21
 
 reg diff_arcsine_nl13 if sample==1 & within_control==0 & nbr_within_control==0, r
 reg diff_nl13_density if sample==1 & within_control==0 & nbr_within_control==0, r
 reg diff_wmean_nl1 if sample==1 & within_control==0 & nbr_within_control==0, r
 
+*Arcsine results
 reg diff_elevation2 if sample==1, r
 outreg2 using "${tables}\rdd_all_elev_placebo_p1.tex", tex(frag) replace
 reg diff_arcsine_nl13 if sample==1, r
@@ -64,6 +83,10 @@ outreg2 using "${tables}\rdd_all_elev_placebo_p1.tex", tex(frag) append
 reg diff_arcsine_nl13 if sample==1 & within_control==0 & nbr_within_control==0, r
 outreg2 using "${tables}\rdd_all_elev_placebo_p1.tex", tex(frag) append
 
+*-------------------------------------------------------------------------------
+* Sample of neighbor pairs with a difference between 21 and 100 masl
+*-------------------------------------------------------------------------------
+*Arcsine results
 reg diff_elevation2 if diff_elevation2>=20  & diff_elevation2<=100, r
 outreg2 using "${tables}\rdd_all_elev_placebo_p1.tex", tex(frag) append
 reg diff_arcsine_nl13 if diff_elevation2>=20  & diff_elevation2<=100, r
@@ -74,6 +97,7 @@ outreg2 using "${tables}\rdd_all_elev_placebo_p1.tex", tex(frag) append
 *reg diff_arcsine_nl13 if sample==1 & within_control==1 & nbr_within_control==0, r
 *outreg2 using "${tables}\rdd_all_elev_placebo.tex", tex(frag) append
 
+*Wealth Score results
 reg diff_z_wi if sample==1
 outreg2 using "${tables}\rdd_all_elev_placebo_p2.tex", tex(frag) replace
 reg diff_z_wi if sample==1 & within_control==0 & nbr_within_control==0, r
@@ -83,10 +107,10 @@ outreg2 using "${tables}\rdd_all_elev_placebo_p2.tex", tex(frag) append
 reg diff_z_wi if diff_elevation2>=20 & diff_elevation2<=100 & within_control==0 & nbr_within_control==0, r
 outreg2 using "${tables}\rdd_all_elev_placebo_p2.tex", tex(frag) append
 
-
 *reg diff_z_wi if sample==1 & within_control==1 & nbr_within_control==0, r
 *outreg2 using "${tables}\rdd_all_elev_placebo.tex", tex(frag) append
 
+*Education years results
 reg diff_mean_educ_years if sample==1, r
 outreg2 using "${tables}\rdd_all_elev_placebo_p3.tex", tex(frag) replace
 reg diff_mean_educ_years if sample==1 & within_control==0 & nbr_within_control==0, r
@@ -97,7 +121,9 @@ reg diff_mean_educ_years if diff_elevation2>=20 & diff_elevation2<=100 & within_
 outreg2 using "${tables}\rdd_all_elev_placebo_p3.tex", tex(frag) append
 
 
-
+*-------------------------------------------------------------------------------
+* Some summary statistics
+*-------------------------------------------------------------------------------
 summ diff_elevation2, d 
 reg diff_arcsine_nl13 if diff_elevation2<=`r(p1)', r
 
@@ -140,14 +166,12 @@ reg diff_arcsine_nl13 if diff_elevation2>=`r(p10)' & diff_elevation2<=`r(p99)'
 summ diff_elevation2, d 
 reg diff_arcsine_nl13 if diff_elevation2>=`r(p10)'
 
-
 summ diff_elevation2, d 
 reg diff_arcsine_nl13 if diff_elevation2>=20 & diff_elevation2<=100
 summ diff_elevation2, d 
 reg diff_z_wi if diff_elevation2>=20 & diff_elevation2<=`r(p90)'
 summ diff_elevation2, d 
 reg diff_mean_educ_years if diff_elevation2>=20 & diff_elevation2<=`r(p90)'
-
 
 gen Dh=round(diff_elevation2, 1)
 tabstat diff_arcsine_nl13, by(Dh) s(N mean sd min max)
@@ -170,14 +194,12 @@ tabstat diff_elevation2, by(p_dh) s(N mean sd min max)
 tabstat diff_arcsine_nl13 if within_control==0 & nbr_within_control==0, by(p_dh) s(N mean sd min max)
 tabstat diff_elevation2 if within_control==0 & nbr_within_control==0, by(p_dh) s(N mean sd min max)
 
-
 tabstat diff_arcsine_nl13 if estsample==1 & nbr_estsample==1, by(p_dh) s(N mean sd min max)
 tabstat diff_elevation2 if estsample==1 & nbr_estsample==1, by(p_dh) s(N mean sd min max)
 
 tabstat elevation2, by(p_dh) s(N mean sd min max)
 
-
-
+*Taking out census tracts with a really high difference in elevation regarding one of his neighbors 
 *gen x=1 if p_dh>=9 & p_dh<.
 gen x=1 if diff_elevation2>=100 & diff_elevation2<.
 bys segm_id: egen out=mean(x)
@@ -219,7 +241,7 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 			Results but taking out high difference in elevation (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl main "arcsine_nl13 z_wi mean_educ_years" 
@@ -246,6 +268,7 @@ foreach var of global main{
 
 
 
+*END
 
 
 

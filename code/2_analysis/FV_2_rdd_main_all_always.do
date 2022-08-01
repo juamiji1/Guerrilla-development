@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating main outcomes for the people who has always lived in the same place
 DATE:
 
 NOTES: 
@@ -48,7 +48,7 @@ la var z_wi_iqr3 "Wealth Index Range (p90-p10)"
 la var z_wi_p50 "Median Wealth Index"
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Main outcomes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
 gl nl "z_wi_always mean_educ_years_always literacy_rate_always"

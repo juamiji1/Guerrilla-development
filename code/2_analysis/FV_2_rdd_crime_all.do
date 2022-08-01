@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating crime outcomes
 DATE:
 
 NOTES: 
@@ -9,7 +9,7 @@ NOTES:
 
 
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 						Preparing the set-up 
 *
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
@@ -32,18 +32,28 @@ cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
+* 						Crime outcomes (Table)
 *-------------------------------------------------------------------------------
+
 *Global of outcomes
 gl crime "homicidios delinc extorsion3"
 gl resid "homicidios_r delinc_r extorsion3_r"
+gl crime2 "pandillaje delinc extorsion3"
 
 la var delinc "Victim of crime"
 la var extorsion3 "Victim of extorsion"
+la var pandillaje "Gang perception"
+la var delinc "Victim of crime"
+la var delinc_hog "HH member victim of crime"
+la var extorsion1 "Mean extorsions"
+la var extorsion3 "Victim of extorsion"
+la var extorsion5 "Changed number bc extorsion"
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_crime_all.tex"
 cap erase "${tables}\rdd_crime_all.txt"
+cap erase "${tables}\rdd_crime_all_p2.tex"
+cap erase "${tables}\rdd_crime_all_p2.txt"
 
 foreach var of global crime{
 	
@@ -53,6 +63,17 @@ foreach var of global crime{
 	gl mean_y=round(r(mean), .01)
 	
 	outreg2 using "${tables}\rdd_crime_all.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+}
+
+foreach var of global crime2{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_crime_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 	
 }
 
@@ -123,45 +144,6 @@ foreach var of global crime {
 
 }
 
-
-
-
-
-
-*END
-
-
-
-
-
-*-------------------------------------------------------------------------------
-* 						Night Light outcomes (Table)
-*-------------------------------------------------------------------------------
-*Global of outcomes
-gl crime "pandillaje delinc extorsion3"
-
-la var pandillaje "Gang perception"
-la var delinc "Victim of crime"
-la var delinc_hog "HH member victim of crime"
-la var extorsion1 "Mean extorsions"
-la var extorsion3 "Victim of extorsion"
-la var extorsion5 "Changed number bc extorsion"
-
-
-*Erasing table before exporting
-cap erase "${tables}\rdd_crime_all_p2.tex"
-cap erase "${tables}\rdd_crime_all_p2.txt"
-
-foreach var of global crime{
-	
-	*Table
-	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	summ `var' if e(sample)==1 & within_control==0, d
-	gl mean_y=round(r(mean), .01)
-	
-	outreg2 using "${tables}\rdd_crime_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-	
-}
 
 
 

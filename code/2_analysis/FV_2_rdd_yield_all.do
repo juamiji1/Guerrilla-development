@@ -8,6 +8,13 @@ RA: JMJR
 NOTES: 
 ------------------------------------------------------------------------------*/
 
+clear all 
+
+
+*-------------------------------------------------------------------------------
+* RDD results
+* 
+*-------------------------------------------------------------------------------
 *Census segment level data 
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear 
 
@@ -29,7 +36,7 @@ cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
 *-------------------------------------------------------------------------------
-* Local continuity using Percentile 25 and up of elevation (Table)
+* Preparing the different measures of yield and total production 
 *-------------------------------------------------------------------------------
 summ bean05 maize05 coffe05 sugar05
 summ h_bean05 h_maize05 h_coffee05 h_sugar05
@@ -77,7 +84,7 @@ foreach var of global is{
 }
 
 *-------------------------------------------------------------------------------
-* Local continuity using Percentile 25 and up of elevation (Table)
+* Actual crops' yield results (Table)
 *-------------------------------------------------------------------------------
 *Global of local continuity vars to check 
 gl yld "bean05 maize05 coffe05 sugar05"
@@ -103,7 +110,6 @@ cap erase "${tables}\rdd_yld_all_p6.tex"
 cap erase "${tables}\rdd_yld_all_p6.txt"
 cap erase "${tables}\rdd_yld_all_p7.tex"
 cap erase "${tables}\rdd_yld_all_p7.txt"
-
 
 foreach var of global yld{
 	
@@ -177,10 +183,7 @@ foreach var of global pd{
 	outreg2 using "${tables}\rdd_yld_all_p7.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y})  nonote nocons append 
 }
 
-
-
-
-
+*Checking the results with different BWs depending on the outcome
 foreach var of global yld {
 	
 	*RDD with break fe and triangular weights 
@@ -204,6 +207,9 @@ foreach var of global yld {
 
 }
 
+*-------------------------------------------------------------------------------
+*Plots
+*-------------------------------------------------------------------------------
 gl resid "bean05_r maize05_r coffe05_r sugar05_r"
 
 *Against the distance
@@ -229,6 +235,8 @@ preserve
 	}
 	
 restore
+
+
 
 
 

@@ -1,15 +1,18 @@
 /*-----------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Estimating the RDD predictions 
 DATE:
 
-NOTES: 
+NOTES: I merged region to the night_light_13_segm_lvl_onu_91_nowater.dta to 
+create sample_try.dta
 ------------------------------------------------------------------------------*/
+
+clear all 
 
 
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 						Preparing the set-up
 *
 *-------------------------------------------------------------------------------
 use "${data}/sample_try.dta", clear
@@ -31,6 +34,9 @@ gl if "if abs(z_run_cntrl)<=${h}"
 cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
+*-------------------------------------------------------------------------------
+*Calculating RDD predictions
+*-------------------------------------------------------------------------------
 *Global of outcomes
 gl outcomes "arcsine_nl13 z_wi mean_educ_years bean05 maize05 coffe05 sugar05 h_bean05 h_maize05 h_coffee05 h_sugar05 prod_bean05 prod_maize05 prod_coffee05 prod_sugar05 size_comer sizet_comer sizec_comer sh_prod_own_comer si_all_segm si_comer_segm si_subs_segm z_index_pp z_index_ep z_index_ap z_index_trst"
 
@@ -52,7 +58,10 @@ foreach var of global outcomes{
 	replace `var'_xb_m=. if `var'==.
 }
 
-*Sample indicator
+*-------------------------------------------------------------------------------
+* RDD results by region 
+*-------------------------------------------------------------------------------
+*Creating the sample indicator
 reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 gen sample_reg=e(sample)
 
@@ -70,6 +79,9 @@ reghdfe z_index_trst ${controls} [aw=tweights] ${if} & region==3, vce(r) a(i.${b
 *Rename
 ren (COD_D COD_M COD_C MPIO CANTO) (codepto codmuni codcanton muni_name canto_name)
 
+*-------------------------------------------------------------------------------
+* Sample of the census tracts to deliver to the survey firm
+*-------------------------------------------------------------------------------
 preserve
 	keep if sample_reg==1 & region==3
 	keep segm_id codepto codmuni codcanton depto_name muni_name canto_name within_control region total_pop 
@@ -81,6 +93,9 @@ preserve
 	export delimited using "${data}\info_consulting.csv", replace
 restore 
 
+*-------------------------------------------------------------------------------
+* Exporting the outcomes' predictions to map in R
+*-------------------------------------------------------------------------------
 keep segm_id codepto codmuni codcanton ${outcomes} *_r *_xb *_xb_m sample_reg within_control z_run_cntrl region total_pop
 export delimited using "${data}\predicted_outcomes_all.csv", replace
 
@@ -89,7 +104,6 @@ export delimited using "${data}\predicted_outcomes_all.csv", replace
 
 * observaciones en los 41 segmentos 
 * Cuantos 41 y N en controladas vs no controladas 
-*
 
 *NIght light a nivel de segmento 
 *Size de comerciantes 
@@ -101,5 +115,4 @@ export delimited using "${data}\predicted_outcomes_all.csv", replace
 
 
 
-
-
+*END

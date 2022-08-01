@@ -1,15 +1,16 @@
 /*------------------------------------------------------------------------------
 PROJECT: Guerrillas_Development
 AUTHOR: JMJR
-TOPIC: Estimating NL outcomes
+TOPIC: Data on comisarias 
 DATE:
 
 NOTES: 
 ------------------------------------------------------------------------------*/
 
+clear all 
 
 *-------------------------------------------------------------------------------
-* 						Main outcomes 
+* 			   Presence of police station outcomes 
 *
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear

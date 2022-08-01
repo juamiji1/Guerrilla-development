@@ -5,7 +5,7 @@ DATE:
 AUTHORS: 
 RA: JMJR
 
-NOTES: The recommended altitud is 300 masml
+NOTES: 
 ------------------------------------------------------------------------------*/
 
 *Census segment level data 

@@ -1,5 +1,18 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: Calculating the Simpson's Index at the Canton level 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
 clear all 
 
+
+*-------------------------------------------------------------------------------
+* 						Main outcomes 
+*
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\CensoAgropecuario\01 - Base de Datos MSSQL\FA2.csv", clear
 
@@ -180,6 +193,7 @@ save `Plot', replace
 
 *-------------------------------------------------------------------------------
 * 					Preparing the data for the RDD
+*
 *-------------------------------------------------------------------------------
 *Loading the data 
 use "${data}/temp\slvShp_cantons_info.dta", clear
@@ -206,7 +220,6 @@ gen arcsine_nl13=ln(nl13_density+sqrt(nl13_density^2+1))
 *Merging cenagro data
 merge 1:1 canton_id using `Plot', keep(1 3) nogen
 
-end
 *-------------------------------------------------------------------------------
 * 								Results
 *-------------------------------------------------------------------------------
@@ -244,3 +257,8 @@ foreach var of global si_index{
 	outreg2 using "${tables}\rdd_cenagrosize_canton_all.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
 
+
+
+
+
+*END

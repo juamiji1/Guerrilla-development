@@ -9,25 +9,15 @@ NOTES:
 
 clear all 
 
-/*gl do "C:\Users\jmjimenez\Documents\GitHub\Guerrilla-development"
-gl path "C:\Users\jmjimenez\Dropbox\My-Research\Guerillas_Development"
-gl data "${path}\2-Data\Salvador"
-gl plots "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\GD-draft-slv\plots"
-gl tables "C:\Users\jmjimenez\Dropbox\Apps\Overleaf\GD-draft-slv\tables"
-gl maps "${path}\5-Maps\Salvador"
 
-*Setting the working directory 
-cd ${data}
+*-------------------------------------------------------------------------------
+* Preparing data at the canton level (not census tract)
+*
+*-------------------------------------------------------------------------------
 
-*Setting a pre-scheme for plots
-set scheme s2color, perm 
-grstyle init
-grstyle title color black
-grstyle color background white
-grstyle color major_grid dimgray
-*/
-
-
+*-------------------------------------------------------------------------------
+* Inquality measures using EHPM 
+*-------------------------------------------------------------------------------
 use "${data}/ehpm\ehpm_2000_2017_mjsp.dta", clear 
 
 drop if department==.
@@ -69,10 +59,8 @@ destring canton_id, replace
 tempfile Gini0
 save `Gini0', replace 
 
-
 *-------------------------------------------------------------------------------
-* 					     	Acommodation and Household conditions 
-*	
+* Inquality measures using the census 
 *-------------------------------------------------------------------------------
 use "${data}/censo2007\data\poblacion.dta", clear 
 
@@ -247,10 +235,8 @@ destring canton_id, replace
 tempfile Gini
 save `Gini', replace 
 
-
 *-------------------------------------------------------------------------------
-* 					Preparing the data for the RDD
-*
+* 		Preparing the data for the RDD using the canton shapefile
 *-------------------------------------------------------------------------------
 *Loading the data 
 use "${data}/temp\slvShp_cantons_info.dta", clear
@@ -274,17 +260,18 @@ gen ln_nl13=ln(nl13_density)
 gen ln_nl13_plus=ln(nl13_density+0.01)
 gen arcsine_nl13=ln(nl13_density+sqrt(nl13_density^2+1))
 
-
 *-------------------------------------------------------------------------------
-* 					Merging the conflict data 
-*
+* 					Merging data 
 *-------------------------------------------------------------------------------
 *Merging the census 2007
 merge 1:1 canton_id using `Gini', keep(1 3) nogen
 merge 1:1 canton_id using `Gini0', keep(1 3) nogen
 
-*REGRESSION
 
+*-------------------------------------------------------------------------------
+* 					Results at the Canton lvl (Tables)
+*
+*-------------------------------------------------------------------------------
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
@@ -311,7 +298,6 @@ cap erase "${tables}\rdd_ineq_all_canton_p1.tex"
 cap erase "${tables}\rdd_ineq_all_canton_p1.txt"
 cap erase "${tables}\rdd_ineq_all_canton_p2.tex"
 cap erase "${tables}\rdd_ineq_all_canton_p2.txt"
-
 
 foreach var of global inc1{
 
@@ -340,12 +326,3 @@ foreach var of global inc2{
 
 
 *END
-
-
-
-
-
-
-
-
-

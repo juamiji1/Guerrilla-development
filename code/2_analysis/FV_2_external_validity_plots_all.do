@@ -1,3 +1,19 @@
+/*------------------------------------------------------------------------------
+PROJECT: Guerrillas_Development
+AUTHOR: JMJR
+TOPIC: External validity plots 
+DATE:
+
+NOTES: 
+------------------------------------------------------------------------------*/
+
+clear all 
+
+
+*-------------------------------------------------------------------------------
+* PLots of the average min per distance bin in the whole spam of data
+*
+*-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 *Global of outcomes
@@ -37,7 +53,6 @@ foreach var in arcsine z_wi mean_educ_years{
 	gr export "${plots}/mean_`var'.pdf", as(pdf) replace
 	
 }
-
 
 
 
