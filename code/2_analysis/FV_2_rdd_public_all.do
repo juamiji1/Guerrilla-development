@@ -19,6 +19,9 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 gen hosp_pop=total_hospitals*100000/total_pop
 gen schl_pop=total_schools*100000/total_pop
 
+*Other version the daily water
+gen daily_water_sh_v2=daily_water_sh if pipes_sh==1
+
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
@@ -40,7 +43,7 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 * 				Mechanisms related to household conditions
 *-------------------------------------------------------------------------------
 gl hh1 "sewerage_sh pipes_sh electricity_sh garbage_sh hosp_pop schl_pop"
-gl hh2 "dist_hosp dist_schl road14_dens public_pet"
+gl hh2 "dist_hosp dist_schl road14_dens public_pet daily_water_sh daily_water_sh_v2"
 *total_hospitals total_schools
 
 *Labelling for tables 
@@ -191,27 +194,8 @@ foreach var of global hh{
 
 
 
-*END
 
 
-
-
-
-
-
-
-*END
-
-
-
-
-
-
-*END 
-
-
-
-*END
 
 
 
