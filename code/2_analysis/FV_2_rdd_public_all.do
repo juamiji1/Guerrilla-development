@@ -22,6 +22,9 @@ gen schl_pop=total_schools*100000/total_pop
 *Other version the daily water
 gen daily_water_sh_v2=daily_water_sh if pipes_sh==1
 
+*Enrollment per person 
+gen total_matricula_pop=total_matricula/total_pop
+
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
@@ -43,7 +46,7 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 * 				Mechanisms related to household conditions
 *-------------------------------------------------------------------------------
 gl hh1 "sewerage_sh pipes_sh electricity_sh garbage_sh hosp_pop schl_pop"
-gl hh2 "dist_hosp dist_schl road14_dens public_pet daily_water_sh daily_water_sh_v2"
+gl hh2 "dist_hosp dist_schl road14_dens public_pet daily_water_sh total_matricula_pop"
 *total_hospitals total_schools
 
 *Labelling for tables 
@@ -176,8 +179,8 @@ gl hh "sanitary_sh exclusive_sanitary electric_cook owner_sh "
 la var exclusive_sanitary "Exclusive sanitary"
 
 *Erasing files 
-cap erase "${tables}\rdd_public_all_p2.tex"
-cap erase "${tables}\rdd_public_all_p2.txt"
+cap erase "${tables}\rdd_public_all_p3.tex"
+cap erase "${tables}\rdd_public_all_p3.txt"
 	
 *Tables
 foreach var of global hh{

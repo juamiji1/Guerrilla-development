@@ -20,6 +20,7 @@ ren SEG_ID segm_id
 
 *Keeping most probable public buildings 
 gen yes=1 if strpos(type, "local_government_office") | strpos(type, "city_hall") | strpos(type, "school") | strpos(type, "courthouse") | strpos(type, "embassy") | strpos(type, "fire_station") | strpos(type, "hospital") | strpos(type, "museum") | strpos(type, "police") | strpos(type, "post_office") | strpos(type, "secondary_school") | strpos(type, "transit_station") | strpos(type, "bus_station") 
+*NOt hopsitals nor schools 
 
 gen n_pbuilding=1
 
