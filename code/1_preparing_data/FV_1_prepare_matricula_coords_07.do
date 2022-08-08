@@ -43,7 +43,10 @@ rename _all, low
 
 *Keeping only obs and vars of interest
 drop if entidad==""
-keep entidad matricula 
+egen matricula_prim=rowtotal(º u v w x)
+egen notsecundaria=rowtotal(años r s º u v w x nivadul ah ai)
+gen matricula_secund=matricula-notsecundaria
+keep entidad matricula matricula_prim matricula_secund
 
 *Merging teachers 
 merge 1:1 entidad using `Teachers', keep(1 3) nogen 

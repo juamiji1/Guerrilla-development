@@ -33,6 +33,12 @@ gl if "if abs(z_run_cntrl)<=${h}"
 cap drop tweights
 gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 
+*Creating vars 
+gen tea_enroll= teachers/total_matricula
+gen enroll_pop= total_matricula/total_pop
+gen prim_pop= matricula_primaria/total_pop
+gen sec_pop= matricula_secundaria/total_pop
+
 *Labels for outcomes
 la var arcsine_nl13 "Arcsine"
 la var ln_nl13 "Logarithm"
@@ -60,7 +66,7 @@ gl ed1 "mean_educ_years_wsage literacy_rate_wsage"
 gl ed2 "mean_educ_years_wnsage literacy_rate_wnsage"
 gl ed3 "mean_educ_years_sage literacy_rate_sage"
 gl ed  "mean_educ_years_wsage mean_educ_years_wnsage mean_educ_years_sage"
-gl qual "total_matricula teachers high_skl1 high_skl2 high_skl3"
+gl qual "total_matricula matricula_primaria matricula_secundaria enroll_pop prim_pop sec_pop teachers tea_enroll high_skl1 high_skl2 high_skl3"
 
 *Erasing table before exporting
 cap erase "${tables}\rdd_main_educage_p1.tex"

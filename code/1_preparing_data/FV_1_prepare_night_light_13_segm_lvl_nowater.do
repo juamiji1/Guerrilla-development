@@ -19,11 +19,14 @@ clear all
 *shp2dta using "${data}/gis\maps_interim\slvShp_segm_yield05", data("${data}/temp\slvShp_segm_yield05.dta") coord("${data}/temp\slvShp_segm_yield05_coord.dta") genid(pixel_id) genc(coord) replace 
 
 use "${data}/temp\slvShp_segm_pnc.dta", clear
-ren (SEG_ID dst_cms dst_r80 dstc_80 dst_r14 dstc_14) (segm_id dist_comisaria dist_road80 distc_road80 dist_road14 distc_road14)
+ren (SEG_ID dst_cms dst_r80 dstc_80 dst_r14 dstc_14 n_vnt81 n_vct81 secund primar) (segm_id dist_comisaria dist_road80 distc_road80 dist_road14 distc_road14 events81 victims81 matricula_secundaria matricula_primaria)
 
-keep segm_id dist_comisaria dist_road80 distc_road80 dist_road14 distc_road14
+keep segm_id dist_comisaria dist_road80 distc_road80 dist_road14 distc_road14 events81 victims81 matricula_secundaria matricula_primaria
 
 *Preparing vars
+replace events81=0 if events81==.
+replace victims81=0 if victims81==.
+
 replace dist_comisaria=dist_comisaria/1000
 replace dist_road80=dist_road80/1000
 replace distc_road80=distc_road80/1000

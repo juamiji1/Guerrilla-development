@@ -191,8 +191,13 @@ replace delinc_all=0 if delinc==0 & delinc_hog==0
 *Count of N 
 gen n_trst=1 if z_index_trst!=.
 
+*Property trespassing
+summ aprobacion5, d
+gen aprobacion5_median=(aprobacion5>`r(p50)') if aprobacion5!=.
+gen aprobacion5_p75=(aprobacion5>`r(p75)') if aprobacion5!=.
+
 *Collapsing 
-collapse (mean) aprobacion2 aprobacion3 aprobacion4 aprobacion7 aprobacion8 bienservicio1 bienservicio4 confianza2 confianza3 confianza4 confianza6 confianza12 confianza13 confianza14 confianza18 confianza21 confianza21a confianza43 confianza47 culturapolitica2 culturapolitica3 culturapolitica4 satisfaccion2 satisfaccion3 satisfaccion6 sum_* index_* z_index* pandillaje delinc* extorsion* (sum) n_trst, by(segm_id)
+collapse (mean) aprobacion2 aprobacion3 aprobacion4 aprobacion5 aprobacion7 aprobacion8 bienservicio1 bienservicio4 confianza2 confianza3 confianza4 confianza6 confianza12 confianza13 confianza14 confianza18 confianza21 confianza21a confianza43 confianza47 culturapolitica2 culturapolitica3 culturapolitica4 satisfaccion2 satisfaccion3 satisfaccion6 sum_* index_* z_index* pandillaje delinc* extorsion* aprobacion5_median aprobacion5_p75 (sum) n_trst, by(segm_id)
 
 *Merging the new vars
 merge 1:1 segm_id using `LAPOP0', nogen

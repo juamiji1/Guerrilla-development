@@ -91,6 +91,19 @@ roadShp14 <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_selection_2
 roadShp14 <- st_transform(roadShp14, crs = slv_crs)
 roadShp14 <- st_simplify(roadShp14, preserveTopology = FALSE, dTolerance = 10000)
 
+#Importing conflict data location at baseline
+events <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/edh_muertes_guerra_civil/events_XY_baseline.csv")
+events_sf <- st_as_sf(events, coords = c("longitud", "latitud"), crs = slv_crs)
+
+victims <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/edh_muertes_guerra_civil/victims_XY_baseline.csv")
+victims_sf <- st_as_sf(victims, coords = c("longitud", "latitud"), crs = slv_crs)
+
+#Importing location of schools in 2007 year
+schools <- read.csv("C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/mineduc/matricula_coords_2007.csv",header=TRUE)
+names(schools)[1] <- 'codigoce'
+schools <- na.omit(schools) 
+schools_sf <- st_as_sf(schools, coords = c("x", "y"), crs = slv_crs)
+
 #---------------------------------------------------------------------------------------
 ## CALCULATING THE NEEDED TOPOLOGICAL RELATIONS:
 #
@@ -117,7 +130,7 @@ distMatrix<-distBrk %>% as.data.frame() %>%
 distMin<-rowMins(distMatrix)
 slvShp_segm_info1$dist_road14<-distMin
 
-#USing the centroid of the segment 
+#Using the centroid of the segment 
 distBrk<-st_distance(segm_centroid, st_make_valid(roadShp), by_element = FALSE)
 distMatrix<-distBrk %>% as.data.frame() %>%
   data.matrix()
@@ -129,6 +142,38 @@ distMatrix<-distBrk %>% as.data.frame() %>%
   data.matrix()
 distMin<-rowMins(distMatrix)
 slvShp_segm_info1$distc_road14<-distMin
+
+#Counting number of events per segment 
+intersection <- st_intersection(x = st_make_valid(slvShp_segm), y = events_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  dplyr::summarise(n=n())
+
+slvShp_segm_info1<-st_join(st_make_valid(slvShp_segm_info1), int_result)
+slvShp_segm_info1 <- subset(slvShp_segm_info1, select = -SEG_ID.y)
+names(slvShp_segm_info1)[names(slvShp_segm_info1) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info1)[names(slvShp_segm_info1) == 'n'] <- 'n_events81'
+
+#Counting number of victims per segment 
+intersection <- st_intersection(x = st_make_valid(slvShp_segm), y = victims_sf)
+int_result <- intersection %>% 
+  group_by(SEG_ID) %>% 
+  dplyr::summarise(n=n())
+
+slvShp_segm_info1<-st_join(st_make_valid(slvShp_segm_info1), int_result)
+slvShp_segm_info1 <- subset(slvShp_segm_info1, select = -SEG_ID.y)
+names(slvShp_segm_info1)[names(slvShp_segm_info1) == 'SEG_ID.x'] <- 'SEG_ID'
+names(slvShp_segm_info1)[names(slvShp_segm_info1) == 'n'] <- 'n_victims81'
+
+#Counting number of schools per segment 
+schools_segm <- st_join(schools_sf, st_make_valid(slvShp_segm), left=TRUE)
+enroll_segm <- schools_segm %>% 
+               group_by(SEG_ID) %>% 
+               dplyr::summarise(secund=sum(matricula_secund), primar=sum(matricula_prim))
+enroll_segm <- st_drop_geometry(enroll_segm)
+
+slvShp_segm_info1 <- left_join(slvShp_segm_info1, enroll_segm, by = c("SEG_ID" = "SEG_ID"))
+
 
 #---------------------------------------------------------------------------------------
 ## EXPORTING THE SHAPEFILE WITH ALL INFORMATION:
