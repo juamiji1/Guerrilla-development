@@ -61,6 +61,27 @@ summ dens_pop_bornbef80 ${if}, d
 gen p50_pop_dens_80=(dens_pop_bornbef80>=`r(p50)') ${if}
 gen wxpopd=within_control*p50_pop_dens_80 ${if}
 
+*For crops potential yields
+foreach var in bean79 coffee79 cotton79 maize79 rice79 sugarcane79 {
+	egen z_crop_`var'=std(`var')
+}
+
+egen total_crops_subs=rowtotal(z_crop_bean79 z_crop_maize79 z_crop_rice79)
+egen z_crops_subs=std(total_crops_subs)
+
+egen total_crops_perm=rowtotal(z_crop_coffee79 z_crop_cotton79 z_crop_sugarcane79)
+egen z_crops_perm=std(total_crops_perm)
+
+drop total_crops* z_crop_*
+
+summ z_crops_subs ${if}, d
+gen p50_z_subs=(z_crops_subs>=`r(p50)') ${if}
+gen wxzsubs=within_control*p50_z_subs ${if}
+
+summ z_crops_perm ${if}, d
+gen p50_z_perm=(z_crops_perm>=`r(p50)') ${if}
+gen wxzperm=within_control*p50_z_perm ${if}
+
 *Standardizing Suitability Index
 foreach var in sibean sicoffee simaize sisugar {
 	gen h_`var'=(`var'>7000) if `var'!=.
@@ -92,6 +113,8 @@ la var wxhsibean "Controlled $\times$ I(high bean)"
 la var wxhsicoffee "Controlled $\times$ I(high coffee)"
 la var wxhsimaize "Controlled $\times$ I(high maize)"
 la var wxhsisugar "Controlled $\times$ I(high sugar)"
+la var wxzsubs "Controlled $\times$ I(high subs yield)"
+la var wxzperm "Controlled $\times$ I(high perm yield)"
 
 *-------------------------------------------------------------------------------
 * 						Main outcomes (Table)
@@ -125,7 +148,6 @@ cap erase "${tables}\rdd_het_all_elev_p11.tex"
 cap erase "${tables}\rdd_het_all_elev_p11.txt"
 cap erase "${tables}\rdd_het_all_elev_p12.tex"
 cap erase "${tables}\rdd_het_all_elev_p12.txt"
-
 cap erase "${tables}\rdd_het_all_elev_p13.tex"
 cap erase "${tables}\rdd_het_all_elev_p13.txt"
 cap erase "${tables}\rdd_het_all_elev_p14.tex"
@@ -134,6 +156,11 @@ cap erase "${tables}\rdd_het_all_elev_p15.tex"
 cap erase "${tables}\rdd_het_all_elev_p15.txt"
 cap erase "${tables}\rdd_het_all_elev_p16.tex"
 cap erase "${tables}\rdd_het_all_elev_p16.txt"
+
+cap erase "${tables}\rdd_het_all_elev_p17.tex"
+cap erase "${tables}\rdd_het_all_elev_p17.txt"
+cap erase "${tables}\rdd_het_all_elev_p18.tex"
+cap erase "${tables}\rdd_het_all_elev_p18.txt"
 
 *Heterogeneous analysis results  
 foreach var of global nl{
@@ -219,9 +246,20 @@ foreach var of global nl{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	outreg2 using "${tables}\rdd_het_all_elev_p16.tex", tex(frag) keep(within_control wxhsisugar) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+			
+	reghdfe `var' ${controls} wxzsubs p50_z_subs [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	outreg2 using "${tables}\rdd_het_all_elev_p17.tex", tex(frag) keep(within_control wxzsubs) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
+	reghdfe `var' ${controls} wxzperm p50_z_perm [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	outreg2 using "${tables}\rdd_het_all_elev_p18.tex", tex(frag) keep(within_control wxzperm) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	
 }
 
-
+ 
 
 
 *END
