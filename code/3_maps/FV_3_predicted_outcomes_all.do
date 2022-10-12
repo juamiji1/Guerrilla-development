@@ -84,7 +84,7 @@ ren (COD_D COD_M COD_C MPIO CANTO) (codepto codmuni codcanton muni_name canto_na
 *-------------------------------------------------------------------------------
 preserve
 	keep if sample_reg==1 & region==3
-	keep segm_id codepto codmuni codcanton depto_name muni_name canto_name within_control region total_pop 
+	keep segm_id codepto codmuni codcanton depto_name muni_name canto_name within_control region total_pop total_household_survey
 	export delimited using "${data}\info_consulting_sample.csv", replace
 restore
 
@@ -96,7 +96,7 @@ restore
 *-------------------------------------------------------------------------------
 * Exporting the outcomes' predictions to map in R
 *-------------------------------------------------------------------------------
-keep segm_id codepto codmuni codcanton ${outcomes} *_r *_xb *_xb_m sample_reg within_control z_run_cntrl region total_pop
+keep segm_id codepto codmuni codcanton ${outcomes} *_r *_xb *_xb_m sample_reg within_control z_run_cntrl region total_pop total_household_survey
 export delimited using "${data}\predicted_outcomes_all.csv", replace
 
 
