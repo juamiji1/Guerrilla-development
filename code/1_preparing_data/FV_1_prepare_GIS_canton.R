@@ -48,7 +48,7 @@ library(plyr)
 library(spatialEco)
 
 #Directory: 
-current_path ='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
+current_path ='C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
 setwd(current_path)
 
 
@@ -100,9 +100,10 @@ disputa_line <- st_cast(disputaShp,"MULTILINESTRING")
 # Preparing Raster Layers:
 #---------------------------------------------------------------------------------------
 #Importing the rasters 
-nl13 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
-elevation <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
-elevation2 <- raster('C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/DEM.tif')
+nl13 <- raster('C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+nl92 <- raster('C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw-yearly/F101992.v4b.avg_lights_x_pct.tif')
+elevation <- raster('C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/SLV_msk_alt.vrt')
+elevation2 <- raster('C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/altitud/DEM.tif')
 
 #Aligning the CRS for all rasters 
 nl_crs <- crs(nl13)
@@ -111,6 +112,8 @@ elevation <- projectRaster(elevation, crs=nl_crs)
 #Cropping and masking the raster to fit el salvador size
 nl13_crop <- crop(nl13, slvShp_sp)
 nl13_mask <- mask(nl13_crop, mask=slvShp_sp)
+nl92_mask <- mask(crop(nl92, slvShp_sp), mask=slvShp_sp)
+
 elevation_crop <- crop(elevation, slvShp_sp)
 elevation2_crop <- crop(elevation2, slvShp_sp)
 
@@ -119,7 +122,7 @@ elevation_mask <- mask(elevation_crop, mask=slvShp_sp)
 elevation2_mask <- mask(elevation2_crop, mask=slvShp_sp)
 
 #Not considering zeros 
-nl13_mask_zeros <- reclassify(nl13_mask, c(-Inf,0, NA))
+#nl13_mask_zeros <- reclassify(nl13_mask, c(-Inf,0, NA))
 
 
 #---------------------------------------------------------------------------------------
@@ -130,11 +133,12 @@ slvShp_segm_info1<-slvShp_segm
 
 #Extracting mean
 slvShp_segm_info1$nl <- exact_extract(nl13_mask, slvShp_segm_info1, 'mean')
+slvShp_segm_info1$nl92 <- exact_extract(nl92_mask, slvShp_segm, 'mean')
 slvShp_segm_info1$elev <- exact_extract(elevation_mask, slvShp_segm_info1, 'mean')
 slvShp_segm_info1$elev2 <- exact_extract(elevation2, slvShp_segm_info1, 'mean')
 
 #Extracting weighted mean
-slvShp_segm_info1$wmean_nl <- exact_extract(nl13_mask, slvShp_segm_info1, 'weighted_mean', weights=area(nl13_mask))
+#slvShp_segm_info1$wmean_nl <- exact_extract(nl13_mask, slvShp_segm_info1, 'weighted_mean', weights=area(nl13_mask))
 
 
 #---------------------------------------------------------------------------------------
@@ -144,12 +148,12 @@ slvShp_segm_info1$wmean_nl <- exact_extract(nl13_mask, slvShp_segm_info1, 'weigh
 slvShp_segm_info2<-slvShp_segm_info1
 
 #Calculating the minimum distance of each segment to the FMLN zones 
-slvShp_segm_info2$dist_control<-as.numeric(st_distance(slvShp_segm, control_line))
-slvShp_segm_info2$dist_disputa<-as.numeric(st_distance(slvShp_segm, disputa_line))
+slvShp_segm_info2$dist_control<-as.numeric(st_distance(st_make_valid(slvShp_segm), control_line))
+slvShp_segm_info2$dist_disputa<-as.numeric(st_distance(st_make_valid(slvShp_segm), disputa_line))
 
 #Creating indicators for whether the segment is within each FMLN zone
-slvShp_segm_info2 <- mutate(slvShp_segm_info2, within_control=as.numeric(st_intersects(slvShp_segm, controlShp, sparse = FALSE)), 
-                            within_disputa=as.numeric(st_intersects(slvShp_segm, disputaShp, sparse = FALSE)))
+slvShp_segm_info2 <- mutate(slvShp_segm_info2, within_control=as.numeric(st_intersects(st_make_valid(slvShp_segm), controlShp, sparse = FALSE)), 
+                            within_disputa=as.numeric(st_intersects(st_make_valid(slvShp_segm), disputaShp, sparse = FALSE)))
 
 
 #---------------------------------------------------------------------------------------
@@ -168,7 +172,7 @@ control_line_sample <- st_sample(control_line, 400, type="regular")
 pnt_controlBrk_400 <- st_cast(control_line_sample, "POINT")
 
 #Calculating the distance of each census segment to disputed border breaks
-distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_1000, by_element = FALSE)
+distBrk<-st_distance(st_make_valid(slvShp_segm_info), pnt_controlBrk_1000, by_element = FALSE)
 
 #Converting from units object to numeric array
 distMatrix<-distBrk %>% as.data.frame() %>%
@@ -189,7 +193,7 @@ slvShp_segm_info$cntrldist_brk1000<-distMin
 slvShp_segm_info$cntrlbrkfe1000<-brkIndexUnique[, 'col']
 
 #Calculating the distance of each census segment to disputed border breaks
-distBrk<-st_distance(slvShp_segm_info, pnt_controlBrk_400, by_element = FALSE)
+distBrk<-st_distance(st_make_valid(slvShp_segm_info), pnt_controlBrk_400, by_element = FALSE)
 
 #Converting from units object to numeric array
 distMatrix<-distBrk %>% as.data.frame() %>%
@@ -215,14 +219,14 @@ slvShp_segm_info$cntrlbrkfe400<-brkIndexUnique[, 'col']
 #
 #---------------------------------------------------------------------------------------
 #Saving as an R object 
-save.image(file='C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/temp/cantons_info.RData')
+save.image(file='C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/temp/cantons_info.RData')
 
 # Converting from sf to sp object
 slvShp_segm_info_sp_v2 <- as(slvShp_segm_info, Class='Spatial')
 
 #Exporting the all data shapefile
-#writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
-writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/jmjimenez/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim", layer="slvShp_cantons_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+#writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/nl_segm_lvl_vars", layer="slvShp_segm_info_sp_onu_91", driver="ESRI Shapefile",  overwrite_layer=TRUE)
+writeOGR(obj=slvShp_segm_info_sp_v2, dsn="C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim", layer="slvShp_cantons_info_sp", driver="ESRI Shapefile",  overwrite_layer=TRUE)
 
 
 
