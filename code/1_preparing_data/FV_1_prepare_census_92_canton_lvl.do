@@ -152,6 +152,7 @@ save `Household', replace
 *Population outcomes 
 use"C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\censo1992\1992pop\1992pop\interim\census_1992_poblacion.dta", clear
 
+*Creating educ years measure
 gen educ_yrs_v2 = p12b_ultimo_ano
 replace educ_yrs_v2 = educ_yrs_v2 + 6 if p12a_nivel_educa==3
 replace educ_yrs_v2 = educ_yrs_v2 + 9 if p12a_nivel_educa==4
@@ -160,7 +161,13 @@ replace educ_yrs_v2 = educ_yrs_v2 + 12 if p12a_nivel_educa==5 | p12a_nivel_educa
 gen educ_yrs=educ_yrs_v2
 replace educ_yrs=. if age<18
 
-collapse (mean) mean_educ_years92=educ_yrs mean_educ_years92_v2=educ_yrs_v2, by(department municipality canton)
+*Creating ISICv3 activity codes
+gen isic1_agr92=(p17_produce<1000) & p17_produce!=.
+gen isic1_ind92=(p17_produce>=1000 & p17_produce<5000) & p17_produce!=.
+gen isic1_serv92=(p17_produce>=5000) & p17_produce!=.
+gen agr_azcf92=(p17_produce==111 | p17_produce==113)
+
+collapse (mean) isic1_agr92 isic1_ind92 isic1_serv92 agr_azcf92 mean_educ_years92=educ_yrs mean_educ_years92_v2=educ_yrs_v2, by(department municipality canton)
 
 merge 1:1 department municipality canton using `Household', keep(1 3) nogen 
 
@@ -182,14 +189,15 @@ tempfile info92
 save `info92'
 
 
-
 *-------------------------------------------------------------------------------
 * Merging with canton info of 07 
 *
 *-------------------------------------------------------------------------------
+*shp2dta using "${data}/gis\maps_interim\slvShp_cantons_info_sp", data("${data}/temp\slvShp_cantons_info.dta") coord("${data}/temp\slvShp_cantons_info_coord.dta") genid(pixel_id) genc(coord) replace 
+
 use "${data}/temp\slvShp_cantons_info.dta", clear
 
-ren (nl elev2 wmen_nl dst_cnt dst_dsp wthn_cn wthn_ds cn_1000 cnt1000 cnt_400 cntr400) (nl13_density elevation wmean_nl1 dist_control dist_disputed within_control within_disputed dist_control_breaks_1000 control_break_fe_1000 dist_control_breaks_400 control_break_fe_400)
+ren (nl elev2 nl92 dst_cnt dst_dsp wthn_cn wthn_ds cn_1000 cnt1000 cnt_400 cntr400) (nl13_density elevation nl92_density dist_control dist_disputed within_control within_disputed dist_control_breaks_1000 control_break_fe_1000 dist_control_breaks_400 control_break_fe_400)
 
 *Canton ID
 gen id07=COD_DEP+COD_MUN+COD_CAN
@@ -205,8 +213,10 @@ replace z_run_cntrl= -1*dist_control if within_control==0
 
 *Different transformations of the night light density var
 gen ln_nl13=ln(nl13_density)
-gen ln_nl13_plus=ln(nl13_density+0.01)
 gen arcsine_nl13=ln(nl13_density+sqrt(nl13_density^2+1))
+
+gen ln_nl92=ln(nl92_density)
+gen arcsine_nl92=ln(nl92_density+sqrt(nl92_density^2+1))
 
 *Merging info from 92 census
 merge 1:1 id07 using `info92', keep(1 3) nogen
