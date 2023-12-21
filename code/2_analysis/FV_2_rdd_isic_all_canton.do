@@ -79,6 +79,44 @@ preserve
 restore
 
 
+*-------------------------------------------------------------------------------
+*PLot of structural transformation 
+*-------------------------------------------------------------------------------
+summ z_run_cntrl, d
+gen z_integer=round(z_run_cntrl)
+replace z_integer=z_integer+61 // Translating thex axis so it does admit the negative numbers
+
+rename (isic1_agr92 isic1_ind92 isic1_serv92) (isic1_agr isic1_ind isic1_serv)
+
+*Plots of structural transformation at the 1st level
+foreach var in isic1_agr isic1_ind isic1_serv {
+	
+	*Capturing the means
+	eststo est1: mean `var' if z_integer>44, over(z_integer)
+	
+	*Capturing and fixing the labels of the coefficients for the coefplots
+	mat b=e(b)
+	local cnames: colnames b
+	tokenize "`cnames'"
+	local i = 1
+	local coeflabels =""
+	while "``i''" != "" {
+		cap dis ustrregexm("``i''","[0-9]{2}")
+		local number=  ustrregexs(0)
+				local number=`number'-61
+		local arg="``i''"+"="+"`number'"
+		local coeflabels= "`coeflabels'"+" " +"`arg'"
+		
+		local ++i
+	}
+	gl coeflabels1=subinstr("`coeflabels'","bn","",1)
+	
+	coefplot est1, xline(16, lp(shortdash)) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
+	gr export "${plots}/mean_`var'92.pdf", as(pdf) replace
+	
+}
+
+
 
 
 

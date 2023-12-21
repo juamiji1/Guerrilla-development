@@ -185,7 +185,7 @@ foreach var in isic1_agr isic1_ind isic1_serv {
 	}
 	gl coeflabels1=subinstr("`coeflabels'","bn","",1)
 	
-	coefplot est1, xline(18) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
+	coefplot est1, xline(18, lp(shortdash)) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
 	gr export "${plots}/mean_`var'.pdf", as(pdf) replace
 	
 }
@@ -213,7 +213,7 @@ foreach var in isic2_agr isic2_cons isic2_man isic2_mserv isic2_min isic2_nmserv
 	}
 	gl coeflabels1=subinstr("`coeflabels'","bn","",1)
 	
-	coefplot est1, xline(18) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
+	coefplot est1, xline(18, lp(shortdash)) coeflabels(${coeflabels1}) vert recast(connected) ciopts(recast(rcap)) xlabel(,labsize(small) angle(45))
 	gr export "${plots}/mean_`var'.pdf", as(pdf) replace
 	
 }
