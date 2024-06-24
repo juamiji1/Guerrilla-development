@@ -216,8 +216,11 @@ preserve
 	save `Gini', replace 
 restore
 
+*Weights for individual regressions
+gen n_z_wi=1 if z_wi!=.
+
 *Collapsing at the segment level 
-collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 z_wi z_wi_always z_wi_iqr* z_wi_p50 car_bike S03P13A S03P13D S03P13E S03P13J S03P13K good_floor2 good_wall2 good_roof2 exclusive_sanitary=S03P06 electric_cook (sum) good_floor good_wall good_roof bad_* total_household*, by(segm_id)
+collapse (mean) owner_sh=S03P04 sanitary_sh=S03P05 sewerage_sh=S03P07 pipes_sh=S03P08 daily_water_sh=S03P09 electricity_sh=S03P11 garbage_sh=S03P12 z_wi z_wi_always z_wi_iqr* z_wi_p50 car_bike S03P13A S03P13D S03P13E S03P13J S03P13K good_floor2 good_wall2 good_roof2 exclusive_sanitary=S03P06 electric_cook (sum) good_floor good_wall good_roof bad_* total_household* n_z_wi, by(segm_id)
 *(iqr) iqr_good_roof=good_roof iqr_good_wall=good_wall iqr_good_floor=good_floor iqr_good_roof1=good_roof1 iqr_S03P13A=S03P13A iqr_S03P13D=S03P13D iqr_S03P13E=S03P13E iqr_S03P13J=S03P13J iqr_S03P13K=S03P13K
 
 merge 1:1 segm_id using `Gini', keep(1 3)
@@ -857,8 +860,11 @@ preserve
 	save `Schlage', replace 	
 restore 
 
+*Weights for individual regressions: 
+gen n_mean_educ_years=1 if S06P11A!=.
+
 *Collapsing at the segment level 
-collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always remittance_rate_heduc remittance_rate_leduc isic1_* isic2_* agr_azcf agr_azcf_v2 man_azcf man_azcf_v2 serv_azcf serv_azcf_v2 (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc before_war_child before_war_inmigrant work_insegm, by(segm_id)
+collapse (mean) female_head sex_sh=S06P02 mean_age=S06P03A literacy_rate=S06P09 asiste_rate=asiste mean_educ_years=S06P11A married_rate=married_mu remittance_rate=S06P15A had_child_rate=S06P25 teen_pregnancy_rate=teen_pregnancy work_hours=S06P23 always_sh=always moving_sh=moving_pop mother_sh=mother_same arrived_war always_heduc mother_heduc year_arrive_heduc arrived_war_heduc always_leduc mother_leduc year_arrive_leduc arrived_war_leduc year_arrive mean_educ_years_always literacy_rate_always remittance_rate_heduc remittance_rate_leduc isic1_* isic2_* agr_azcf agr_azcf_v2 man_azcf man_azcf_v2 serv_azcf serv_azcf_v2 (sum) pet po pd pea nea wage nowage total_pop female male always moving_pop moving_incntry_pop moving_outcntry_pop public private boss independent total_pop_heduc total_pop_leduc before_war_child before_war_inmigrant work_insegm n_mean_educ_years, by(segm_id)
 
 *Tasa de desempleo 
 gen td=pd/pea 
