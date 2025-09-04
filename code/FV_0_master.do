@@ -33,7 +33,7 @@ grstyle title color black
 grstyle color background white
 grstyle color major_grid dimgray
 
-
+END
 *-------------------------------------------------------------------------------
 *	 						1. Preparing the Data
 *
