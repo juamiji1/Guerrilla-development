@@ -176,7 +176,6 @@ foreach var of global lc6{
 gl lc "elevation2 slope rugged hydrography rail_road d_city45 dist_city45 dist_comms45 comms45_dens high_pop80_swithin reform grown80_swithin d_parr80 dist_parr80 z_crops bean79 coffee79 cotton79 maize79 rice79 sugarcane79"
 gl resid "elevation2_r slope_r rugged_r hydrography_r rail_road_r d_city45_r dist_city45_r dist_comms45_r comms45_dens_r high_pop80_swithin_r reform_r grown80_swithin_r d_parr80_r dist_parr80_r z_crops_r bean79_r coffee79_r cotton79_r maize79_r rice79_r sugarcane79_r"
 
-
 *Against the distance
 foreach var of global lc{
 	*Predicting outcomes
