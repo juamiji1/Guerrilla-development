@@ -137,6 +137,7 @@ save `LAPOP0', replace
 *Index vars
 use "${data}/lapop/lapop_panel_segmento/LAPOP 2004-2016 a nivel de individuo con ID.dta", clear
 
+END
 drop _merge
 merge m:1 ID using `ID2', keep(3) nogen
 merge m:1 segm_id using `RDDSAMPLE', keep (1 3) nogen 
@@ -279,13 +280,11 @@ foreach var of global trst{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .001)
 	
-	*outreg2 using "${tables}/rdd_trustsum_all.tex", tex(frag) keep(within_control) nor2 addstat("Bandwidth (Km)", ${h}, "Dependent mean", ${mean_y}) label nonote nocons `r'
+	outreg2 using "${tables}/rdd_trustsum_all.tex", tex(frag) keep(within_control) nor2 addstat("Bandwidth (Km)", ${h}, "Dependent mean", ${mean_y}) label nonote nocons `r'
 	
 	local r append 
 
 }
-
-END
 
 preserve 
   insheet using "${tables}/rdd_trustsum_all.txt", nonames clear
