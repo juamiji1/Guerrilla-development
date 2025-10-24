@@ -1,4 +1,5 @@
-use "${data}/SurveyAnalysis", clear
+use "${data}/survey/SurveyAnalysis", clear
+
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
 gl if "if abs(z_run_cntrl)<=${h}"
 

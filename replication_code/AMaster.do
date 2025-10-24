@@ -12,7 +12,7 @@ clear all
 *Setting directories 
 if c(username) == "juami" {
 	gl localpath "C:\Users/`c(username)'\Dropbox\My-Research\Guerillas_Development"
-	gl overleafpath "C:\Users/`c(username)'\Dropbox\Overleaf\GD-draft-slv"
+	gl overleafpath "C:\Users/`c(username)'\Dropbox\Overleaf\RESTUD Guerrillas Draft"
 	gl do "C:\Github\Guerrilla-development\code"
 	
 }
