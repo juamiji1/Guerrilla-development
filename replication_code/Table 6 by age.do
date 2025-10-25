@@ -1,0 +1,88 @@
+
+*-------------------------------------------------------------------------------
+* 						Spatial RDD Results
+*
+*-------------------------------------------------------------------------------
+*Census segment level data 
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear 
+
+*Global of border FE for all estimates
+gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gl h=2.266
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+*Labels
+la var sum_pp "Political Participation (sum)"
+la var sum_ep "Engagement with Politicians (sum)"
+la var sum_ap "Non-Democratic Engagement (sum)"
+la var sum_trst "Trust in Institutions (sum)"
+
+*-------------------------------------------------------------------------------
+* 						Attitudes outcomes (Table)
+*-------------------------------------------------------------------------------
+*Global of outcomes
+gl trst "sum_pp sum_ep sum_ap sum_trst conf_com_low"
+
+*Erasing table before exporting
+foreach var of global trst{
+	
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid 
+
+}
+
+summ sh_agewar_lapop, d
+gen d_agewar_lapop=(sh_agewar_lapop>=`r(mean)') if sh_agewar_lapop!=.
+
+gen within_dagelapop=within_control*d_agewar_lapop
+
+la var within_dagelapop "Control $\times$ $\mathbb{I}[\text{Population after 1992} \geq \text{p50}]$"
+
+*Erasing table before exporting
+local i=1
+foreach var of global trst{	
+	*Table
+	eststo r`i': reghdfe `var' within_dagelapop ${controls} d_agewar_lapop [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid 
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_ry`i'=round(r(mean), .001)
+	
+	local ++i
+}
+
+*Exporting results dummy
+esttab r1 r2 r3 r4 r5 using "${tables}/Table_6_agewar.tex", keep(within_control within_dagelapop) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) ///
+    booktabs b(3) replace ///
+	prehead(`"\begin{tabular}{l*{5}{c}}"' ///
+			`"\hline \hline \toprule"' ///
+			`" & \multicolumn{4}{c}{\textit{Total Sum of Questions per Item/Scope}} & \\"' ///
+			`"\cmidrule(lr){2-5}"' ///
+			`" & Political & Engagement & Non-Democratic & Trust in & Distrust of Members \\"' ///
+			`" & Participation & with Politicians & Engagement & Institutions & of the Community (Share) \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) \\"' ///
+			`"\midrule"') ///
+	postfoot(`"Bandwidth (Km) & ${h} & ${h} & ${h} & ${h} & ${h} \\"' ///
+			 `"Dependent mean & ${mean_ry1} & ${mean_ry2} & ${mean_ry3} & ${mean_ry4} & ${mean_ry5} \\"' ///
+			 `"\bottomrule"' ///
+			 `"\end{tabular}"')
+
+
+
+
+
+			 
+*END
+

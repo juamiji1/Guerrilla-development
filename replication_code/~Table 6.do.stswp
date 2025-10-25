@@ -238,6 +238,8 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 merge 1:1 segm_id using `LAPOP', keep(1 3) nogen 
 
+
+END
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
 gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"

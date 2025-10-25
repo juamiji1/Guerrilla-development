@@ -107,10 +107,10 @@ merge m:1 ID using `ID2', keep(3) nogen
 gen agewar= age -(year-1992)
 
 gen sh_agewar_lapop=1 if agewar<1
-replace sh_agewar_lapop=0 if agewar>=1 & agewar!=.
+replace d_agewar_lapop=0 if agewar>=1 & agewar!=.
 
 *Collapsing at the segment level
-collapse (mean) sh_agewar_lapop, by(segm_id)
+collapse (mean) d_agewar_lapop, by(segm_id)
 
 tempfile LAPOP00
 save `LAPOP00', replace 
