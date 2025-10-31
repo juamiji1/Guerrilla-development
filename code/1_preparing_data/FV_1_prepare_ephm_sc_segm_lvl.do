@@ -4,7 +4,7 @@
 *r006 canton 
 *segmento 
 
-forval y=15/18{
+forval y=11/18{
 
 	import delimited "${data}\ehpm\ehpm`y'.csv", encoding(UTF-8) clear
 
@@ -32,12 +32,13 @@ forval y=15/18{
 	*Credits
 	gen credit_friend=(r509=="9") if r509!="NA"
 	gen credit_coop=(r509=="6") if r509!="NA"
+	gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4") if r509!="NA"
 
 	*Part of organization 
-	gen member_coop=(r445b1=="1") if r445b1!="NA"
-	gen member_union=(r445b2=="1") if r445b2!="NA"
-	gen member_gremio=(r445b3=="1") if r445b3!="NA"
-	gen member_profesion=(r445b4=="1") if r445b4!="NA"
+	cap gen member_coop=(r445b1=="1") if r445b1!="NA"
+	cap gen member_union=(r445b2=="1") if r445b2!="NA"
+	cap gen member_gremio=(r445b3=="1") if r445b3!="NA"
+	cap gen member_profesion=(r445b4=="1") if r445b4!="NA"
 
 	*Type of relation with land 
 	gen land_prop=(r503a=="1") if r503a!="NA"
@@ -48,25 +49,33 @@ forval y=15/18{
 
 	gen land_prop_safe=(r5031=="1") if r5031!="NA"
 	gen land_prop_claim=(r5033=="3" | r5033otr=="3") if r503a!="NA" & r5033otr!="NA" 
-
+	
+	*Medical insurance 
+	cap gen noins_health=(r108a=="8") if r108a!="NA"	
+	cap gen noins_health=(r108a==8) if r108a!=.	
+	
+	*Pobreza 
+	tab pobreza, g(pobreza_ehpm_)
+	
 	gen year=20`y'
 
-	collapse (mean) credit_* member_* land_* , by(segm_id year)
+	cap collapse (mean) credit_* member_* land_* pobreza_ehpm_*, by(segm_id year)
+	cap collapse (mean) credit_* land_* pobreza_ehpm_*, by(segm_id year)
 
 	tempfile EHPM20`y'
 	save `EHPM20`y''
 }
 
-use `EHPM2015', clear
-append using `EHPM2016' `EHPM2017' `EHPM2018'
+use `EHPM2011', clear
+append using `EHPM2012' `EHPM2013' `EHPM2014' `EHPM2015' `EHPM2016' `EHPM2017' `EHPM2018'
 
 duplicates tag segm_id, g(dup)
 tab year dup
 
 *keeping unique in 2015 and 2016 for better comparison (less time-gap)
-bys segm_id: egen min_y=min(year)
-keep if year==min_y 
-drop year min_y
+bys segm_id: egen max_y=max(year)
+keep if year==max_y
+drop year max_y
 
 isid segm_id
 

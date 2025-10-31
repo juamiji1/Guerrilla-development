@@ -116,13 +116,12 @@ esttab q1 q2 q3 q4 q5 using "${tables}/rdd_main_all_qregzwi.tex", keep(within_co
     booktabs b(4) replace ///
     prehead(`"\begin{tabular}{@{}l*{5}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & \multicolumn{4}{c}{Wealth Index (2007)} \\"' ///
+            `" & \multicolumn{5}{c}{Wealth Index (2007)} \\"' ///
             `"\cline{2-6}"' ///
             `" & Quantile 10 & Quantile 25 & Quantile 50 & Quantile 75 & Quantile 90 \\"' ///
             `" & (1) & (2) & (3) & (4) & (5) \\"' ///
             `"\midrule"') ///
     postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
-			`" Dependent mean & & & & & \\"' ///
 			`"\bottomrule \end{tabular}"') 
 			  
 			  
