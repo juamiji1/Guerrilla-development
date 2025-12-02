@@ -67,7 +67,7 @@ merge 1:m DEPID MUNID SEGID VIVID using "${data}/censo2007\data\hogar.dta", keep
 merge 1:1 DEPID MUNID SEGID VIVID HOGID using `pop', keep(2 3) nogen
 
 *Creating the segment identifier 
-gen segm_id=DEPID+MUNID+SEGID
+gen segm_id=DEPID+MUNID+SEGID		// Adding canton does not make a difference in isid 
 
 *Wall materials
 gen good_wall=(S02P02==1)

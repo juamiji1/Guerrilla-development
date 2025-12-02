@@ -21,7 +21,7 @@ gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
-gl h=e(h_l)
+gl h=2.26
 gl b=e(b_l)
 
 *Conditional for all specifications
@@ -40,21 +40,18 @@ la var poverty25 "Share of Poor HH"
 la var poverty4 "Share of Moderate Poor HH"
 la var cooperative "Cooperative Workers"
 la var assistance "Social Assistance Share"
+la var ipcf_ppp11 "HH Income"
 *ipcf_ppp11_pr9010 ipcf_ppp11_pr9505 ipcf_ppp11_pr7525 hh_p2575 hh_p1090 hh_p0595
 
 *-------------------------------------------------------------------------------
 * 						Inequality outcomes (Table)
 *-------------------------------------------------------------------------------
 *Global of outcomes
-gl inc1 "ipcf_ppp11_iqr ipcf_ppp11_iqr2 ipcf_ppp11_iqr3 ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance"  
-gl inc2  "gini_zwi iqr_zwi ipr_zwi ilr_zwi"
-*ln_ipcf_ppp11 ipcf_ppp11
+gl inc1 "ipcf_ppp11_iqr ipcf_ppp11_p50 ipcf_ppp11"  
 
 *Erasing table before exporting
-cap erase "${tables}\rdd_ineq_all_p1.tex"
-cap erase "${tables}\rdd_ineq_all_p1.txt"
-cap erase "${tables}\rdd_ineq_all_p2.tex"
-cap erase "${tables}\rdd_ineq_all_p2.txt"
+cap erase "${tables}\rdd_ineq_all.tex"
+cap erase "${tables}\rdd_ineq_all.txt"
 
 foreach var of global inc1{
 
@@ -63,23 +60,49 @@ foreach var of global inc1{
 	summ `var' if e(sample)==1 & within_control==0, d
 	gl mean_y=round(r(mean), .01)
 	
-	outreg2 using "${tables}\rdd_ineq_all_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
-
-}
-
-foreach var of global inc2{
-
-	*Table
-	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
-	summ `var' if e(sample)==1 & within_control==0, d
-	gl mean_y=round(r(mean), .01)
-	
-	outreg2 using "${tables}\rdd_ineq_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+	outreg2 using "${tables}\rdd_ineq_all.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 
 }
 
 
 
+
+
+*END
+
+// *Global of outcomes
+// gl inc1 "ipcf_ppp11_iqr ipcf_ppp11_iqr2 ipcf_ppp11_iqr3 ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance"  
+// gl inc2  "gini_zwi iqr_zwi ipr_zwi ilr_zwi"
+// *ln_ipcf_ppp11 ipcf_ppp11
+//
+// *Erasing table before exporting
+// cap erase "${tables}\rdd_ineq_all_p1.tex"
+// cap erase "${tables}\rdd_ineq_all_p1.txt"
+// cap erase "${tables}\rdd_ineq_all_p2.tex"
+// cap erase "${tables}\rdd_ineq_all_p2.txt"
+//
+// foreach var of global inc1{
+//
+// 	*Table
+// 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+// 	summ `var' if e(sample)==1 & within_control==0, d
+// 	gl mean_y=round(r(mean), .01)
+//	
+// 	outreg2 using "${tables}\rdd_ineq_all_p1.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+//
+// }
+//
+// foreach var of global inc2{
+//
+// 	*Table
+// 	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+// 	summ `var' if e(sample)==1 & within_control==0, d
+// 	gl mean_y=round(r(mean), .01)
+//	
+// 	outreg2 using "${tables}\rdd_ineq_all_p2.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+//
+// }
+//
 
 
 

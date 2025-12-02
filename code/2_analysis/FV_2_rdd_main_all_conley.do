@@ -98,7 +98,7 @@ foreach var of global main{
 		ciopts(recast(rarea) lpattern(dash) color(gs6%40)) ///
 		yline(0) yscale(range(0 .)) ///
 		ylabel(, labsize(small)) xlabel(, labsize(small)) ///
-		l2title("Coeficient magnitud") b2title("Threshold chosen for Conley SE in Kms") ///
+		l2title("Coefficient magnitude") b2title("Threshold chosen for Conley SE in Kms") ///
 		name(`var', replace)
 		
 	gr export "${plots}\rdd_all_`var'_conley.pdf", as(pdf) replace 
@@ -236,7 +236,7 @@ coefplot (mat(coef1[1]), ci((2 3)) aux(4) msymbol(circle) mcolor(gs6) label("Nig
 	(mat(coef3[1]), ci((2 3)) aux(4) msymbol(diamond) mcolor(gs6) label("Years of Education")), /// 
 	yline(0, lc("black")) vert ciopts(recast(rcap) lcolor(gs6)) citop ///
 	xlabel( 1 "0.01° (~1.2 Km²)" 2 "0.05° (~6 Km²)" 3 "0.1° (~12 Km²)", labsize(medsmall)) ///
-	l2title("Coeficient magnitud") b2title("Grid resolution of spatial clusters") ///
+	l2title("Coefficient magnitude") b2title("Grid resolution of spatial clusters") ///
 	ylabel(, format(%9.2f)) legend(position(6) rows(1)) ///
 	mlabel(cond(@aux1<=.01,"***", cond(@aux1<=.05,"**", cond(@aux1<=.1,"*", cond(@aux1<=.15,"†",""""))))) ///
 	mlabposition(3) mlabcolor(black) mlabsize(medsmall)
@@ -283,7 +283,7 @@ coefplot (mat(coef1[1]), ci((2 3)) aux(4) msymbol(circle) mcolor(gs6) label("Nig
 	(mat(coef3[1]), ci((2 3)) aux(4) msymbol(diamond) mcolor(gs6) label("Years of Education")), /// 
 	yline(0, lc("black")) vert ciopts(recast(rcap) lcolor(gs6)) citop ///
 	xlabel( 1 "Robust" 2 "Cluster by municipality", labsize(medsmall)) ///
-	l2title("Coeficient magnitud") b2title("Type of SE") ///
+	l2title("Coefficient magnitude") b2title("Type of SE") ///
 	ylabel(, format(%9.2f)) legend(position(6) rows(1)) ///
 	mlabel(cond(@aux1<=.01,"***", cond(@aux1<=.05,"**", cond(@aux1<=.1,"*", cond(@aux1<=.15,"†",""""))))) ///
 	mlabposition(3) mlabcolor(black) mlabsize(medsmall)
