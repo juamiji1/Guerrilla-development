@@ -84,4 +84,9 @@ save "${data}\ehpm\ehpm_social_cap.dta", replace
 
 
 
+import delimited "${data}\ehpm\ehpm17.csv", encoding(UTF-8) clear
+
+
+
+
 *END
