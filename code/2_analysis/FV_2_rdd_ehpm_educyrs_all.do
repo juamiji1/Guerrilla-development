@@ -208,10 +208,10 @@ save `EHPM15', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm16.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
 
 *Destring of vars 
-destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b, replace force 
+destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
 
 *Fixing code of segmento 
 replace codigomunic="0"+codigomunic if length(codigomunic)==3
@@ -230,6 +230,16 @@ replace educ_yrs=r215a+3 if (r215b==2 | r215b==3) & educ_yrs==.
 replace educ_yrs=r215a+14 if r215b>=4 & educ_yrs==.			   // <- CHECK THIS PART!!!! specially niveles annos? o especiales?
 
 replace educ_yrs=0 if r201a==1 | r213==2 | educ_yrs==.
+
+*Food insecurity vars
+recode r1101-r1115 (2=0)
+egen x=rowtotal(r1101-r1115), m
+gen food_insec_all=(x>0) if x!=.
+
+egen y=rowtotal(r1109-r1115), m
+gen food_insec_kids=(y>0) if x!=.
+
+drop x y
 
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
@@ -245,10 +255,10 @@ save `EHPM16', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm17.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
 
 *Destring of vars 
-destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b, replace force 
+destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
 
 *Fixing code of segmento 
 replace codigomunic="0"+codigomunic if length(codigomunic)==3
@@ -267,6 +277,16 @@ replace educ_yrs=r215a+3 if (r215b==2 | r215b==3) & educ_yrs==.
 replace educ_yrs=r215a+14 if r215b>=4 & educ_yrs==.			   // <- CHECK THIS PART!!!! specially niveles annos? o especiales?
 
 replace educ_yrs=0 if r201a==1 | r213==2 | educ_yrs==.
+
+*Food insecurity vars
+recode r1101-r1115 (2=0)
+egen x=rowtotal(r1101-r1115), m
+gen food_insec_all=(x>0) if x!=.
+
+egen y=rowtotal(r1109-r1115), m
+gen food_insec_kids=(y>0) if x!=.
+
+drop x y
 
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
@@ -282,10 +302,10 @@ save `EHPM17', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm18.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
 
 *Destring of vars 
-destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b, replace force 
+destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
 
 *Fixing code of segmento 
 replace codigomunic="0"+codigomunic if length(codigomunic)==3
@@ -305,6 +325,16 @@ replace educ_yrs=r215a+14 if r215b>=4 & educ_yrs==.			   // <- CHECK THIS PART!!
 
 replace educ_yrs=0 if r201a==1 | r213==2 | educ_yrs==.
 
+*Food insecurity vars
+recode r1101-r1115 (2=0)
+egen x=rowtotal(r1101-r1115), m
+gen food_insec_all=(x>0) if x!=.
+
+egen y=rowtotal(r1109-r1115), m
+gen food_insec_kids=(y>0) if x!=.
+
+drop x y
+
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
 
@@ -318,7 +348,7 @@ save `EHPM18', replace
 *Appending all data sets
 *-------------------------------------------------------------------------------
 use `EHPM11', clear 
-append using `EHPM12' `EHPM13' `EHPM14' `EHPM16' `EHPM17'  
+append using `EHPM12' `EHPM13' `EHPM14' `EHPM16' `EHPM17' `EHPM18'
 *`EHPM15'
 
 *School age at war time
@@ -350,11 +380,21 @@ preserve
 	save `WNSAGE'
 restore
 
+*Food security
+preserve
+	collapse (mean) food_insec_all food_insec_kids, by(segm_id)
+	
+	tempfile FOODSEC
+	save `FOODSEC'
+restore
+
+
 keep if schl_age_today==1
-collapse (mean) educ_years_tsage_ehpm=educ_yrs, by(segm_id)
+collapse (mean) educ_years_tsage_ehpm=educ_yrs , by(segm_id)
 
 merge 1:1 segm_id using `WSAGE', nogen
 merge 1:1 segm_id using `WNSAGE', nogen 
+merge 1:1 segm_id using `FOODSEC', nogen 
 
 *Saving the file 
 tempfile EDUC_EHPM
@@ -407,6 +447,28 @@ foreach var of global educ{
 	
 	outreg2 using "${tables}\rdd_educ_ephm.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
 }
+
+*Global of outcomes 
+gl foodsec "food_insec_all food_insec_kids"
+
+la var food_insec_all "School age at war"
+la var food_insec_kids "Non-school age at war"
+
+*Erasing table before exporting
+cap erase "${tables}\rdd_foodsec_ephm.tex"
+cap erase "${tables}\rdd_foodsec_ephm.txt"
+
+*Tables
+foreach var of global foodsec{
+	*Table
+	reghdfe `var' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	summ `var' if e(sample)==1 & within_control==0, d
+	gl mean_y=round(r(mean), .01)
+	
+	outreg2 using "${tables}\rdd_foodsec_ephm.tex", tex(frag) keep(within_control) addtext("Kernel", "Triangular") addstat("Bandwidth (Km)", ${h},"Polynomial", 1, "Dependent mean", ${mean_y}) label nonote nocons append 
+}
+
+
 
 
 

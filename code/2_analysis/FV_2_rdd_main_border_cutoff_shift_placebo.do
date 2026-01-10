@@ -1,0 +1,452 @@
+
+clear all 
+
+/*-------------------------------------------------------------------------------
+* 				 Placebo Borders for Main outcomes (Night Light)
+*
+*
+*-------------------------------------------------------------------------------*/
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
+
+mat C_pos=J(3,7,.)
+mat C_neg=J(3,6,.)
+
+*-------------------------------------------------------------------------------
+* 						Main result for Night Light
+*-------------------------------------------------------------------------------
+*Global of border FE for all estimates
+gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gl h=e(h_l)
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+lincom within_control
+mat C_pos[1,1]= r(estimate) 
+mat C_pos[2,1]= r(lb)
+mat C_pos[3,1]= r(ub)
+	
+*-------------------------------------------------------------------------------
+* 						Changing border by .5 kms as placebo
+*-------------------------------------------------------------------------------
+local c=2
+
+forval s_p = .5(.5)3 {
+	
+	gen z_p = z_run_cntrl+ `s_p'
+	gen in_p = (z_p>=0) 
+	
+	*Global of border FE for all estimates
+	gl breakfe="control_break_fe_400"
+	gl controls "in_p i.in_p#c.z_p z_p"
+
+	*RDD with break fe and triangular weights 
+	rdrobust arcsine_nl13 z_p, all kernel(triangular)
+	gl h_p= 2.271
+	
+	*Conditional for all specifications
+	gl if "if abs(z_p)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_p/${h})) ${if}
+	
+	*Estimates
+	reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	lincom in_p
+	
+	mat C_pos[1,`c']= r(estimate) 
+	mat C_pos[2,`c']= r(lb)
+	mat C_pos[3,`c']= r(ub)
+		
+	drop z_p in_p
+	
+	local c=`c'+1
+}
+
+local c=6
+
+forval s_p = -.5(-.5)-3 {
+	
+	gen z_p = z_run_cntrl+ `s_p'
+	gen in_p = (z_p>=0) 
+	
+	*Global of border FE for all estimates
+	gl breakfe="control_break_fe_400"
+	gl controls "in_p i.in_p#c.z_p z_p"
+
+	*RDD with break fe and triangular weights 
+	rdrobust arcsine_nl13 z_p, all kernel(triangular)
+	gl h_p= 2.271
+	
+	*Conditional for all specifications
+	gl if "if abs(z_p)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_p/${h})) ${if}
+	
+	*Estimates
+	reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	lincom in_p
+	
+	mat C_neg[1,`c']= r(estimate) 
+	mat C_neg[2,`c']= r(lb)
+	mat C_neg[3,`c']= r(ub)
+		
+	drop z_p in_p
+	
+	local c=`c'-1
+}
+
+mat C=C_neg,C_pos
+mat coln C = -3 -2.5 -2 -1.5 -1 -.5 0 .5 1 1.5 2 2.5 3
+mat l C
+
+*Plotting estimates 
+coefplot (mat(C[1]), ci((2 3))), vert ciopts(recast(rcap)) citop ///
+yline(0, lc(maroon) lp(dash)) ///
+l2title("Effect of within guerrilla control on night light", size(medium)) ///
+b2title("Border cutoff shift (km)")
+
+gr export "${plots}\rdd_border_shift_placebo_arcsine_nl13.pdf", as(pdf) replace 
+
+
+*-------------------------------------------------------------------------------
+* 						Main outcomes (Wealth index)
+*
+*-------------------------------------------------------------------------------
+clear all 
+
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
+
+mat C_pos=J(3,7,.)
+mat C_neg=J(3,6,.)
+
+*-------------------------------------------------------------------------------
+* 						Main result
+*-------------------------------------------------------------------------------
+*Global of border FE for all estimates
+gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gl h=e(h_l)
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+reghdfe z_wi ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+lincom within_control
+mat C_pos[1,1]= r(estimate) 
+mat C_pos[2,1]= r(lb)
+mat C_pos[3,1]= r(ub)
+	
+*-------------------------------------------------------------------------------
+* 						Changing border by .5 kms as placebo
+*-------------------------------------------------------------------------------
+local c=2
+
+forval s_p = .5(.5)3 {
+	
+	gen z_p = z_run_cntrl+ `s_p'
+	gen in_p = (z_p>=0) 
+	
+	*Global of border FE for all estimates
+	gl breakfe="control_break_fe_400"
+	gl controls "in_p i.in_p#c.z_p z_p"
+
+	*RDD with break fe and triangular weights 
+	rdrobust arcsine_nl13 z_p, all kernel(triangular)
+	gl h_p= 2.271
+	
+	*Conditional for all specifications
+	gl if "if abs(z_p)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_p/${h})) ${if}
+	
+	*Estimates
+	reghdfe z_wi ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	lincom in_p
+	
+	mat C_pos[1,`c']= r(estimate) 
+	mat C_pos[2,`c']= r(lb)
+	mat C_pos[3,`c']= r(ub)
+		
+	drop z_p in_p
+	
+	local c=`c'+1
+}
+
+local c=6
+
+forval s_p = -.5(-.5)-3 {
+	
+	gen z_p = z_run_cntrl+ `s_p'
+	gen in_p = (z_p>=0) 
+	
+	*Global of border FE for all estimates
+	gl breakfe="control_break_fe_400"
+	gl controls "in_p i.in_p#c.z_p z_p"
+
+	*RDD with break fe and triangular weights 
+	rdrobust arcsine_nl13 z_p, all kernel(triangular)
+	gl h_p= 2.271
+	
+	*Conditional for all specifications
+	gl if "if abs(z_p)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_p/${h})) ${if}
+	
+	*Estimates
+	reghdfe z_wi ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	lincom in_p
+	
+	mat C_neg[1,`c']= r(estimate) 
+	mat C_neg[2,`c']= r(lb)
+	mat C_neg[3,`c']= r(ub)
+		
+	drop z_p in_p
+	
+	local c=`c'-1
+}
+
+mat C=C_neg,C_pos
+mat coln C = -3 -2.5 -2 -1.5 -1 -.5 0 .5 1 1.5 2 2.5 3
+mat l C
+
+*Plotting estimates 
+coefplot (mat(C[1]), ci((2 3))), vert ciopts(recast(rcap)) citop ///
+yline(0, lc(maroon) lp(dash)) ///
+l2title("Effect of within guerrilla control on wealth index", size(medium)) ///
+b2title("Border cutoff shift (km)")
+
+gr export "${plots}\rdd_border_shift_placebo_z_wi.pdf", as(pdf) replace 
+
+
+*-------------------------------------------------------------------------------
+* 						Main outcomes (Years of Education)
+*
+*-------------------------------------------------------------------------------
+clear all 
+
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
+
+mat C_pos=J(3,7,.)
+mat C_neg=J(3,6,.)
+
+*-------------------------------------------------------------------------------
+* 						Main result
+*-------------------------------------------------------------------------------
+*Global of border FE for all estimates
+gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gl h=e(h_l)
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+reghdfe mean_educ_years ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+lincom within_control
+mat C_pos[1,1]= r(estimate) 
+mat C_pos[2,1]= r(lb)
+mat C_pos[3,1]= r(ub)
+	
+*-------------------------------------------------------------------------------
+* 						Changing border by .5 kms as placebo
+*-------------------------------------------------------------------------------
+local c=2
+
+forval s_p = .5(.5)3 {
+	
+	gen z_p = z_run_cntrl+ `s_p'
+	gen in_p = (z_p>=0) 
+	
+	*Global of border FE for all estimates
+	gl breakfe="control_break_fe_400"
+	gl controls "in_p i.in_p#c.z_p z_p"
+
+	*RDD with break fe and triangular weights 
+	rdrobust arcsine_nl13 z_p, all kernel(triangular)
+	gl h_p= 2.271
+	
+	*Conditional for all specifications
+	gl if "if abs(z_p)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_p/${h})) ${if}
+	
+	*Estimates
+	reghdfe mean_educ_years ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	lincom in_p
+	
+	mat C_pos[1,`c']= r(estimate) 
+	mat C_pos[2,`c']= r(lb)
+	mat C_pos[3,`c']= r(ub)
+		
+	drop z_p in_p
+	
+	local c=`c'+1
+}
+
+local c=6
+
+forval s_p = -.5(-.5)-3 {
+	
+	gen z_p = z_run_cntrl+ `s_p'
+	gen in_p = (z_p>=0) 
+	
+	*Global of border FE for all estimates
+	gl breakfe="control_break_fe_400"
+	gl controls "in_p i.in_p#c.z_p z_p"
+
+	*RDD with break fe and triangular weights 
+	rdrobust arcsine_nl13 z_p, all kernel(triangular)
+	gl h_p= 2.271
+	
+	*Conditional for all specifications
+	gl if "if abs(z_p)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_p/${h})) ${if}
+	
+	*Estimates
+	reghdfe mean_educ_years ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	lincom in_p
+	
+	mat C_neg[1,`c']= r(estimate) 
+	mat C_neg[2,`c']= r(lb)
+	mat C_neg[3,`c']= r(ub)
+		
+	drop z_p in_p
+	
+	local c=`c'-1
+}
+
+mat C=C_neg,C_pos
+mat coln C = -3 -2.5 -2 -1.5 -1 -.5 0 .5 1 1.5 2 2.5 3
+mat l C
+
+*Plotting estimates 
+coefplot (mat(C[1]), ci((2 3))), vert ciopts(recast(rcap)) citop ///
+yline(0, lc(maroon) lp(dash)) ///
+l2title("Effect of within guerrilla control on years of education", size(medium)) ///
+b2title("Border cutoff shift (km)")
+
+gr export "${plots}\rdd_border_shift_placebo_mean_educ_years.pdf", as(pdf) replace 
+
+
+/*-------------------------------------------------------------------------------
+* 			 	Randomization Inference for Main outcomes
+*
+*
+*-------------------------------------------------------------------------------*/
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
+
+*RDD with break fe and triangular weights 
+rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+gl h=e(h_l)
+gl ht= round(${h}, .001)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl mainoutcomes "arcsine_nl13 z_wi mean_educ_years"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+*-------------------------------------------------------------------------------
+* Estimating RI p-values through Randomization Inference (RI)
+*-------------------------------------------------------------------------------
+eststo clear
+
+set seed 123
+gl reps = 1000
+
+local i=1
+foreach yvar of global mainoutcomes {
+	
+	*Base Estimation
+	reghdfe `yvar' within_control ${if}, vce(r) a(i.${breakfe}) 
+	eststo r`i'
+	
+	*RI permutation
+	ritest within_control _b[within_control], reps(${reps}) ///
+	strata(${breakfe}) force: ///
+	reghdfe `yvar' within_control ${if}, vce(r) a(i.${breakfe}) 
+	
+	gl ri_p_`i'= r(p)[1,1]
+		
+	local ++i
+	
+	*Base Estimation
+ 	reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+ 	eststo r`i'
+	
+ 	*RI permutation
+ 	ritest within_control _b[within_control], reps(${reps}) ///
+ 	strata(${breakfe}) force: ///
+ 	reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	
+ 	gl ri_p_`i'= r(p)[1,1]
+		
+ 	local ++i
+	
+}
+
+*-------------------------------------------------------------------------------
+* Table 
+*-------------------------------------------------------------------------------
+*Exporting results 
+esttab r1 r2 r3 r4 r5 r6 using "${tables}/rdd_main_all_RI.tex", keep(within_control) ///
+se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+prehead(`"\begin{tabular}{@{}l*{6}{c}}"' ///
+            `"\hline \hline \toprule"'                     ///
+            `" & Night Light & Night Light & Wealth Index & Wealth Index & Years of Education & Years of Education \\"' ///
+            `" & (1) & (2) & (3) & (4) & (5) & (6) \\"'                       ///
+            `" \toprule"')  ///
+    postfoot(`" \toprule"' ///
+		`"Lineal polynomial & No & Yes & No & Yes & No & Yes \\"' ///
+		`"Permutation p-value & ${ri_p_1} & ${ri_p_2} & ${ri_p_3} & ${ri_p_4} & ${ri_p_5} & ${ri_p_6} \\"' ///
+		`"Permutation reps & ${reps} & ${reps} & ${reps} & ${reps} & ${reps} & ${reps} \\"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"') 
+
+
+*END
