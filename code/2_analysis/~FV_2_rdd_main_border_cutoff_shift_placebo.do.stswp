@@ -533,8 +533,7 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 gen s_1=y_coord
 gen s_2=x_coord
 
-spurtest i0resid arcsine_nl13 within_control ${if},  nrep(100)
-*latlong
+spurtest i0resid arcsine_nl13 within_control ${if}, latlong nrep(100)
 
 *-------------------------------------------------------------------------------
 * Estimating RI p-values through Randomization Inference (RI)
