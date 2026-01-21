@@ -566,7 +566,7 @@ prehead(`"\begin{tabular}{@{}l*{6}{c}}"' ///
             `" \toprule"')  ///
     postfoot(`" \toprule"' ///
 		`"Lat-lon polynomial (2nd degree) & No & Yes & No & Yes & No & Yes \\"' ///
-		`"Muller-Watson I(1) p-value & ${p_1} & - & ${p_2} & - & ${p_3} & - \\"' ///
+		`"Muller-Watson I(1) p-value & ${p_1} & - & ${p_1} & - & - & ${p_1} \\"' ///
 		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
 

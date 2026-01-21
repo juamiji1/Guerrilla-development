@@ -106,6 +106,39 @@ roadShp <- st_read(dsn = "gis/historic_rail_roads", layer = "roads_1980")
 roadShp <- st_transform(roadShp, crs = slv_crs)
 
 #---------------------------------------------------------------------------------------
+## NIGHT LIGHTS: LOAD + ALIGN + CROP/MASK
+#---------------------------------------------------------------------------------------
+# Night-lights raster (you can switch to VIIRS if needed)
+nl13 <- raster('C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/night_lights/raw/F182013.v4c.avg_lights_x_pct.tif')
+
+# Ensure CRS matches polygons (segments use slv_crs)
+# If nl13 has no CRS or differs, project it
+if (is.na(crs(nl13))) {
+  stop("Night-lights raster has no CRS set. Set it first (crs(nl13) <- ...) before projecting.")
+}
+
+if (!compareCRS(crs(nl13), as.character(slv_crs$wkt))) {
+  nl13 <- projectRaster(nl13, crs = as.character(slv_crs$wkt))
+}
+
+# Crop & mask to El Salvador boundary
+nl13_crop <- crop(nl13, slvShp_sp)
+nl13_mask <- mask(nl13_crop, mask = slvShp_sp)
+
+#---------------------------------------------------------------------------------------
+## DEFINE QUANTILE FUNCTIONS (NO asinh)
+#---------------------------------------------------------------------------------------
+get_q25 <- function(values, coverage_fraction) {
+  x <- values[!is.na(values)]
+  as.numeric(quantile(x, 0.25, na.rm = TRUE))
+}
+
+get_q75 <- function(values, coverage_fraction) {
+  x <- values[!is.na(values)]
+  as.numeric(quantile(x, 0.75, na.rm = TRUE))
+}
+
+#---------------------------------------------------------------------------------------
 ## TOPOLOGICAL RELATIONS: 
 #
 #---------------------------------------------------------------------------------------
@@ -162,10 +195,27 @@ for (fname in names(feature_pairs)) {
   segm_out[[paste0("dist_", fname)]] <- compute_min_dist(segm_out, feature_pairs[[fname]][["out"]])
 }
 
-segm_info_dists <- rbind(segm_in, segm_out)
-segm_info_dists <- st_drop_geometry(segm_info_dists)
+#---------------------------------------------------------------------------------------
+## NIGHT LIGHTS QUARTILES WITHIN EACH SEGMENT
+#---------------------------------------------------------------------------------------
+# (Compute for all segments, not separately for in/out)
+slvShp_segm_info$nl_q25 <- exact_extract(nl13_mask, slvShp_segm_info, get_q25)
+slvShp_segm_info$nl_q75 <- exact_extract(nl13_mask, slvShp_segm_info, get_q75)
 
-write.csv(segm_info_dists, "C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_info_dists.csv", row.names = FALSE)
+#---------------------------------------------------------------------------------------
+## EXPORT
+#---------------------------------------------------------------------------------------
+segm_info_dists <- rbind(segm_in, segm_out)
+
+segm_info_dists_df <- st_drop_geometry(segm_info_dists)
+
+nl_df <- slvShp_segm_info %>%
+  st_drop_geometry() %>%
+  dplyr::select(SEG_ID, nl_q25, nl_q75)
+
+segm_info_out <- dplyr::left_join(segm_info_dists_df, nl_df, by = "SEG_ID")
+
+write.csv(segm_info_out,"C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/gis/maps_interim/segm_info_dists.csv",row.names = FALSE)
 
 
 
