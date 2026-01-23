@@ -10,42 +10,18 @@
 ## PACKAGES AND LIBRARIES:
 #
 #---------------------------------------------------------------------------------------
-#install.packages('bit64')
-#install.packages('raster')
-#install.packages('exactextractr')
-#install.packages('rmapshaper')
-#install.packages('geojsonio')
-
-library(data.table)
-library(rgdal)
-library(rgeos)
-library(ggplot2)
-library(ggrepel)
+# --- Load ---
 library(sf)
-library(spdep)
-library(sp)
-library(ggpubr)
-library(dplyr)
-library(tidyr)
-library(scales) 
-library(tidyverse)
-library(lubridate)
-library(gtools)
-library(foreign)
-library(ggmap)
-library(maps)
-library(gganimate)
-library(gifski)
-library(transformr)
-library(tmap)
 library(raster)
 library(exactextractr)
+
+library(dplyr)
+library(tidyr)
 library(matrixStats)
-library(rgeos)
-library(rmapshaper)
-library(geojsonio)
-library(plyr)
-library(spatialEco)
+
+library(sp)         # needed for: as(slvShp, "Spatial")
+library(ggplot2)
+library(ggrepel)
 
 #Directory: 
 current_path ='C:/Users/juami/Dropbox/My-Research/Guerillas_Development/2-Data/Salvador/'
@@ -126,8 +102,13 @@ nl13_crop <- crop(nl13, slvShp_sp)
 nl13_mask <- mask(nl13_crop, mask = slvShp_sp)
 
 #---------------------------------------------------------------------------------------
-## DEFINE QUANTILE FUNCTIONS (NO asinh)
+## DEFINE QUANTILE AND GINI FUNCTIONS 
 #---------------------------------------------------------------------------------------
+get_q10 <- function(values, coverage_fraction) {
+  x <- values[!is.na(values)]
+  as.numeric(quantile(x, 0.1, na.rm = TRUE))
+}
+
 get_q25 <- function(values, coverage_fraction) {
   x <- values[!is.na(values)]
   as.numeric(quantile(x, 0.25, na.rm = TRUE))
@@ -136,6 +117,52 @@ get_q25 <- function(values, coverage_fraction) {
 get_q75 <- function(values, coverage_fraction) {
   x <- values[!is.na(values)]
   as.numeric(quantile(x, 0.75, na.rm = TRUE))
+}
+
+get_q90 <- function(values, coverage_fraction) {
+  x <- values[!is.na(values)]
+  as.numeric(quantile(x, 0.9, na.rm = TRUE))
+}
+
+# Gini helper (base R) — no extra packages needed
+gini_vec <- function(x) {
+  x <- x[!is.na(x)]
+  if (length(x) < 2) return(NA_real_)
+  if (all(x == 0)) return(0)
+  x <- sort(x)
+  n <- length(x)
+  # G = (2*sum(i*x_i))/(n*sum(x)) - (n+1)/n
+  (2 * sum(seq_len(n) * x)) / (n * sum(x)) - (n + 1) / n
+}
+
+get_gini <- function(values, coverage_fraction) {
+  gini_vec(values)
+}
+
+gini_w <- function(x, w) {
+  ok <- !is.na(x) & !is.na(w) & w > 0
+  x <- x[ok]; w <- w[ok]
+  if (length(x) < 2) return(NA_real_)
+  if (sum(w) == 0) return(NA_real_)
+  if (all(x == 0)) return(0)
+  
+  o <- order(x)
+  x <- x[o]; w <- w[o]
+  
+  W <- sum(w)
+  wx <- w * x
+  mu <- sum(wx) / W
+  if (mu == 0) return(0)
+  
+  # Weighted Gini via pairwise formula (O(n^2)) is too slow,
+  # so use a sorted cumulative approach:
+  cw <- cumsum(w)
+  # G = (1/(mu*W)) * sum( w_i * (2*cw_i - w_i - W) * x_i ) / W
+  sum(w * (2 * cw - w - W) * x) / (mu * W^2)
+}
+
+get_gini_w <- function(values, coverage_fraction) {
+  gini_w(values, coverage_fraction)
 }
 
 #---------------------------------------------------------------------------------------
@@ -199,8 +226,13 @@ for (fname in names(feature_pairs)) {
 ## NIGHT LIGHTS QUARTILES WITHIN EACH SEGMENT
 #---------------------------------------------------------------------------------------
 # (Compute for all segments, not separately for in/out)
+slvShp_segm_info$nl_q10 <- exact_extract(nl13_mask, slvShp_segm_info, get_q10)
 slvShp_segm_info$nl_q25 <- exact_extract(nl13_mask, slvShp_segm_info, get_q25)
 slvShp_segm_info$nl_q75 <- exact_extract(nl13_mask, slvShp_segm_info, get_q75)
+slvShp_segm_info$nl_q90 <- exact_extract(nl13_mask, slvShp_segm_info, get_q90)
+
+slvShp_segm_info$nl_gini <- exact_extract(nl13_mask, slvShp_segm_info, get_gini)
+slvShp_segm_info$nl_gini_w <- exact_extract(nl13_mask, slvShp_segm_info, get_gini_w)
 
 #---------------------------------------------------------------------------------------
 ## EXPORT
@@ -211,7 +243,7 @@ segm_info_dists_df <- st_drop_geometry(segm_info_dists)
 
 nl_df <- slvShp_segm_info %>%
   st_drop_geometry() %>%
-  dplyr::select(SEG_ID, nl_q25, nl_q75)
+  dplyr::select(SEG_ID, nl_q10, nl_q25, nl_q75, nl_q90, nl_gini, nl_gini_w)
 
 segm_info_out <- dplyr::left_join(segm_info_dists_df, nl_df, by = "SEG_ID")
 
