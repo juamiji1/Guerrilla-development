@@ -411,6 +411,9 @@ gen d_ztemp_2sd=(abs(temp_std)>=2) if temp_std!=.
 gen d_zprecip_1sd=(abs(precip_std)>=1) if precip_std!=.
 gen d_zprecip_2sd=(abs(precip_std)>=2) if precip_std!=.
 
+replace temp_std=abs(temp_std)
+replace precip_std=abs(precip_std)
+
 collapse (sum) d_z* (mean) hist_temp_mean_all hist_temp_sd_all hist_precip_mean_all hist_precip_sd_all predict_modis_temp predict_chirps_precip temp_std precip_std, by(seg_id)
 
 gen ztemp=(predict_modis_temp-hist_temp_mean_all)/hist_temp_sd_all
@@ -438,8 +441,8 @@ merge 1:1 segm_id using `SHOCKS', keep(1 3) nogen
 gen d_mean_ztemp_1sd=(abs(temp_std)>=1) if temp_std!=.
 gen d_mean_ztemp_2sd=(abs(temp_std)>=1.5) if temp_std!=.
 
-gen d_mean_zprecip_1sd=(abs(precip_std)>=.5) if precip_std!=.
-gen d_mean_zprecip_2sd=(abs(precip_std)>=1) if precip_std!=.
+gen d_mean_zprecip_1sd=(abs(precip_std)>=1) if precip_std!=.
+gen d_mean_zprecip_2sd=(abs(precip_std)>=1.5) if precip_std!=.
 
 gen wc_ztemp =within_control*temp_std
 gen wc_zprecip =within_control*precip_std
@@ -453,6 +456,11 @@ gen wc_dmzprecip1sd =within_control*d_mean_zprecip_1sd
 gen wc_dmztemp2sd =within_control*d_mean_ztemp_2sd
 gen wc_dmzprecip2sd =within_control*d_mean_zprecip_2sd
 
+summ temp_std, d
+gen d_hightemp=(temp_std>=`r(p50)')
+summ precip_std, d
+gen d_highprecip=(precip_std>=`r(p50)')
+
 summ d_zprecip_1sd, d
 gen d_highprecip1sd=(d_zprecip_1sd>=`r(p50)')
 summ d_zprecip_2sd, d
@@ -463,6 +471,8 @@ gen d_hightemp1sd=(d_ztemp_1sd>=`r(p50)')
 summ d_zprecip_2sd, d
 gen d_hightemp2sd=(d_ztemp_2sd>=`r(p50)')
 
+gen wc_highprecip=within_control*d_highprecip
+gen wc_hightemp=within_control*d_hightemp
 gen wc_highprecip1sd=within_control*d_highprecip1sd
 gen wc_highprecip2sd=within_control*d_highprecip2sd
 gen wc_hightemp1sd=within_control*d_hightemp1sd
@@ -480,12 +490,12 @@ label var wc_dmzprecip1sd "Control $\times$ $\lvert Z\text{-Precip} \rvert \geq 
 label var wc_dmzprecip2sd "Control $\times$ $\lvert Z\text{-Precip} \rvert \geq 2$ SD"
 label var wc_dzprecip1sd "Control $\times$ Months with $\lvert Z\text{-Precip} \rvert \geq 1$ SD"
 label var wc_dzprecip2sd "Control $\times$ Months with $\lvert Z\text{-Precip} \rvert \geq 2$ SD"
-label var wc_hightemp1sd "Control $\times$ High Temp Shock (1SD)"
-label var wc_hightemp2sd "Control $\times$ High Temp Shock (2SD)"
-label var wc_highprecip1sd "Control $\times$ High Precip Shock (1SD)"
-label var wc_highprecip2sd "Control $\times$ High Precip Shock (2SD)"
-
-END
+label var wc_hightemp "Control $\times$ High Temp (Above Median)"
+label var wc_highprecip "Control $\times$ High Precip (Above Median)"
+label var wc_hightemp1sd "Control $\times$ High Months Temp Shock (1SD)"
+label var wc_hightemp2sd "Control $\times$ High Months Temp Shock (2SD)"
+label var wc_highprecip1sd "Control $\times$ High Months Precip Shock (1SD)"
+label var wc_highprecip2sd "Control $\times$ High Months Precip Shock (2SD)"
 
 *Global of border FE for all estimates
 gl breakfe="control_break_fe_400"
@@ -495,6 +505,7 @@ gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
 gl h=2.266
+gl ht=${h}
 gl b=e(b_l)
 
 *Conditional for all specifications
@@ -578,64 +589,133 @@ foreach yvar of global foodsecoutcomes {
 	estadd scalar L_p  = r(p)
 	eststo k`i'
 	
+	reghdfe `yvar' ${controls} wc_hightemp d_hightemp [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	lincom within_control+ wc_hightemp
+	estadd scalar L    = r(estimate)
+	estadd scalar L_p  = r(p)
+	eststo k`i'
+	
+	reghdfe `yvar' ${controls} wc_hightemp1sd d_hightemp1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	lincom within_control+ wc_hightemp1sd
+	estadd scalar L    = r(estimate)
+	estadd scalar L_p  = r(p)
+	eststo l`i'
+	
 	reghdfe `yvar' ${controls} wc_hightemp2sd d_hightemp2sd [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	lincom within_control+ wc_hightemp2sd
 	estadd scalar L    = r(estimate)
 	estadd scalar L_p  = r(p)
-	eststo l`i'
+	eststo m`i'
+	
+	reghdfe `yvar' ${controls} wc_highprecip d_highprecip [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	lincom within_control+ wc_highprecip
+	estadd scalar L    = r(estimate)
+	estadd scalar L_p  = r(p)
+	eststo n`i'
 	
 	reghdfe `yvar' ${controls} wc_highprecip1sd d_highprecip1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	lincom within_control+ wc_highprecip1sd
 	estadd scalar L    = r(estimate)
 	estadd scalar L_p  = r(p)
-	eststo m`i'
+	eststo o`i'
 	
 	reghdfe `yvar' ${controls} wc_highprecip2sd d_highprecip2sd [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	lincom within_control+ wc_highprecip2sd
 	estadd scalar L    = r(estimate)
 	estadd scalar L_p  = r(p)
-	eststo n`i'
+	eststo p`i'
 	
 	local ++i
 }
 
 *Exporting results 
-esttab a1 b1 c1 d1 e1 k1 l1 a2 b2 c2 d2 e2 k2 l2 using "${tables}/rdd_main_all_foodsec_temp.tex", ///
-    keep(within_control wc_ztemp wc_dmztemp1sd wc_dmztemp2sd wc_dztemp1sd wc_dztemp2sd wc_hightemp1sd wc_hightemp2sd) ///
+*Table 1: Temperature effects on food_insec_all
+esttab a1 b1 c1 d1 e1 k1 l1 m1 using "${tables}/rdd_foodsec_all_temp.tex", ///
+    keep(within_control wc_ztemp wc_dmztemp1sd wc_dmztemp2sd wc_dztemp1sd wc_dztemp2sd wc_hightemp wc_hightemp1sd wc_hightemp2sd) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
     label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
     stats(L L_p N, ///
           labels("Combined estimate" "p-value (lincom)" "Observations") ///
           fmt(3 3 0)) ///
-    prehead(`"\begin{tabular}{@{}l*{14}{c}}"' ///
+    prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & food_insec_all & food_insec_all & food_insec_all  & food_insec_all & food_insec_all & food_insec_all & food_insec_all & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids\\"' ///
-            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9) & (10) & (11) & (12) & (13) & (14) \\"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (All)}\\\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
-             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
              `"\bottomrule \end{tabular}"')
 
-esttab f1 g1 h1 i1 j1 m1 n1 f2 g2 h2 i2 j2 m2 n2 using "${tables}/rdd_main_all_foodsec_precip.tex", ///
-	keep(within_control wc_zprecip wc_dmzprecip1sd wc_dmzprecip2sd wc_dzprecip1sd wc_dzprecip2sd wc_highprecip1sd wc_highprecip2sd) ///
+*Table 2: Temperature effects on food_insec_kids
+esttab a2 b2 c2 d2 e2 k2 l2 m2 using "${tables}/rdd_foodsec_kids_temp.tex", ///
+    keep(within_control wc_ztemp wc_dmztemp1sd wc_dmztemp2sd wc_dztemp1sd wc_dztemp2sd wc_hightemp wc_hightemp1sd wc_hightemp2sd) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
     label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
     stats(L L_p N, ///
           labels("Combined estimate" "p-value (lincom)" "Observations") ///
           fmt(3 3 0)) ///
-    prehead(`"\begin{tabular}{@{}l*{14}{c}}"' ///
+    prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & food_insec_all & food_insec_all & food_insec_all  & food_insec_all & food_insec_all & food_insec_all & food_insec_all & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids & food_insec_kids\\"' ///
-            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9) & (10) & (11) & (12) & (13) & (14) \\"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (Children)}\\\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
-             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
+             `"\bottomrule \end{tabular}"')
+
+*Table 3: Precipitation effects on food_insec_all
+esttab f1 g1 h1 i1 j1 n1 o1 p1 using "${tables}/rdd_foodsec_all_precip.tex", ///
+	keep(within_control wc_zprecip wc_dmzprecip1sd wc_dmzprecip2sd wc_dzprecip1sd wc_dzprecip2sd wc_highprecip wc_highprecip1sd wc_highprecip2sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(L L_p N, ///
+          labels("Combined estimate" "p-value (lincom)" "Observations") ///
+          fmt(3 3 0)) ///
+    prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (All)}\\\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
+             `"\bottomrule \end{tabular}"')
+
+*Table 4: Precipitation effects on food_insec_kids
+esttab f2 g2 h2 i2 j2 n2 o2 p2 using "${tables}/rdd_foodsec_kids_precip.tex", ///
+	keep(within_control wc_zprecip wc_dmzprecip1sd wc_dmzprecip2sd wc_dzprecip1sd wc_dzprecip2sd wc_highprecip wc_highprecip1sd wc_highprecip2sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(L L_p N, ///
+          labels("Combined estimate" "p-value (lincom)" "Observations") ///
+          fmt(3 3 0)) ///
+    prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (Children)}\\\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
              `"\bottomrule \end{tabular}"')
 		
+/*
+reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip1sd==0, vce(r) a(i.${breakfe}) 
+reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip1sd==1, vce(r) a(i.${breakfe}) 
+
+reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip1sd==0, vce(r) a(i.${breakfe}) 
+reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip1sd==1, vce(r) a(i.${breakfe}) 
+
+reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip2sd==0, vce(r) a(i.${breakfe}) 
+reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip2sd==1, vce(r) a(i.${breakfe}) 
+
+reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip2sd==0, vce(r) a(i.${breakfe}) 
+reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip2sd==1, vce(r) a(i.${breakfe}) 
 
 
+reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip==0, vce(r) a(i.${breakfe}) 
+reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip==1, vce(r) a(i.${breakfe}) 
 
-
+reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip==0, vce(r) a(i.${breakfe}) 
+reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip==1, vce(r) a(i.${breakfe}) 
 
 
 
