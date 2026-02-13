@@ -208,7 +208,7 @@ save `EHPM15', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm16.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115 r508 r509 r601
 
 *Destring of vars 
 destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
@@ -240,6 +240,16 @@ egen y=rowtotal(r1109-r1115), m
 gen food_insec_kids=(y>0) if x!=.
 
 drop x y
+
+*Credits (only for agriculture -> a lot of missings)
+gen credit_any=(r508=="1") if r508!="NA"
+gen credit_friend=(r509=="9") if r509!="NA"
+gen credit_coop=(r509=="6") if r509!="NA"
+gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4" | r509=="10") if r509!="NA"
+gen credit_informal=(r509=="5" | r509=="6" | r509=="7" | r509=="8" | r509=="9" | r509=="11") if r509!="NA"
+
+*Seguro medico 
+gen med_insur=(r601!="8")
 
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
@@ -255,7 +265,7 @@ save `EHPM16', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm17.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115 r508 r509 r601
 
 *Destring of vars 
 destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
@@ -287,6 +297,16 @@ egen y=rowtotal(r1109-r1115), m
 gen food_insec_kids=(y>0) if x!=.
 
 drop x y
+
+*Credits (only for agriculture -> a lot of missings)
+gen credit_any=(r508=="1") if r508!="NA"
+gen credit_friend=(r509=="9") if r509!="NA"
+gen credit_coop=(r509=="6") if r509!="NA"
+gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4" | r509=="10") if r509!="NA"
+gen credit_informal=(r509=="5" | r509=="6" | r509=="7" | r509=="8" | r509=="9" | r509=="11") if r509!="NA"
+
+*Seguro medico 
+gen med_insur=(r601!="8")
 
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
@@ -302,7 +322,7 @@ save `EHPM17', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm18.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115 r508 r509 r601
 
 *Destring of vars 
 destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
@@ -334,6 +354,16 @@ egen y=rowtotal(r1109-r1115), m
 gen food_insec_kids=(y>0) if x!=.
 
 drop x y
+
+*Credits (only for agriculture -> a lot of missings)
+gen credit_any=(r508=="1") if r508!="NA"
+gen credit_friend=(r509=="9") if r509!="NA"
+gen credit_coop=(r509=="6") if r509!="NA"
+gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4" | r509=="10") if r509!="NA"
+gen credit_informal=(r509=="5" | r509=="6" | r509=="7" | r509=="8" | r509=="9" | r509=="11") if r509!="NA"
+
+*Seguro medico 
+gen med_insur=(r601!="8")
 
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
@@ -382,7 +412,7 @@ restore
 
 *Food security
 preserve
-	collapse (mean) food_insec_all food_insec_kids, by(segm_id)
+	collapse (mean) credit_* med_insur food_insec_all food_insec_kids, by(segm_id)
 	
 	tempfile FOODSEC
 	save `FOODSEC'
@@ -432,6 +462,8 @@ save `SHOCKS', replace
 *-------------------------------------------------------------------------------
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
+drop credit_* 
+
 *Merging data
 drop _merge
 merge 1:1 segm_id using `EDUC_EHPM', keep(1 3) nogen
@@ -479,7 +511,7 @@ gen wc_hightemp1sd=within_control*d_hightemp1sd
 gen wc_hightemp2sd=within_control*d_hightemp2sd
 
 *Variable labels 
-label var within_control "Control"
+label var within_control "Guerrilla control"
 label var wc_ztemp "Control $\times$ Temperature (Z-score)"
 label var wc_dmztemp1sd "Control $\times$ $\lvert Z\text{-Temp} \rvert \geq 1$ SD"
 label var wc_dmztemp2sd "Control $\times$ $\lvert Z\text{-Temp} \rvert \geq 2$ SD"
@@ -494,7 +526,7 @@ label var wc_hightemp "Control $\times$ High Temp (Above Median)"
 label var wc_highprecip "Control $\times$ High Precip (Above Median)"
 label var wc_hightemp1sd "Control $\times$ High Months Temp Shock (1SD)"
 label var wc_hightemp2sd "Control $\times$ High Months Temp Shock (2SD)"
-label var wc_highprecip1sd "Control $\times$ High Months Precip Shock (1SD)"
+label var wc_highprecip1sd "Control $\times \mathbb{I}$\{Months with High Precip (1SD) $\geq$ p50\}"
 label var wc_highprecip2sd "Control $\times$ High Months Precip Shock (2SD)"
 
 *Global of border FE for all estimates
@@ -551,7 +583,6 @@ foreach yvar of global foodsecoutcomes {
 	estadd scalar L    = r(estimate)
 	estadd scalar L_p  = r(p)
 	eststo e`i'
-	
 	
 	reghdfe `yvar' ${controls} wc_zprecip precip_std [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
 	lincom within_control+ wc_zprecip
@@ -639,11 +670,11 @@ esttab a1 b1 c1 d1 e1 k1 l1 m1 using "${tables}/rdd_foodsec_all_temp.tex", ///
           fmt(3 3 0)) ///
     prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & \multicolumn{8}{c}{Food Insecurity (All)}\\\\"' ///
-            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (All)}\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
-             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
              `"\bottomrule \end{tabular}"')
 
 *Table 2: Temperature effects on food_insec_kids
@@ -656,11 +687,11 @@ esttab a2 b2 c2 d2 e2 k2 l2 m2 using "${tables}/rdd_foodsec_kids_temp.tex", ///
           fmt(3 3 0)) ///
     prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & \multicolumn{8}{c}{Food Insecurity (Children)}\\\\"' ///
-            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (Children)}\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
-             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
              `"\bottomrule \end{tabular}"')
 
 *Table 3: Precipitation effects on food_insec_all
@@ -673,11 +704,11 @@ esttab f1 g1 h1 i1 j1 n1 o1 p1 using "${tables}/rdd_foodsec_all_precip.tex", ///
           fmt(3 3 0)) ///
     prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & \multicolumn{8}{c}{Food Insecurity (All)}\\\\"' ///
-            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (All)}\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
-             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
              `"\bottomrule \end{tabular}"')
 
 *Table 4: Precipitation effects on food_insec_kids
@@ -690,36 +721,91 @@ esttab f2 g2 h2 i2 j2 n2 o2 p2 using "${tables}/rdd_foodsec_kids_precip.tex", //
           fmt(3 3 0)) ///
     prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & \multicolumn{8}{c}{Food Insecurity (Children)}\\\\"' ///
-            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\"' ///
+            `" & \multicolumn{8}{c}{Food Insecurity (Children)}\\"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
-             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\\\"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
              `"\bottomrule \end{tabular}"')
-		
-/*
-reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip1sd==0, vce(r) a(i.${breakfe}) 
-reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip1sd==1, vce(r) a(i.${breakfe}) 
 
-reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip1sd==0, vce(r) a(i.${breakfe}) 
-reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip1sd==1, vce(r) a(i.${breakfe}) 
+*Table 5: Combined table for food_insec_all with selected shocks
+esttab f1 i1 o1 using "${tables}/rdd_foodsec_all_precip_final.tex", ///
+	keep(within_control wc_zprecip wc_dzprecip1sd wc_highprecip1sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(L L_p N, ///
+          labels("Combined estimate" "p-value (lincom)" "Observations") ///
+          fmt(3 3 0)) ///
+    prehead(`"\begin{tabular}{@{}l*{3}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{3}{c}{Food Insecurity (All)}\\"' ///
+            `"\ & (1) & (2) & (3) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')
 
-reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip2sd==0, vce(r) a(i.${breakfe}) 
-reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip2sd==1, vce(r) a(i.${breakfe}) 
+*-------------------------------------------------------------------------------
+* Additional outcomes: Credit and Medical Insurance
+*-------------------------------------------------------------------------------
+*Variable labels for credit and insurance outcomes
+label var credit_any "Credit (Any)"
+label var credit_formal "Credit (Formal)"
+label var credit_friend "Credit (Friend/Informal)"
+label var med_insur "Medical Insurance"
 
-reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip2sd==0, vce(r) a(i.${breakfe}) 
-reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip2sd==1, vce(r) a(i.${breakfe}) 
+*Global with outcomes
+gl credit_outcomes "credit_any credit_formal credit_friend med_insur"
+
+*Clear previous estimates and run regressions in a loop
+est clear
+
+local col=1
+foreach yvar of global credit_outcomes {
+	
+	*Specification 1: Z-score precipitation
+	reghdfe `yvar' ${controls} wc_zprecip precip_std [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	lincom within_control+ wc_zprecip
+	estadd scalar L    = r(estimate)
+	estadd scalar L_p  = r(p)
+	eststo col`col'
+	local ++col
+	
+	*Specification 2: Months with precipitation shock >= 1SD
+	reghdfe `yvar' ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	lincom within_control+ wc_dzprecip1sd
+	estadd scalar L    = r(estimate)
+	estadd scalar L_p  = r(p)
+	eststo col`col'
+	local ++col
+	
+	*Specification 3: High months precipitation shock indicator
+	reghdfe `yvar' ${controls} wc_highprecip1sd d_highprecip1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	lincom within_control+ wc_highprecip1sd
+	estadd scalar L    = r(estimate)
+	estadd scalar L_p  = r(p)
+	eststo col`col'
+	local ++col
+}
+
+*Table 6: Combined table for credit and medical insurance outcomes
+esttab col1 col2 col3 col4 col5 col6 col7 col8 col9 col10 col11 col12 using "${tables}/rdd_credit_medinsur_precip_final.tex", ///
+	keep(within_control wc_zprecip wc_dzprecip1sd wc_highprecip1sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(L L_p N, ///
+          labels("Combined estimate" "p-value (lincom)" "Observations") ///
+          fmt(3 3 0)) ///
+    prehead(`"\begin{tabular}{@{}l*{12}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{3}{c}{Credit (Any)} & \multicolumn{3}{c}{Credit (Formal)} & \multicolumn{3}{c}{Credit (Friend)} & \multicolumn{3}{c}{Med. Insurance}\\"' ///
+            `"\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}"' ///
+            `"\ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9) & (10) & (11) & (12) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')
 
 
-reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip==0, vce(r) a(i.${breakfe}) 
-reghdfe food_insec_all ${controls} [aw=tweights] ${if} & d_highprecip==1, vce(r) a(i.${breakfe}) 
-
-reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip==0, vce(r) a(i.${breakfe}) 
-reghdfe food_insec_kids ${controls} [aw=tweights] ${if} & d_highprecip==1, vce(r) a(i.${breakfe}) 
-
-
-
-
-
-
+			 
 
