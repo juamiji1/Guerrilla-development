@@ -1,0 +1,155 @@
+
+use "${data}\encuestas_victimización\short_ECP_segment_nofexp_2017.dta", clear
+
+ren SEG_COMPLETO segm_id 
+
+collapse pc_*, by(segm_id)
+
+tempfile ECP1 
+save `ECP1', replace 
+
+use "${data}\encuestas_victimización\ECP_segment_nofexp_2017.dta", clear
+
+ren SEG_COMPLETO segm_id 
+
+collapse pc_*, by(segm_id)
+
+merge 1:1 segm_id using `ECP1', nogen keep(1 3)
+
+tempfile ECP17 
+save `ECP17', replace 
+
+use "${data}\encuestas_victimización\short_ECP_segment_nofexp_2018.dta", clear
+
+ren SEG_COMPLETO segm_id 
+
+collapse pc_*, by(segm_id)
+
+tempfile ECP2 
+save `ECP2', replace 
+
+use "${data}\encuestas_victimización\ECP_segment_nofexp_2018.dta", clear
+
+ren SEG_COMPLETO segm_id 
+
+collapse pc_*, by(segm_id) 
+
+merge 1:1 segm_id using `ECP2', nogen keep(1 3)
+
+append using `ECP17'
+
+collapse pc_*, by(segm_id) // duplicates by year deal with 6
+
+tempfile ECP 
+save `ECP', replace 
+
+*-------------------------------------------------------------------------------
+* RDD results
+*
+*-------------------------------------------------------------------------------
+use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
+
+*Merging data
+drop _merge
+merge 1:1 segm_id using `ECP', keep(1 3) nogen
+
+*Labels 
+la var pc_seg_colonia_seg            "Perceived neighborhood safety"
+la var pc_pricausa_inseg_pandillas   "Gang-related insecurity"
+la var pc_delinc_en_colonia_aum      "Perceived increase in neighborhood crime"
+la var pc_con_servidor_fp            "Has contacted a public official"
+la var pc_vic_delito                 "Victim of crime"
+
+*Global of border FE for all estimates
+gl breakfe="control_break_fe_400"
+gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
+gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
+
+*RDD with break fe and triangular weights 
+rdrobust pc_vic_delito z_run_cntrl, all kernel(triangular)
+gl h=3
+gl ht=${h}
+gl b=e(b_l)
+
+*Conditional for all specifications
+gl if "if abs(z_run_cntrl)<=${h}"
+
+*Replicating triangular weights
+cap drop tweights
+gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+*Victimation outcomes 
+*gl vic_outcomes "pc_seg_colonia_seg pc_prob_pandillas_si pc_cree_victim_delito pc_dej_caminar pc_dej_salir_noche pc_dej_visitar_pariente pc_dej_llegtarde_casa pc_con_policia pc_con_militar pc_con_alcaldia pc_con_juzgado pc_delinc_en_colonia_aum"
+*gl vic_outcomes2 "pc_siente_inseguro pc_med_seguridad pc_med12_seguridad pc_con_servidor_fp pc_vic_delito pc_vic_robo_casa pc_vic_robo_auto pc_vic_atraco pc_vic_hurto pc_vic_agresion pc_vic_amenaza pc_vic_extorsion"
+
+gl vic_outcomes "pc_seg_colonia_seg pc_pricausa_inseg_pandillas pc_delinc_en_colonia_aum pc_con_servidor_fp pc_vic_delito"
+
+local i=1
+foreach yvar of global vic_outcomes{
+	
+	eststo est`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) keepsing
+	
+	local ++i
+}
+
+local i=1
+foreach yvar of global vic_outcomes{
+	
+	*RDD with break fe and triangular weights 
+	rdrobust `yvar' z_run_cntrl, all kernel(triangular)
+	gl h=e(h_l)
+	gl ht`i'=round(${h}, .001)
+	
+	*Conditional for all specifications
+	gl if "if abs(z_run_cntrl)<=${h}"
+
+	*Replicating triangular weights
+	cap drop tweights
+	gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
+
+	eststo estopt`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) keepsing
+	
+	local ++i
+}
+
+
+*-------------------------------------------------------------------------------
+* Exporting results to tables
+*
+*-------------------------------------------------------------------------------
+
+*Table 1: Crime Perceptions Outcomes
+esttab est1 est2 est3 est4 est5 using "${tables}/rdd_crimeperceptions_all.tex", ///
+    keep(within_control) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, labels("Observations") fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{5}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & Perceived neighborhood & Gang-related & Perceived increase in  & Has contacted & Victim of \\"' ///
+            `" & safety & insecurity & neighborhood crime & public official & any crime \\"' ///
+			`"\ & (1) & (2) & (3) & (4) & (5) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')
+
+*Table 1: Crime Perceptions Outcomes
+esttab estopt* using "${tables}/rdd_crimeperceptions_all_optbw.tex", ///
+    keep(within_control) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, labels("Observations") fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{5}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & Perceived neighborhood & Gang-related & Perceived increase in  & Has contacted & Victim of \\"' ///
+            `" & safety & insecurity & neighborhood crime & public official & any crime \\"' ///
+			`"\ & (1) & (2) & (3) & (4) & (5) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht1} & ${ht2} & ${ht3} & ${ht4} & ${ht5} \\"' ///
+             `"\bottomrule \end{tabular}"')
+
+
+
+*END
