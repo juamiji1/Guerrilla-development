@@ -806,6 +806,35 @@ esttab col1 col2 col3 col4 col5 col6 col7 col8 col9 col10 col11 col12 using "${t
              `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
              `"\bottomrule \end{tabular}"')
 
+*-------------------------------------------------------------------------------
+* Baseline table: Credit and Medical Insurance (within_control only, no interactions)
+*-------------------------------------------------------------------------------
+est clear
+
+local col=1
+foreach yvar of global credit_outcomes {
+	
+	reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	eststo col`col'
+	local ++col
+}
+
+*Table 7: Baseline credit and medical insurance (no shock interactions)
+esttab col1 col2 col3 col4 using "${tables}/rdd_credit_medinsur_base.tex", ///
+	keep(within_control) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, ///
+          labels("Observations") ///
+          fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{4}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & (1) & (2) & (3) & (4) \\"' ///
+            `" & Credit (Any) & Credit (Formal) & Credit (Friend) & Med. Insurance \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')
 
 			 
 

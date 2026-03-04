@@ -39,8 +39,9 @@ gl controls "within_control i.within_control#c.z_run_cntrl z_run_cntrl"
 gl controls_resid "i.within_control#c.z_run_cntrl z_run_cntrl"
 
 *RDD with break fe and triangular weights 
-rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
+rdrobust ipcf_ppp11_iqr z_run_cntrl, all kernel(triangular)
 gl h=2.266
+*gl h=e(h_l)
 gl b=e(b_l)
 
 *Conditional for all specifications
@@ -53,7 +54,7 @@ gen tweights=(1-abs(z_run_cntrl/${h})) ${if}
 *-------------------------------------------------------------------------------
 * Inequality results
 *-------------------------------------------------------------------------------
-gl ineqoutcomes "arcsine_nliqr arcsine_nliqr1090 nl_gini nl_gini_w z_wi_iqr iqr_zwi ipcf_ppp11_iqr ln_ipcf_ppp11_iqr"
+gl ineqoutcomes "arcsine_nliqr arcsine_nliqr1090 nl_gini nl_gini_w z_wi_iqr iqr_zwi ipcf_ppp11_iqr ln_ipcf_ppp11_iqr itf_m_iqr ilpc_m_iqr inlpc_m_iqr itranext_m_iqr agr_income_iqr iasalp_m_iqr ictapp_m_iqr ip_m_iqr wage_m_iqr"
 eststo clear
 
 local i=1
@@ -66,17 +67,17 @@ foreach yvar of global ineqoutcomes {
 }
 
 *Exporting results 
-esttab r1 r2 r3 r4 r5 r6 r7 r8 using "${tables}/rdd_main_all_ineq_nl.tex", keep(within_control) ///
+esttab r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 using "${tables}/rdd_main_all_ineq_nl.tex", keep(within_control) ///
 se nocons star(* 0.10 ** 0.05 *** 0.01) ///
 label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
-prehead(`"\begin{tabular}{@{}l*{8}{c}}"' ///
+prehead(`"\begin{tabular}{@{}l*{17}{c}}"' ///
             `"\hline \hline \toprule"'                     ///
-            `" & Night Light & Night Light & Night Light & Night Light & Wealth Index & Wealth & Income EHPM & Log Income EHPM \\"' ///
-			`" & (IQR 75-25)  & (IQR 90-10) & (Gini) & (Gini - weighted) & (IQR) & (IQR) & (IQR) & (IQR) \\"' ///
-			`" & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8)  \\"'                       ///
+            `" & NL IQR & NL IQR & NL Gini & NL Gini & Wealth & Wealth & Income & Log Income & HH Total & Labor PC & Non-Labor & Remittances & Agr. & Main Job & Self- & Main Occ. & Hourly \\"' ///
+			`" & (75-25)  & (90-10) & & (weighted) & Index & Index & EHPM & EHPM & Income & Income & PC Income & Income & Income & Labor & Employed & Income & Income \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9) & (10) & (11) & (12) & (13) & (14) & (15) & (16) & (17)  \\"'                       ///
             `" \toprule"')  ///
     postfoot(`" \toprule"' ///
-		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
 
 		
