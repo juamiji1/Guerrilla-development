@@ -80,6 +80,35 @@ prehead(`"\begin{tabular}{@{}l*{17}{c}}"' ///
 		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
 
+gl ineqoutcomes "itf_m_ipr ilpc_m_ipr inlpc_m_ipr itranext_m_ipr agr_income_ipr iasalp_m_ipr ictapp_m_ipr ip_m_ipr wage_m_ipr"
+eststo clear
+
+local i=1
+foreach yvar of global ineqoutcomes {
+	
+	*Base Estimation
+	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	
+	local ++i
+}
+
+*Exporting results 
+esttab r1 r2 r3 r4 r5 r6 r7 r8 r9 using "${tables}/rdd_main_all_ineq_nl_v2.tex", keep(within_control) ///
+se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+prehead(`"\begin{tabular}{@{}l*{9}{c}}"' ///
+            `"\hline \hline \toprule"'                     ///
+            `" & HH Total & Labor PC & Non-Labor & Remittances & Agr. & Main Job & Self- & Main Occ. & Hourly \\"' ///
+			`" & Income & Income & PC Income & Income & Income & Labor & Employed & Income & Income \\"' ///
+			`" & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9)  \\"'                       ///
+            `" \toprule"')  ///
+    postfoot(`" \toprule"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"') 
+		
+		
+		
 		
 
 *END

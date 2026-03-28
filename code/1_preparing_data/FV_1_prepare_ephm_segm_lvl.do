@@ -52,6 +52,15 @@ bys segment_id: egen ictapp_m_iqr = iqr(ictapp_m)
 bys segment_id: egen ip_m_iqr = iqr(ip_m)
 bys segment_id: egen wage_m_iqr = iqr(wage_m)
 
+gl incomeout "itf_m ilpc_m inlpc_m itranext_m agr_income iasalp_m ictapp_m ip_m wage_m"
+
+foreach var of global incomeout{
+	cap drop x y 
+	bys segment_id: egen y = pctile(`var'), p(90)
+	bys segment_id: egen x= pctile(`var'), p(10)
+	gen `var'_ipr= y - x
+}
+
 *Poverty count using pc income per day 
 gen ipcf_ppp11_day=ipcf_ppp11/30 
 gen poverty25=(ipcf_ppp11_day < 2.5) 
@@ -59,7 +68,7 @@ gen poverty4=(ipcf_ppp11_day < 4)
 
 *Collapsing at the segment lvl 
 gen total_hh=1
-collapse (sum) total_hh (mean) ln_ipcf_ppp11 ipcf_ppp11 ipcf_ppp11_iqr* ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance ln_ipcf_ppp11_iqr ln_ipcf_ppp11_p50 ipcf_ppp11_pr9010 ipcf_ppp11_pr9505 ipcf_ppp11_pr7525 hh_p2575 hh_p1090 hh_p0595 itf_m_iqr ilpc_m_iqr inlpc_m_iqr itranext_m_iqr agr_income_iqr iasalp_m_iqr ictapp_m_iqr ip_m_iqr wage_m_iqr [aw=pondera], by(segment_id)
+collapse (sum) total_hh (mean) ln_ipcf_ppp11 ipcf_ppp11 ipcf_ppp11_iqr* ipcf_ppp11_p50 poverty25 poverty4 cooperative assistance ln_ipcf_ppp11_iqr ln_ipcf_ppp11_p50 ipcf_ppp11_pr9010 ipcf_ppp11_pr9505 ipcf_ppp11_pr7525 hh_p2575 hh_p1090 hh_p0595 itf_m_iqr ilpc_m_iqr inlpc_m_iqr itranext_m_iqr agr_income_iqr iasalp_m_iqr ictapp_m_iqr ip_m_iqr wage_m_iqr *_ipr[aw=pondera], by(segment_id)
 
 *Fixing segment var
 ren segment_id segm_id

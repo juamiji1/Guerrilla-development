@@ -20,7 +20,7 @@ clear all
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm16.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115 r508 r509 r601
 
 *Destring of vars 
 destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
@@ -50,6 +50,17 @@ gen food_insec_all=(x>0) if x!=.
 
 drop x
 
+*Credits (only for agriculture -> a lot of missings)
+*gen credit_any=(r508=="1") if r508!="NA"
+gen credit_any=(r509!="NA") 
+gen credit_friend=(r509=="9") if r509!="NA"
+gen credit_coop=(r509=="6") if r509!="NA"
+gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4" | r509=="10") if r509!="NA"
+gen credit_informal=(r509=="5" | r509=="6" | r509=="7" | r509=="8" | r509=="9" | r509=="11") if r509!="NA"
+
+*Seguro medico 
+gen med_insur=(r601!="8")
+
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
 
@@ -57,7 +68,7 @@ ren (r105a r106) (birth_yr age_yr)
 gen year=2016
 
 *Collapse by segment
-collapse (mean) food_insec_all, by(segm_id year)
+collapse (mean) food_insec_all credit_* med_insur, by(segm_id year)
 
 tempfile EHPM16
 save `EHPM16', replace 
@@ -67,7 +78,7 @@ save `EHPM16', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm17.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115 r508 r509 r601
 
 *Destring of vars 
 destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
@@ -97,6 +108,17 @@ gen food_insec_all=(x>0) if x!=.
 
 drop x
 
+*Credits (only for agriculture -> a lot of missings)
+*gen credit_any=(r508=="1") if r508!="NA"
+gen credit_any=(r509!="NA") 
+gen credit_friend=(r509=="9") if r509!="NA"
+gen credit_coop=(r509=="6") if r509!="NA"
+gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4" | r509=="10") if r509!="NA"
+gen credit_informal=(r509=="5" | r509=="6" | r509=="7" | r509=="8" | r509=="9" | r509=="11") if r509!="NA"
+
+*Seguro medico 
+gen med_insur=(r601!="8")
+
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
 
@@ -104,7 +126,7 @@ ren (r105a r106) (birth_yr age_yr)
 gen year=2017
 
 *Collapse by segment
-collapse (mean) food_insec_all, by(segm_id year)
+collapse (mean) food_insec_all credit_* med_insur, by(segm_id year)
 
 tempfile EHPM17
 save `EHPM17', replace 
@@ -114,7 +136,7 @@ save `EHPM17', replace
 *-------------------------------------------------------------------------------
 import delimited "C:\Users\juami\Dropbox\My-Research\Guerillas_Development\2-Data\Salvador\ehpm\ehpm18.csv", clear stringcols(_all)
 
-keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115
+keep r105a r106 r201a r202a r203 r204 r204g r205 r213 r215a r215b codigomunic segmento r1101-r1115 r508 r509 r601
 
 *Destring of vars 
 destring r105a r106 r201a r202 r203 r204 r204g r205 r213 r215a r215b r1101-r1115, replace force 
@@ -144,6 +166,17 @@ gen food_insec_all=(x>0) if x!=.
 
 drop x
 
+*Credits (only for agriculture -> a lot of missings)
+*gen credit_any=(r508=="1") if r508!="NA"
+gen credit_any=(r509!="NA") 
+gen credit_friend=(r509=="9") if r509!="NA"
+gen credit_coop=(r509=="6") if r509!="NA"
+gen credit_formal=(r509=="1" | r509=="2" | r509=="3" | r509=="4" | r509=="10") if r509!="NA"
+gen credit_informal=(r509=="5" | r509=="6" | r509=="7" | r509=="8" | r509=="9" | r509=="11") if r509!="NA"
+
+*Seguro medico 
+gen med_insur=(r601!="8")
+
 *Renaming vars
 ren (r105a r106) (birth_yr age_yr)
 
@@ -151,7 +184,7 @@ ren (r105a r106) (birth_yr age_yr)
 gen year=2018
 
 *Collapse by segment
-collapse (mean) food_insec_all, by(segm_id year)
+collapse (mean) food_insec_all credit_* med_insur, by(segm_id year)
 
 tempfile EHPM18
 save `EHPM18', replace
@@ -442,3 +475,172 @@ esttab a_1 a_4 a_7 using "${tables}/rdd_foodsec_all_precip_pooled.tex", ///
              `"\bottomrule \end{tabular}"')
 
 			 
+*-------------------------------------------------------------------------------
+* Exporting results by year (FINAL TABLE)
+*-------------------------------------------------------------------------------
+foreach y in 2016 {
+	
+	di "************* YEAR `y' *************"
+	
+	local i=1
+	
+	*Base Estimation
+	reghdfe food_insec_all ${controls} [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+	eststo  a`y'_`i'
+	local ++i
+	
+	reghdfe food_insec_all ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+	eststo  a`y'_`i'
+	local ++i
+
+}
+
+*Table 1: Precipitation effects on food_insec_all - 2016
+esttab a2016_1 a2016_2 using "${tables}/rdd_foodsec_all_precip_2016.tex", ///
+	keep(within_control wc_dzprecip1sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, ///
+          labels("Observations") ///
+          fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{2}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{2}{c}{Food Insecurity (All) - 2016}\\"' ///
+            `"\ & (1) & (2) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')		
+
+*Base Estimation
+reghdfe food_insec_all ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe} ) 
+eststo  apool_1
+
+reghdfe food_insec_all ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe} ) 
+eststo  apool_2
+
+*Table 1: Precipitation effects on food_insec_all - 2016
+esttab apool_1 apool_2 using "${tables}/rdd_foodsec_all_precip_final.tex", ///
+	keep(within_control wc_dzprecip1sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, ///
+          labels("Observations") ///
+          fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{2}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{2}{c}{Food Insecurity (All)}\\"' ///
+            `"\ & (1) & (2) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')		
+			 			 
+foreach y in 2016 {
+	
+	di "************* YEAR `y' *************"
+	
+	local i=1
+	
+	*Base Estimation
+	reghdfe med_insur ${controls} [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+	eststo  a`y'_`i'
+	local ++i
+	
+	reghdfe med_insur ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+	eststo  a`y'_`i'
+	local ++i
+
+}
+
+*Table 1: Precipitation effects on food_insec_all - 2016
+esttab a2016_1 a2016_2 using "${tables}/rdd_credit_any_precip_2016.tex", ///
+	keep(within_control wc_dzprecip1sd) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, ///
+          labels("Observations") ///
+          fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{2}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{2}{c}{Food Insecurity (All) - 2016}\\"' ///
+            `"\ & (1) & (2) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht} \\"' ///
+             `"\bottomrule \end{tabular}"')		
+
+*-------------------------------------------------------------------------------
+* Additional outcomes: Credit and Medical Insurance
+*-------------------------------------------------------------------------------
+drop credit_any 
+gen credit_any=(credit_formal==1 | credit_informal==1) if credit_formal!=. | credit_informal!=.
+
+*Variable labels for credit and insurance outcomes
+label var credit_any "Credit (Any)"
+label var credit_formal "Credit (Formal)"
+label var credit_informal "Credit (Informal)"
+label var credit_friend "Credit (Friend/Informal)"
+label var med_insur "Medical Insurance"
+
+*Global with outcomes
+gl credit_outcomes "credit_any med_insur"
+
+*Clear previous estimates and run regressions in a loop
+est clear
+
+local y=2016
+local col=1
+foreach yvar of global credit_outcomes {
+	
+	*Specification 1: Z-score precipitation
+	reghdfe `yvar' ${controls} [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+	eststo col`col'
+	local ++col
+	
+}
+
+*Table 6: Combined table for credit and medical insurance outcomes
+esttab col1 col2 using "${tables}/rdd_credit_medinsur_precip_final.tex", ///
+	keep(within_control) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+    stats(N, ///
+          labels("Observations") ///
+          fmt(0)) ///
+    prehead(`"\begin{tabular}{@{}l*{2}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & Acces to Credit & Med. Insurance \\"' ///
+            `"\ & (1) & (2) \\"' ///
+            `" \toprule"') ///
+    postfoot(`" \toprule"' ///
+             `" Bandwidth (Km) & ${ht} & ${ht}  \\"' ///
+             `"\bottomrule \end{tabular}"')
+
+
+// *Base Estimation
+// reghdfe credit_any ${controls} wc_zprecip precip_std [aw=tweights] ${if}, vce(r) a(i.${breakfe} ) 
+// eststo  apool_1
+//
+// reghdfe credit_any ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe} ) 
+// eststo  apool_2
+//
+// *Table 1: Precipitation effects on food_insec_all - 2016
+// esttab apool_1 apool_2 using "${tables}/rdd_credit_any_precip_final.tex", ///
+// 	keep(within_control wc_dzprecip1sd) ///
+//     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+//     label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+//     stats(N, ///
+//           labels("Observations") ///
+//           fmt(0)) ///
+//     prehead(`"\begin{tabular}{@{}l*{2}{c}}"' ///
+//             `"\hline \hline \toprule"' ///
+//             `" & \multicolumn{2}{c}{Food Insecurity (All)}\\"' ///
+//             `"\ & (1) & (2) \\"' ///
+//             `" \toprule"') ///
+//     postfoot(`" \toprule"' ///
+//              `" Bandwidth (Km) & ${ht} & ${ht} \\"' ///
+//              `"\bottomrule \end{tabular}"')		
+//			 
+//			 
+//			 
