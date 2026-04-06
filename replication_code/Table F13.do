@@ -156,11 +156,11 @@ gl b=e(b_l)
 gen samplec =( abs(z_run_cntrl)<=${h})
 
 *Descriptives for the sample chosen 
-tabstat $lc1 $lc2 $lc3 $lc4 $lc5 $lc6 if samplec==1, s(mean N) save
+tabstat $lc1 $lc2 $lc3 $lc4 $lc5 $lc6 if samplec==1, s(mean p25 p50 p75 N) save
 tabstatmat A
 mat A=A'
 
-tabstat $lc1 $lc2 $lc3 $lc4 $lc5 $lc6 if samplec==0, s(mean N) save
+tabstat $lc1 $lc2 $lc3 $lc4 $lc5 $lc6 if samplec==0, s(mean p25 p50 p75 N) save
 tabstatmat B
 mat B=B'
 

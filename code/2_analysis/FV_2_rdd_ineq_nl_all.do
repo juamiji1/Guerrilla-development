@@ -44,6 +44,8 @@ gl h=2.266
 *gl h=e(h_l)
 gl b=e(b_l)
 
+gl ht=2.266
+
 *Conditional for all specifications
 gl if "if abs(z_run_cntrl)<=${h}"
 
@@ -80,7 +82,7 @@ prehead(`"\begin{tabular}{@{}l*{17}{c}}"' ///
 		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
 
-gl ineqoutcomes "itf_m_ipr ilpc_m_ipr inlpc_m_ipr itranext_m_ipr agr_income_ipr iasalp_m_ipr ictapp_m_ipr ip_m_ipr wage_m_ipr"
+gl ineqoutcomes "itf_m_ipr inlpc_m_ipr itranext_m_ipr iasalp_m_ipr ip_m_ipr wage_m_ipr"
 eststo clear
 
 local i=1
@@ -93,20 +95,73 @@ foreach yvar of global ineqoutcomes {
 }
 
 *Exporting results 
-esttab r1 r2 r3 r4 r5 r6 r7 r8 r9 using "${tables}/rdd_main_all_ineq_nl_v2.tex", keep(within_control) ///
+esttab r1 r2 r3 r4 r5 r6 using "${tables}/rdd_main_all_ineq_nl_v2.tex", keep(within_control) ///
+se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+prehead(`"\begin{tabular}{@{}l*{9}{c}}"' ///
+            `"\hline \hline \toprule"'                     ///
+            `" & HH Total & Non-Labor & Remittances & Main Job & Main Occ. & Hourly \\"' ///
+			`" & Income & PC Income & Income & Labor & Income & Income \\"' ///
+			`" & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) & (6)  \\"'                       ///
+            `" \toprule"')  ///
+    postfoot(`" \toprule"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"') 
+		
+gl ineqoutcomes "itf_m_ipr5 ilpc_m_ipr5 inlpc_m_ipr5 itranext_m_ipr5 iasalp_m_ipr5 ip_m_ipr5 wage_m_ipr5"
+eststo clear
+
+local i=1
+foreach yvar of global ineqoutcomes {
+
+	*Base Estimation
+	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+
+	local ++i
+}
+
+*Exporting results
+esttab r1 r2 r3 r4 r5 r6 r7 using "${tables}/rdd_main_all_ineq_nl_v3.tex", keep(within_control) ///
+se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+prehead(`"\begin{tabular}{@{}l*{7}{c}}"' ///
+            `"\hline \hline \toprule"'                     ///
+            `" & HH Total & Labor PC & Non-Labor & Remittances & Main Job & Main Occ. & Hourly \\"' ///
+			`" & Income & Income & PC Income & Income & Labor & Income & Income \\"' ///
+			`" & (95-5) & (95-5) & (95-5) & (95-5) & (95-5) & (95-5) & (95-5) \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) & (6) & (7)  \\"'                       ///
+            `" \toprule"')  ///
+    postfoot(`" \toprule"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"')
+		
+gl ineqoutcomes "itf_m_rat ilpc_m_rat inlpc_m_rat itranext_m_rat agr_income_rat iasalp_m_rat ictapp_m_rat ip_m_rat wage_m_rat"
+eststo clear
+
+local i=1
+foreach yvar of global ineqoutcomes {
+	
+	*Base Estimation
+	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
+	
+	local ++i
+}
+
+*Exporting results 
+esttab r1 r2 r3 r4 r5 r6 r7 r8 r9 using "${tables}/rdd_main_all_ineq_nl_v4.tex", keep(within_control) ///
 se nocons star(* 0.10 ** 0.05 *** 0.01) ///
 label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
 prehead(`"\begin{tabular}{@{}l*{9}{c}}"' ///
             `"\hline \hline \toprule"'                     ///
             `" & HH Total & Labor PC & Non-Labor & Remittances & Agr. & Main Job & Self- & Main Occ. & Hourly \\"' ///
 			`" & Income & Income & PC Income & Income & Income & Labor & Employed & Income & Income \\"' ///
-			`" & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) \\"' ///
+			`" & (75/25) & (75/25) & (75/25) & (75/25) & (75/25) & (75/25) & (75/25) & (75/25) & (75/25) \\"' ///
 			`" & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) & (9)  \\"'                       ///
             `" \toprule"')  ///
     postfoot(`" \toprule"' ///
 		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
-		
 		
 		
 		
