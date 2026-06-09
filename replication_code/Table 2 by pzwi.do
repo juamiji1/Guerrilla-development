@@ -110,18 +110,18 @@ eststo q4: qreg z_wi ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample==1,
 eststo q5: qreg z_wi ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample==1, q(.9) vce(r) iterate(1000)
 
 *Exporting results dummy
-esttab q1 q2 q3 q4 q5 using "${tables}/rdd_main_all_qregzwi.tex", keep(within_control) ///
+esttab q2 q3 q4 q5 using "${tables}/rdd_main_all_qregzwi.tex", keep(within_control) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
     label nolines fragment nomtitle nonumbers obs nodep collabels(none) ///
     booktabs b(4) replace ///
-    prehead(`"\begin{tabular}{@{}l*{5}{c}}"' ///
+    prehead(`"\begin{tabular}{@{}l*{4}{c}}"' ///
             `"\hline \hline \toprule"' ///
-            `" & \multicolumn{5}{c}{Wealth Index (2007)} \\"' ///
-            `"\cline{2-6}"' ///
-            `" & Quantile 10 & Quantile 25 & Quantile 50 & Quantile 75 & Quantile 90 \\"' ///
-            `" & (1) & (2) & (3) & (4) & (5) \\"' ///
+            `" & \multicolumn{4}{c}{Wealth Index (2007)} \\"' ///
+            `"\cline{2-5}"' ///
+            `" & Quantile 25 & Quantile 50 & Quantile 75 & Quantile 90 \\"' ///
+            `" & (1) & (2) & (3) & (4) & \\"' ///
             `"\midrule"') ///
-    postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+    postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 			`"\bottomrule \end{tabular}"') 
 			  
 			  

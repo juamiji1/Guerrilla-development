@@ -115,12 +115,12 @@ gen lat_001 = round(y_coord / 0.01) * 0.01
 gen lon_005 = round(x_coord / 0.05) * 0.05
 gen lat_005 = round(y_coord / 0.05) * 0.05
 
-gen lon_01 = round(x_coord / 0.1) * 0.1
-gen lat_01 = round(y_coord / 0.1) * 0.1
+gen lon_0075 = round(x_coord / 0.075) * 0.075
+gen lat_0075 = round(y_coord / 0.075) * 0.075
 
 gen latlon_001=lat_001*lon_001
 gen latlon_005=lat_005*lon_005
-gen latlon_01=lat_01*lon_01
+gen latlon_0075=lat_0075*lon_0075
 
 *Creating matrix to export estimates
 mat coef1=J(4,3,.)
@@ -167,22 +167,22 @@ mat coef1[2,2]= r(lb)
 mat coef1[3,2]= r(ub)
 mat coef1[4,2]= r(p)
 
-*Results with a 0.1^o degrees of resolution (around 12 Km2)
-reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(cl i.lon_01#i.lat_01) a(i.${breakfe}) 
-unique latlon_01 if e(sample)==1
+*Results with a 0.075^o degrees of resolution (around 8.3 Km)
+reghdfe arcsine_nl13 ${controls} [aw=tweights] ${if}, vce(cl i.lon_0075#i.lat_0075) a(i.${breakfe})
+unique latlon_0075 if e(sample)==1
 
-cap drop n01 n_latlon01
-gen n01=1 if e(sample)==1
-bys latlon_01: egen n_latlon01=total(n01)
+cap drop n0075 n_latlon0075
+gen n0075=1 if e(sample)==1
+bys latlon_0075: egen n_latlon0075=total(n0075)
 
 preserve
-	collapse arcsine_nl13, by(latlon_01 n_latlon01)
-	replace n_latlon01=. if n_latlon01==0
-	summ n_latlon01, d
-restore 
+	collapse arcsine_nl13, by(latlon_0075 n_latlon0075)
+	replace n_latlon0075=. if n_latlon0075==0
+	summ n_latlon0075, d
+restore
 
-lincom within_control	
-mat coef1[1,3]= r(estimate) 
+lincom within_control
+mat coef1[1,3]= r(estimate)
 mat coef1[2,3]= r(lb)
 mat coef1[3,3]= r(ub)
 mat coef1[4,3]= r(p)
@@ -202,9 +202,9 @@ mat coef2[2,2]= r(lb)
 mat coef2[3,2]= r(ub)
 mat coef2[4,2]= r(p)
  
-reghdfe z_wi ${controls} [aw=tweights] ${if}, vce(cl i.lon_01#i.lat_01) a(i.${breakfe}) 
-lincom within_control	
-mat coef2[1,3]= r(estimate) 
+reghdfe z_wi ${controls} [aw=tweights] ${if}, vce(cl i.lon_0075#i.lat_0075) a(i.${breakfe})
+lincom within_control
+mat coef2[1,3]= r(estimate)
 mat coef2[2,3]= r(lb)
 mat coef2[3,3]= r(ub)
 mat coef2[4,3]= r(p)
@@ -223,9 +223,9 @@ mat coef3[2,2]= r(lb)
 mat coef3[3,2]= r(ub)
 mat coef3[4,2]= r(p)
 
-reghdfe mean_educ_years ${controls} [aw=tweights] ${if}, vce(cl i.lon_01#i.lat_01) a(i.${breakfe}) 
-lincom within_control	
-mat coef3[1,3]= r(estimate) 
+reghdfe mean_educ_years ${controls} [aw=tweights] ${if}, vce(cl i.lon_0075#i.lat_0075) a(i.${breakfe})
+lincom within_control
+mat coef3[1,3]= r(estimate)
 mat coef3[2,3]= r(lb)
 mat coef3[3,3]= r(ub)
 mat coef3[4,3]= r(p)
@@ -235,7 +235,7 @@ coefplot (mat(coef1[1]), ci((2 3)) aux(4) msymbol(circle) mcolor(gs6) label("Nig
 	(mat(coef2[1]), ci((2 3)) aux(4) msymbol(triangle) mcolor(gs6) label("Wealth Index")) ///
 	(mat(coef3[1]), ci((2 3)) aux(4) msymbol(diamond) mcolor(gs6) label("Years of Education")), /// 
 	yline(0, lc("black")) vert ciopts(recast(rcap) lcolor(gs6)) citop ///
-	xlabel( 1 "0.01° (~1.2 Km²)" 2 "0.05° (~6 Km²)" 3 "0.1° (~12 Km²)", labsize(medsmall)) ///
+	xlabel( 1 "0.01° (~1.1 Km)" 2 "0.05° (~5.5 Km)" 3 "0.075° (~8.3 Km)", labsize(medsmall)) ///
 	l2title("Coefficient magnitude") b2title("Grid resolution of spatial clusters") ///
 	ylabel(, format(%9.2f)) legend(position(6) rows(1)) ///
 	mlabel(cond(@aux1<=.01,"***", cond(@aux1<=.05,"**", cond(@aux1<=.1,"*", cond(@aux1<=.15,"†",""""))))) ///
