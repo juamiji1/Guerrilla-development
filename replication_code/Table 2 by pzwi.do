@@ -122,7 +122,37 @@ esttab q2 q3 q4 q5 using "${tables}/rdd_main_all_qregzwi.tex", keep(within_contr
             `" & (1) & (2) & (3) & (4) & \\"' ///
             `"\midrule"') ///
     postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
-			`"\bottomrule \end{tabular}"') 
-			  
-			  
+			`"\bottomrule \end{tabular}"')
+
+*-------------------------------------------------------------------------------
+* 						Quantile regression - Years of education
+*
+*-------------------------------------------------------------------------------
+eststo clear
+
+reghdfe mean_educ_years ${controls} [aw=tweights] ${if}, vce(r) abs(i.${breakfe})
+gen rdsample_educ=1 if e(sample)==1
+
+eststo e1: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.1) vce(r) iterate(1000)
+eststo e2: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.25) vce(r) iterate(1000)
+eststo e3: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.5) vce(r) iterate(1000)
+eststo e4: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.75) vce(r) iterate(1000)
+eststo e5: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.9) vce(r) iterate(1000)
+
+*Exporting results dummy
+esttab e2 e3 e4 e5 using "${tables}/rdd_main_all_qregeduc.tex", keep(within_control) ///
+    se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+    label nolines fragment nomtitle nonumbers obs nodep collabels(none) ///
+    booktabs b(4) replace ///
+    prehead(`"\begin{tabular}{@{}l*{4}{c}}"' ///
+            `"\hline \hline \toprule"' ///
+            `" & \multicolumn{4}{c}{Years of Education (2007)} \\"' ///
+            `"\cline{2-5}"' ///
+            `" & Quantile 25 & Quantile 50 & Quantile 75 & Quantile 90 \\"' ///
+            `" & (1) & (2) & (3) & (4) & \\"' ///
+            `"\midrule"') ///
+    postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+			`"\bottomrule \end{tabular}"')
+
+
 *END
