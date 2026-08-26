@@ -24,11 +24,56 @@ gen arcsine_nliqr1090=arcsine_nlq90-arcsine_nlq10
 la var arcsine_nliqr "Night Light (IQR)"
 
 tempfile NLQ
-save `NLQ', replace 
+save `NLQ', replace
 
-use "$data/night_light_13_segm_lvl_onu_91_nowater" , clear 
+*-------------------------------------------------------------------------------
+* EHPM income spreads: 90/10 ratios and winsorized (p1/p99) 90-10 differences
+* (household-level construction mirrors FV_1_prepare_ephm_segm_lvl.do)
+*-------------------------------------------------------------------------------
+use segment_id id year pondera itf_m inlpc_m itranext_m iasalp_m ip_m wage_m using "${data}/ehpm\ehpm_2000_2017_mjsp.dta", clear
 
-merge 1:1 segm_id using `NLQ', nogen 
+*Collapsing at the household level
+collapse (max) pondera itf_m inlpc_m itranext_m iasalp_m ip_m wage_m, by(segment_id id year)
+
+*Keeping the latest year
+bys segment_id: egen max_year=max(year)
+keep if year==max_year
+
+gl incnew "itf_m inlpc_m itranext_m iasalp_m ip_m wage_m"
+
+foreach var of global incnew{
+
+	*90/10 ratio (defined only for tracts whose p10 is positive)
+	cap drop x y
+	bys segment_id: egen y = pctile(`var'), p(90)
+	bys segment_id: egen x = pctile(`var'), p(10)
+	gen `var'_rat9010 = y/x if x>0 & x!=.
+
+	*Winsorizing households at the pooled p1/p99 before computing spreads
+	_pctile `var', p(1 99)
+	gen `var'_w = `var'
+	replace `var'_w = r(r1) if `var'_w<r(r1) & `var'_w!=.
+	replace `var'_w = r(r2) if `var'_w>r(r2) & `var'_w!=.
+
+	cap drop x y
+	bys segment_id: egen y = pctile(`var'_w), p(90)
+	bys segment_id: egen x = pctile(`var'_w), p(10)
+	gen `var'_iprw = y - x
+}
+
+*Collapsing at the segment lvl
+collapse (mean) *_rat9010 *_iprw [aw=pondera], by(segment_id)
+
+ren segment_id segm_id
+keep if length(segm_id)==8
+
+tempfile INEQW
+save `INEQW', replace
+
+use "$data/night_light_13_segm_lvl_onu_91_nowater" , clear
+
+merge 1:1 segm_id using `NLQ', nogen
+merge 1:1 segm_id using `INEQW', nogen keep(1 3)
 
 *-------------------------------------------------------------------------------
 * Setting vars
@@ -82,19 +127,22 @@ prehead(`"\begin{tabular}{@{}l*{17}{c}}"' ///
 		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
 
+*Version 1: current 90-10 dollar differences, now with dependent means
 gl ineqoutcomes "itf_m_ipr inlpc_m_ipr itranext_m_ipr iasalp_m_ipr ip_m_ipr wage_m_ipr"
 eststo clear
 
 local i=1
 foreach yvar of global ineqoutcomes {
-	
+
 	*Base Estimation
-	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) 
-	
+	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	summ `yvar' if e(sample)==1 & within_control==0, d
+	gl mean_a`i'=string(r(mean), "%9.2f")
+
 	local ++i
 }
 
-*Exporting results 
+*Exporting results
 esttab r1 r2 r3 r4 r5 r6 using "${tables}/rdd_main_all_ineq_nl_v2.tex", keep(within_control) ///
 se nocons star(* 0.10 ** 0.05 *** 0.01) ///
 label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
@@ -106,6 +154,69 @@ prehead(`"\begin{tabular}{@{}l*{9}{c}}"' ///
 			`" & (1) & (2) & (3) & (4) & (5) & (6)  \\"'                       ///
             `" \toprule"')  ///
     postfoot(`" \toprule"' ///
+		`" Dependent mean & ${mean_a1} & ${mean_a2} & ${mean_a3} & ${mean_a4} & ${mean_a5} & ${mean_a6} \\"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"')
+
+*Version 2: 90/10 ratios with dependent means
+gl ineqoutcomes "itf_m_rat9010 inlpc_m_rat9010 itranext_m_rat9010 iasalp_m_rat9010 ip_m_rat9010 wage_m_rat9010"
+eststo clear
+
+local i=1
+foreach yvar of global ineqoutcomes {
+
+	*Base Estimation
+	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	summ `yvar' if e(sample)==1 & within_control==0, d
+	gl mean_b`i'=string(r(mean), "%9.2f")
+
+	local ++i
+}
+
+*Exporting results
+esttab r1 r2 r3 r4 r5 r6 using "${tables}/rdd_main_all_ineq_nl_rat9010.tex", keep(within_control) ///
+se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+prehead(`"\begin{tabular}{@{}l*{9}{c}}"' ///
+            `"\hline \hline \toprule"'                     ///
+            `" & HH Total & Non-Labor & Remittances & Main Job & Main Occ. & Hourly \\"' ///
+			`" & Income & PC Income & Income & Labor & Income & Income \\"' ///
+			`" & (90/10) & (90/10) & (90/10) & (90/10) & (90/10) & (90/10) \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) & (6)  \\"'                       ///
+            `" \toprule"')  ///
+    postfoot(`" \toprule"' ///
+		`" Dependent mean & ${mean_b1} & ${mean_b2} & ${mean_b3} & ${mean_b4} & ${mean_b5} & ${mean_b6} \\"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"')
+
+*Version 3: 90-10 differences after winsorizing incomes at p1/p99, with dependent means
+gl ineqoutcomes "itf_m_iprw inlpc_m_iprw itranext_m_iprw iasalp_m_iprw ip_m_iprw wage_m_iprw"
+eststo clear
+
+local i=1
+foreach yvar of global ineqoutcomes {
+
+	*Base Estimation
+	eststo r`i': reghdfe `yvar' ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe})
+	summ `yvar' if e(sample)==1 & within_control==0, d
+	gl mean_c`i'=string(r(mean), "%9.2f")
+
+	local ++i
+}
+
+*Exporting results
+esttab r1 r2 r3 r4 r5 r6 using "${tables}/rdd_main_all_ineq_nl_wins.tex", keep(within_control) ///
+se nocons star(* 0.10 ** 0.05 *** 0.01) ///
+label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
+prehead(`"\begin{tabular}{@{}l*{9}{c}}"' ///
+            `"\hline \hline \toprule"'                     ///
+            `" & HH Total & Non-Labor & Remittances & Main Job & Main Occ. & Hourly \\"' ///
+			`" & Income & PC Income & Income & Labor & Income & Income \\"' ///
+			`" & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) & (90-10) \\"' ///
+			`" & (1) & (2) & (3) & (4) & (5) & (6)  \\"'                       ///
+            `" \toprule"')  ///
+    postfoot(`" \toprule"' ///
+		`" Dependent mean & ${mean_c1} & ${mean_c2} & ${mean_c3} & ${mean_c4} & ${mean_c5} & ${mean_c6} \\"' ///
 		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
 		`"\bottomrule \end{tabular}"') 
 		

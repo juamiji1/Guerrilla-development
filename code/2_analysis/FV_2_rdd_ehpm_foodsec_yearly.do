@@ -262,6 +262,7 @@ label var wc_zprecip "Control $\times$ Precipitation (Z-score)"
 label var wc_dmzprecip1sd "Control $\times$ $\lvert Z\text{-Precip} \rvert \geq 1$ SD"
 label var wc_dmzprecip2sd "Control $\times$ $\lvert Z\text{-Precip} \rvert \geq 2$ SD"
 label var wc_dzprecip1sd "Control $\times$ Months with $\lvert Z\text{-Precip} \rvert \geq 1$ SD"
+label var d_zprecip_1sd "Months with $\lvert Z\text{-Precip} \rvert \geq 1$ SD"
 label var wc_dzprecip2sd "Control $\times$ Months with $\lvert Z\text{-Precip} \rvert \geq 2$ SD"
 label var wc_highprecip "Control $\times$ High Precip (Above Median)"
 label var wc_highprecip1sd "Control $\times \mathbb{I}$\{Months with High Precip (1SD) $\geq$ p50\}"
@@ -485,11 +486,15 @@ foreach y in 2016 {
 	local i=1
 	
 	*Base Estimation
-	reghdfe food_insec_all ${controls} [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+	reghdfe food_insec_all ${controls} [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe})
+	summ food_insec_all if e(sample)==1 & within_control==0, d
+	gl mean_f16_`i'=string(r(mean), "%9.2f")
 	eststo  a`y'_`i'
 	local ++i
-	
-	reghdfe food_insec_all ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe}) 
+
+	reghdfe food_insec_all ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if} & year==`y', vce(r) a(i.${breakfe})
+	summ food_insec_all if e(sample)==1 & within_control==0, d
+	gl mean_f16_`i'=string(r(mean), "%9.2f")
 	eststo  a`y'_`i'
 	local ++i
 
@@ -497,7 +502,8 @@ foreach y in 2016 {
 
 *Table 1: Precipitation effects on food_insec_all - 2016
 esttab a2016_1 a2016_2 using "${tables}/rdd_foodsec_all_precip_2016.tex", ///
-	keep(within_control wc_dzprecip1sd) ///
+	keep(within_control wc_dzprecip1sd d_zprecip_1sd) ///
+	order(within_control wc_dzprecip1sd d_zprecip_1sd) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
     label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
     stats(N, ///
@@ -509,19 +515,25 @@ esttab a2016_1 a2016_2 using "${tables}/rdd_foodsec_all_precip_2016.tex", ///
             `"\ & (1) & (2) \\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
+             `" Dependent mean & ${mean_f16_1} & ${mean_f16_2} \\"' ///
              `" Bandwidth (Km) & ${ht} & ${ht} \\"' ///
-             `"\bottomrule \end{tabular}"')		
+             `"\bottomrule \end{tabular}"')
 
 *Base Estimation
-reghdfe food_insec_all ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe} ) 
+reghdfe food_insec_all ${controls} [aw=tweights] ${if}, vce(r) a(i.${breakfe} )
+summ food_insec_all if e(sample)==1 & within_control==0, d
+gl mean_fp_1=string(r(mean), "%9.2f")
 eststo  apool_1
 
-reghdfe food_insec_all ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe} ) 
+reghdfe food_insec_all ${controls} wc_dzprecip1sd d_zprecip_1sd [aw=tweights] ${if}, vce(r) a(i.${breakfe} )
+summ food_insec_all if e(sample)==1 & within_control==0, d
+gl mean_fp_2=string(r(mean), "%9.2f")
 eststo  apool_2
 
 *Table 1: Precipitation effects on food_insec_all - 2016
 esttab apool_1 apool_2 using "${tables}/rdd_foodsec_all_precip_final.tex", ///
-	keep(within_control wc_dzprecip1sd) ///
+	keep(within_control wc_dzprecip1sd d_zprecip_1sd) ///
+	order(within_control wc_dzprecip1sd d_zprecip_1sd) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
     label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
     stats(N, ///
@@ -533,8 +545,9 @@ esttab apool_1 apool_2 using "${tables}/rdd_foodsec_all_precip_final.tex", ///
             `"\ & (1) & (2) \\"' ///
             `" \toprule"') ///
     postfoot(`" \toprule"' ///
+             `" Dependent mean & ${mean_fp_1} & ${mean_fp_2} \\"' ///
              `" Bandwidth (Km) & ${ht} & ${ht} \\"' ///
-             `"\bottomrule \end{tabular}"')		
+             `"\bottomrule \end{tabular}"')
 			 			 
 foreach y in 2016 {
 	
