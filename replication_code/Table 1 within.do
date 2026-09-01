@@ -558,18 +558,19 @@ replace d_parr802=0 if baseec74==0
 gen d_schl80=(dist_schl80==0) if dist_schl80!=.
 gen d_comms45=(dist_comms45==0) if dist_comms45!=.
 
-*Aggregate presence dummy: any of the state indicators
-egen any_state=rowmax(basesmilitares cabecera d_city45 d_schl80 d_comms45)
-replace any_state=1 if any_state>1 & any_state!=.
+*Aggregate presence dummy: any state institution
+egen any_inst=rowmax(basesmilitares cabecera d_city45 d_schl80 d_comms45)
+replace any_inst=1 if any_inst>1 & any_inst!=.
 
-gl lcdum "basesmilitares cabecera d_city45 d_schl80 d_comms45 any_state d_parr80 d_parr802"
+gl lcdum "basesmilitares cabecera d_city45 d_schl80 d_comms45 rail_road d_parr80 d_parr802 any_inst"
 
 la var basesmilitares "Had a Military Base (1980)"
 la var cabecera "State Administration (1980)"
 la var d_city45 "Had a City or Village (1945)"
 la var d_schl80 "Had a School (1980)"
 la var d_comms45 "Had Telecommunications (1945)"
-la var any_state "Had Any State Institution"
+la var rail_road "Had a Road or Railway (1980)"
+la var any_inst "Had Any State Institution"
 la var d_parr80 "Had a Parish (1979)"
 la var d_parr802 "Had a Ecclesial Base Community (1974)"
 
@@ -642,7 +643,7 @@ forvalues k = 1/`bc' {
 matrix list starsd
 
 tempfile W W1
-frmttable using `W', statmat(SD) ctitle("Variable (Year)", "Coefficient","SE", "RI p-value", "Dependent Mean", "MDE", "MDE (\% of Mean)", "Obs") sdec(3,3,3,3,3,1,0) varlabels fragment tex nocenter annotate(starsd) asymbol(*,**,***) hlines(1 1 0 0 0 0 0 0 0 1 1) replace
+frmttable using `W', statmat(SD) ctitle("Variable (Year)", "Coefficient","SE", "RI p-value", "Dependent Mean", "MDE", "MDE (\% of Mean)", "Obs") sdec(3,3,3,3,3,1,0) varlabels fragment tex nocenter annotate(starsd) asymbol(*,**,***) hlines(1 1 0 0 0 0 0 0 0 1 1 1) replace
 filefilter `W' `W1', from("{tabular}\BS\BS") to("{tabular}") replace
 filefilter `W1' "${tables}/rdd_lc_statecapacity_dummies_RI.tex", from("multicolumn{3}{c}") to("multicolumn{3}{l}") replace
 
