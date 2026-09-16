@@ -1,6 +1,6 @@
 # Context: RI balance table and smoothness-test variants (reply to editors)
 
-*Last updated: 2026-08-31*
+*Last updated: 2026-09-02*
 
 Notes on the August 2026 changes to the balance/smoothness tables used in the
 reply to editors (`R&R REStud - July 3.2025/1.Reply_Editor&Referees.tex`, the
@@ -18,8 +18,14 @@ within border-segment strata):
 
 - Individual presence dummies: military base (1980), state administration
   (1980), city/village (1945), school (1980), telecommunications (1945),
-  **road or railway combined** (`rail_road`, 1980), parish (1979), Ecclesial
-  Base Community (1974).
+  **road or railway combined** (`rail_road`, 1980).
+- Parish (1979) and Ecclesial Base Community (1974) rows were **removed on
+  2026-09-02** (re-run on StataMP 16, same seed/reps). `d_parr80`/`d_parr802`
+  are still built in the block but are no longer in `${lcdum}`. The only
+  change in the remaining rows is the RI p-value of `any_inst` (0.373 ->
+  0.359) because its permutation draws shifted; all other rows identical.
+  Old 9-row estimates: parish -0.004 (SE 0.006, RI p 0.514, mean 0.013);
+  BEC 0.001 (SE 0.004, RI p 0.656, mean 0.002).
 - One composite: **Had Any State Institution** (`any_inst`) = max of military
   base, state administration, city/village, school, telecommunications.
   It excludes roads/railway and the church indicators.
