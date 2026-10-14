@@ -562,7 +562,7 @@ gen d_comms45=(dist_comms45==0) if dist_comms45!=.
 egen any_inst=rowmax(basesmilitares cabecera d_city45 d_schl80 d_comms45)
 replace any_inst=1 if any_inst>1 & any_inst!=.
 
-gl lcdum "basesmilitares cabecera d_city45 d_schl80 d_comms45 rail_road d_parr80 d_parr802 any_inst"
+gl lcdum "basesmilitares cabecera d_city45 d_schl80 d_comms45 rail_road any_inst"
 
 la var basesmilitares "Had a Military Base (1980)"
 la var cabecera "State Administration (1980)"
@@ -643,7 +643,7 @@ forvalues k = 1/`bc' {
 matrix list starsd
 
 tempfile W W1
-frmttable using `W', statmat(SD) ctitle("Variable (Year)", "Coefficient","SE", "RI p-value", "Dependent Mean", "MDE", "MDE (\% of Mean)", "Obs") sdec(3,3,3,3,3,1,0) varlabels fragment tex nocenter annotate(starsd) asymbol(*,**,***) hlines(1 1 0 0 0 0 0 0 0 1 1 1) replace
+frmttable using `W', statmat(SD) ctitle("Variable (Year)", "Coefficient","SE", "RI p-value", "Dependent Mean", "MDE", "MDE (\% of Mean)", "Obs") sdec(3,3,3,3,3,1,0) varlabels fragment tex nocenter annotate(starsd) asymbol(*,**,***) hlines(1 1 0 0 0 0 0 1 1 1) replace
 filefilter `W' `W1', from("{tabular}\BS\BS") to("{tabular}") replace
 filefilter `W1' "${tables}/rdd_lc_statecapacity_dummies_RI.tex", from("multicolumn{3}{c}") to("multicolumn{3}{l}") replace
 
