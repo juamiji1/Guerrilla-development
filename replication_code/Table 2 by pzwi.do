@@ -97,6 +97,35 @@ prehead(`"\begin{tabular}{@{}l*{2}{c}}"' ///
 *-------------------------------------------------------------------------------
 * 						Quantile regression 
 *
+* NOTE: Point estimates and SEs in the tables come from the weighted qreg fits
+* below. To test whether the effect differs across quantiles we need a joint 
+* VCE across quantiles, which sqreg provides via bootstrap but only without 
+* weights. So the p-value rows at the bottom of the tables come from an 
+* unweighted sqreg (same RD sample, same controls and border FE) and lincom.
+*-------------------------------------------------------------------------------
+*Bootstrap replications for the cross-quantile tests (set ${qreps} before running to override)
+if "${qreps}"=="" gl qreps=500
+set maxiter 5000
+
+*Program: runs unweighted sqreg and stores cross-quantile test p-values in globals
+*   ${p_`tag'_50}, ${p_`tag'_75}, ${p_`tag'_90}: lincom [qXX] - [q25] = 0
+*   ${p_`tag'_all}: joint test q25 = q50 = q75 = q90
+cap program drop qreg_quants_test
+program define qreg_quants_test
+	syntax varname, tag(string) sample(varname)
+	set seed 12345
+	sqreg `varlist' ${controls} i.${breakfe} ${if} & `sample'==1, q(.25 .5 .75 .9) reps(${qreps})
+	foreach q in 50 75 90 {
+		lincom [q`q']within_control - [q25]within_control
+		gl p_`tag'_`q': di %5.3f r(p)
+	}
+	test [q25]within_control=[q50]within_control=[q75]within_control=[q90]within_control
+	gl p_`tag'_all: di %5.3f r(p)
+end
+
+*-------------------------------------------------------------------------------
+* 						Quantile regression - Wealth index
+*
 *-------------------------------------------------------------------------------
 eststo clear
 
@@ -109,6 +138,9 @@ eststo q3: qreg z_wi ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample==1,
 eststo q4: qreg z_wi ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample==1, q(.75) vce(r) iterate(1000)
 eststo q5: qreg z_wi ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample==1, q(.9) vce(r) iterate(1000)
 
+*Tests of equality of the effect across quantiles (unweighted sqreg + lincom)
+qreg_quants_test z_wi, tag(zwi) sample(rdsample)
+
 *Exporting results dummy
 esttab q2 q3 q4 q5 using "${tables}/rdd_main_all_qregzwi.tex", keep(within_control) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
@@ -119,9 +151,12 @@ esttab q2 q3 q4 q5 using "${tables}/rdd_main_all_qregzwi.tex", keep(within_contr
             `" & \multicolumn{4}{c}{Wealth Index (2007)} \\"' ///
             `"\cline{2-5}"' ///
             `" & Quantile 25 & Quantile 50 & Quantile 75 & Quantile 90 \\"' ///
-            `" & (1) & (2) & (3) & (4) & \\"' ///
+            `" & (1) & (2) & (3) & (4) \\"' ///
             `"\midrule"') ///
     postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+			`"\addlinespace"' ///
+			`"p-value: effect equal to Quantile 25 & -- & ${p_zwi_50} & ${p_zwi_75} & ${p_zwi_90} \\"' ///
+			`"p-value: effect equal across all quantiles & \multicolumn{4}{c}{${p_zwi_all}} \\"' ///
 			`"\bottomrule \end{tabular}"')
 
 *-------------------------------------------------------------------------------
@@ -139,6 +174,9 @@ eststo e3: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & r
 eststo e4: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.75) vce(r) iterate(1000)
 eststo e5: qreg mean_educ_years ${controls} i.${breakfe} [pw=tweights] ${if} & rdsample_educ==1, q(.9) vce(r) iterate(1000)
 
+*Tests of equality of the effect across quantiles (unweighted sqreg + lincom)
+qreg_quants_test mean_educ_years, tag(educ) sample(rdsample_educ)
+
 *Exporting results dummy
 esttab e2 e3 e4 e5 using "${tables}/rdd_main_all_qregeduc.tex", keep(within_control) ///
     se nocons star(* 0.10 ** 0.05 *** 0.01) ///
@@ -149,9 +187,12 @@ esttab e2 e3 e4 e5 using "${tables}/rdd_main_all_qregeduc.tex", keep(within_cont
             `" & \multicolumn{4}{c}{Years of Education (2007)} \\"' ///
             `"\cline{2-5}"' ///
             `" & Quantile 25 & Quantile 50 & Quantile 75 & Quantile 90 \\"' ///
-            `" & (1) & (2) & (3) & (4) & \\"' ///
+            `" & (1) & (2) & (3) & (4) \\"' ///
             `"\midrule"') ///
     postfoot(`"Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
+			`"\addlinespace"' ///
+			`"p-value: effect equal to Quantile 25 & -- & ${p_educ_50} & ${p_educ_75} & ${p_educ_90} \\"' ///
+			`"p-value: effect equal across all quantiles & \multicolumn{4}{c}{${p_educ_all}} \\"' ///
 			`"\bottomrule \end{tabular}"')
 
 
