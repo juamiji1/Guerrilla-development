@@ -287,4 +287,40 @@ restore
 
 
 
+
+*-------------------------------------------------------------------------------
+* Residualized RD plots over the full optimal bandwidth (Appendix Figures
+* fig:rd_plots_pA to fig:rd_plots_pE). Same residuals as the 1 km plots;
+* display window and linear fits use |distance| <= h instead of |distance| < 1 km.
+* Note: reform is plotted as its residual (reform_r), like every other variable.
+*-------------------------------------------------------------------------------
+gl lc "basesmilitares d_basesmilitares cabecera dist_schl80 dist_comms45 comms45_dens d_city45 dist_city45 rail_road pop_bornbef80_always mean_educ_years_wnsage sh_before_war_inmigrant sh_before_war_outmigrant reform d_parr802 d_parr80 dist_parr80 events victims entries elevation2 slope rugged hydrography h_sibean h_sicoffee h_simaize h_sisugar desthidro landuse2"
+gl resid ""
+foreach var of global lc{
+	gl resid "${resid} `var'_r"
+}
+
+foreach var of global lc{
+	reghdfe `var' ${controls_resid} [aw=tweights] ${if}, vce(r) a(i.${breakfe}) resid
+	cap drop `var'_r
+	predict `var'_r, resid
+}
+
+local hh = ${h}
+di "Optimal bandwidth h = `hh'"
+preserve
+
+	gen x=round(z_run_cntrl, 0.08)
+	gen n=1
+
+	collapse (mean) ${resid} (sum) n, by(x)
+
+	foreach var of global resid{
+		two (scatter `var' x if abs(x)<=`hh', mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<=`hh', clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<=`hh', clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-2(0.5)2) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3) pos(6)) l2title("Estimate magnitude", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var'_optbw, replace)
+		gr export "${plots}dplot_all_`var'_optbw.pdf", as(pdf) replace
+	}
+
+restore
+
+
 *END

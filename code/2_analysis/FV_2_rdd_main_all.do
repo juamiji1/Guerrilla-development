@@ -163,3 +163,23 @@ foreach var of global lc{
 
 
 
+
+*-------------------------------------------------------------------------------
+* Residualized RD plots over the full optimal bandwidth (Appendix figure
+* fig:rd_plots_main_optbw). Same residuals as above; display window and
+* linear fits use |distance| <= h instead of |distance| < 1 km.
+*-------------------------------------------------------------------------------
+local hh = ${h}
+preserve
+
+	gen x=round(z_run_cntrl, 0.08)
+	gen n=1
+	
+	collapse (mean) ${resid} (sum) n, by(x)
+
+	foreach var of global resid{
+		two (scatter `var' x if abs(x)<=`hh', mcolor(gs6) xline(0, lc(maroon) lp(dash))) (lfitci `var' x [aweight = n] if x<0 & abs(x)<=`hh', clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)) (lfitci `var' x [aweight = n] if x>=0 & abs(x)<=`hh', clc(gs2%90) clw(medthick) acolor(gs6%30) alw(vvthin)), xlabel(-2(0.5)2) legend(order(1 "Mean residual per bin" 3 "Linear prediction" 2 "95% CI") cols(3) pos(6)) l2title("Estimate magnitude", size(medsmall)) b2title("Distance to border (Kms)", size(medsmall)) xtitle("") name(`var'_optbw, replace)
+		gr export "${plots}\rdplot_all_`var'_optbw.pdf", as(pdf) replace 
+	}
+	
+restore
