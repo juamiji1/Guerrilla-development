@@ -71,38 +71,51 @@ foreach var of global main{
 *-------------------------------------------------------------------------------
 * 				Main outcomes under different Conley (Plot)
 *-------------------------------------------------------------------------------
-*Plot of many Conley SE under different distance thresholds 
-foreach var of global main{
-		
-	mat coef=J(3,20,.)
-		
-	local h=0.5
-	forval c=1/20{
-		
-		*Total Households
-		acreg `var' ${controls} [pw=tweights] ${if}, spatial latitude(y_coord) longitude(x_coord) dist(`h') pfe1(${breakfe}) dropsingletons 
-		lincom within_control	
-		mat coef[1,`c']= r(estimate) 
-		mat coef[2,`c']= r(lb)
-		mat coef[3,`c']= r(ub)
-		
-		local h=`h'+0.5
+*Plot of many Conley SE under different distance thresholds (0.5 km steps).
+*Two versions: thresholds up to 10 km (manuscript figure, rdd_all_`var'_conley.pdf)
+*and up to 7 km (reply letter, rdd_all_`var'_conley_max7.pdf). Set the global
+*conley_maxkm before running to produce only one of them.
+if "${conley_maxkm}"=="" gl conley_maxkm "10 7"
+
+foreach maxkm of global conley_maxkm {
+
+	local nstep = `maxkm'/0.5
+	local suffix = cond(`maxkm'==10, "", "_max`maxkm'")
+
+	foreach var of global main{
+
+		mat coef=J(3,`nstep',.)
+
+		local h=0.5
+		local labels ""
+		forval c=1/`nstep'{
+
+			*Total Households
+			acreg `var' ${controls} [pw=tweights] ${if}, spatial latitude(y_coord) longitude(x_coord) dist(`h') pfe1(${breakfe}) dropsingletons
+			lincom within_control
+			mat coef[1,`c']= r(estimate)
+			mat coef[2,`c']= r(lb)
+			mat coef[3,`c']= r(ub)
+
+			local labels "`labels' `h'"
+			local h=`h'+0.5
+		}
+
+		*Labeling coef matrix columns with the threshold actually used (km)
+		mat coln coef= `labels'
+
+		*Plotting estimates
+		coefplot (mat(coef[1]), ci((2 3)) label("Within FMLN-dominated zone")), ///
+			vert recast(line) lwidth(*2) color(gs2%70) ///
+			ciopts(recast(rarea) lpattern(dash) color(gs6%40)) ///
+			yline(0) yscale(range(0 .)) ///
+			ylabel(, labsize(small)) xlabel(, labsize(small)) ///
+			l2title("Coefficient magnitude") b2title("Threshold chosen for Conley SE in Kms") ///
+			name(`var', replace)
+
+		gr export "${plots}\rdd_all_`var'_conley`suffix'.pdf", as(pdf) replace
+
 	}
-		
-	*Labeling coef matrix rows according to each bw
-	mat coln coef= .5 1 1.5 2 2.5 3 3.5 4 4.5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 10 10.5 
-
-	*Plotting estimates 
-	coefplot (mat(coef[1]), ci((2 3)) label("Within FMLN-dominated zone")), ///
-		vert recast(line) lwidth(*2) color(gs2%70) ///
-		ciopts(recast(rarea) lpattern(dash) color(gs6%40)) ///
-		yline(0) yscale(range(0 .)) ///
-		ylabel(, labsize(small)) xlabel(, labsize(small)) ///
-		l2title("Coefficient magnitude") b2title("Threshold chosen for Conley SE in Kms") ///
-		name(`var', replace)
-		
-	gr export "${plots}\rdd_all_`var'_conley.pdf", as(pdf) replace 
-
 }
 
 *-------------------------------------------------------------------------------

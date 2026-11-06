@@ -628,7 +628,9 @@ foreach var of global lcdum{
 	local++i
 }
 
-mat SD=D1
+*Export without the MDE columns (5 and 6); they are still computed in D1
+*(reply letter Table R.18, Nov 2026)
+mat SD=D1[1...,1..4], D1[1...,7]
 mat list SD
 
 local bc = rowsof(SD)
@@ -643,7 +645,7 @@ forvalues k = 1/`bc' {
 matrix list starsd
 
 tempfile W W1
-frmttable using `W', statmat(SD) ctitle("Variable (Year)", "Coefficient","SE", "RI p-value", "Dependent Mean", "MDE", "MDE (\% of Mean)", "Obs") sdec(3,3,3,3,3,1,0) varlabels fragment tex nocenter annotate(starsd) asymbol(*,**,***) hlines(1 1 0 0 0 0 0 1 1 1) replace
+frmttable using `W', statmat(SD) ctitle("Variable (Year)", "Coefficient","SE", "RI p-value", "Dependent Mean", "Obs") sdec(3,3,3,3,0) varlabels fragment tex nocenter annotate(starsd) asymbol(*,**,***) hlines(1 1 0 0 0 0 0 1 1 1) replace
 filefilter `W' `W1', from("{tabular}\BS\BS") to("{tabular}") replace
 filefilter `W1' "${tables}/rdd_lc_statecapacity_dummies_RI.tex", from("multicolumn{3}{c}") to("multicolumn{3}{l}") replace
 

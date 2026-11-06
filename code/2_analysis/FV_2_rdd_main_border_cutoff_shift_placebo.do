@@ -1,5 +1,29 @@
 
-clear all 
+clear all
+
+*-------------------------------------------------------------------------------
+* Plot of the border-shift placebo: placebo borders in black/gray, the estimate
+* at the actual boundary (shift = 0) in black (same gray palette as the SE plots). Expects matrix C
+* (rows: estimate, lb, ub; columns: shifts from -3 to 3 km in 0.5 km steps).
+*-------------------------------------------------------------------------------
+cap program drop plot_border_shift
+program define plot_border_shift
+	syntax, ytitle(string) file(string)
+	preserve
+	clear
+	mat Ct = C'
+	svmat Ct
+	gen shift = -3 + 0.5*(_n-1)
+	twoway (rcap Ct2 Ct3 shift if shift!=0, lc(gs6) lw(medthin)) ///
+		(scatter Ct1 shift if shift!=0, mc(gs6) ms(O) msize(medium)) ///
+		(rcap Ct2 Ct3 shift if shift==0, lc(black) lw(medthick)) ///
+		(scatter Ct1 shift if shift==0, mc(black) ms(D) msize(large)), ///
+		yline(0, lc(black)) xlabel(-3(0.5)3) ytitle("") xtitle("") ///
+		legend(order(2 "Placebo borders" 4 "Actual boundary") pos(6) rows(1)) ///
+		l2title("`ytitle'", size(medsmall)) b2title("Border cutoff shift (km)")
+	gr export "${plots}/`file'", as(pdf) replace
+	restore
+end
 
 /*-------------------------------------------------------------------------------
 * 				 Placebo Borders for Main outcomes (Night Light)
@@ -114,20 +138,16 @@ mat C=C_neg,C_pos
 mat coln C = -3 -2.5 -2 -1.5 -1 -.5 0 .5 1 1.5 2 2.5 3
 mat l C
 
-*Plotting estimates 
-coefplot (mat(C[1]), ci((2 3))), vert ciopts(recast(rcap)) citop ///
-yline(0, lc(maroon) lp(dash)) ///
-l2title("Effect of within guerrilla control on night light", size(medium)) ///
-b2title("Border cutoff shift (km)")
-
-gr export "${plots}\rdd_border_shift_placebo_arcsine_nl13.pdf", as(pdf) replace 
+*Plotting estimates
+plot_border_shift, ytitle("Effect of guerrilla control on night light") ///
+	file(rdd_border_shift_placebo_arcsine_nl13.pdf)
 
 
 *-------------------------------------------------------------------------------
 * 						Main outcomes (Wealth index)
 *
 *-------------------------------------------------------------------------------
-clear all 
+clear   // (not "clear all": keeps the plot_border_shift program defined above)
 
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
@@ -237,20 +257,16 @@ mat C=C_neg,C_pos
 mat coln C = -3 -2.5 -2 -1.5 -1 -.5 0 .5 1 1.5 2 2.5 3
 mat l C
 
-*Plotting estimates 
-coefplot (mat(C[1]), ci((2 3))), vert ciopts(recast(rcap)) citop ///
-yline(0, lc(maroon) lp(dash)) ///
-l2title("Effect of within guerrilla control on wealth index", size(medium)) ///
-b2title("Border cutoff shift (km)")
-
-gr export "${plots}\rdd_border_shift_placebo_z_wi.pdf", as(pdf) replace 
+*Plotting estimates
+plot_border_shift, ytitle("Effect of guerrilla control on wealth index") ///
+	file(rdd_border_shift_placebo_z_wi.pdf)
 
 
 *-------------------------------------------------------------------------------
 * 						Main outcomes (Years of Education)
 *
 *-------------------------------------------------------------------------------
-clear all 
+clear   // (not "clear all": keeps the plot_border_shift program defined above)
 
 use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
@@ -360,13 +376,9 @@ mat C=C_neg,C_pos
 mat coln C = -3 -2.5 -2 -1.5 -1 -.5 0 .5 1 1.5 2 2.5 3
 mat l C
 
-*Plotting estimates 
-coefplot (mat(C[1]), ci((2 3))), vert ciopts(recast(rcap)) citop ///
-yline(0, lc(maroon) lp(dash)) ///
-l2title("Effect of within guerrilla control on years of education", size(medium)) ///
-b2title("Border cutoff shift (km)")
-
-gr export "${plots}\rdd_border_shift_placebo_mean_educ_years.pdf", as(pdf) replace 
+*Plotting estimates
+plot_border_shift, ytitle("Effect of guerrilla control on years of education") ///
+	file(rdd_border_shift_placebo_mean_educ_years.pdf)
 
 
 /*-------------------------------------------------------------------------------
@@ -432,21 +444,26 @@ foreach yvar of global mainoutcomes {
 *-------------------------------------------------------------------------------
 * Table 
 *-------------------------------------------------------------------------------
-*Exporting results 
-esttab r1 r2 r3 r4 r5 r6 using "${tables}/rdd_main_all_RI.tex", keep(within_control) ///
+*Exporting results: only the baseline specification (with the linear polynomial,
+*r2 r4 r6). The no-polynomial estimates r1 r3 r5 are still computed above but
+*no longer reported (reply letter Table R.11, Nov 2026).
+foreach i in 2 4 6 {
+	gl ri_p_`i'_f = string(${ri_p_`i'}, "%5.3f")
+}
+
+esttab r2 r4 r6 using "${tables}/rdd_main_all_RI.tex", keep(within_control) ///
 se nocons star(* 0.10 ** 0.05 *** 0.01) ///
 label nolines fragment nomtitle nonumbers obs nodep collabels(none) booktabs b(3) replace ///
-prehead(`"\begin{tabular}{@{}l*{6}{c}}"' ///
+prehead(`"\begin{tabular}{@{}l*{3}{c}}"' ///
             `"\hline \hline \toprule"'                     ///
-            `" & Night Light & Night Light & Wealth Index & Wealth Index & Years of Education & Years of Education \\"' ///
-            `" & (1) & (2) & (3) & (4) & (5) & (6) \\"'                       ///
+            `" & Night Light & Wealth Index & Years of Education \\"' ///
+            `" & (1) & (2) & (3) \\"'                       ///
             `" \toprule"')  ///
     postfoot(`" \toprule"' ///
-		`"Lineal polynomial & No & Yes & No & Yes & No & Yes \\"' ///
-		`"Permutation p-value & ${ri_p_1} & ${ri_p_2} & ${ri_p_3} & ${ri_p_4} & ${ri_p_5} & ${ri_p_6} \\"' ///
-		`"Permutation reps & ${reps} & ${reps} & ${reps} & ${reps} & ${reps} & ${reps} \\"' ///
-		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} & ${ht} \\"' ///
-		`"\bottomrule \end{tabular}"') 
+		`"Permutation p-value & ${ri_p_2_f} & ${ri_p_4_f} & ${ri_p_6_f} \\"' ///
+		`"Permutation reps & ${reps} & ${reps} & ${reps} \\"' ///
+		`" Bandwidth (Km) & ${ht} & ${ht} & ${ht} \\"' ///
+		`"\bottomrule \end{tabular}"')
 
 
 /*-------------------------------------------------------------------------------
