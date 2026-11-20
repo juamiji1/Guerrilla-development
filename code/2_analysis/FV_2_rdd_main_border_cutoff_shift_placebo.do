@@ -390,7 +390,7 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
-gl h=e(h_l)
+gl h=2.266   // bandwidth of the main table (paper Table 2), hardcoded so the sample is the same
 gl ht= round(${h}, .001)
 
 *Conditional for all specifications
@@ -475,7 +475,7 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
-gl h=e(h_l)
+gl h=2.266   // bandwidth of the main table (paper Table 2), hardcoded so the sample is the same
 gl ht= round(${h}, .001)
 
 *Conditional for all specifications
@@ -532,7 +532,7 @@ use "${data}/night_light_13_segm_lvl_onu_91_nowater.dta", clear
 
 *RDD with break fe and triangular weights 
 rdrobust arcsine_nl13 z_run_cntrl, all kernel(triangular)
-gl h=e(h_l)
+gl h=2.266   // bandwidth of the main table (paper Table 2), hardcoded so the sample is the same
 gl ht= round(${h}, .001)
 
 *Conditional for all specifications
